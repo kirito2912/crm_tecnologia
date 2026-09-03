@@ -8,7 +8,7 @@ import {
   Package, DollarSign, ShoppingCart, BarChart2,
   CheckCircle, AlertCircle, Info,
 } from 'lucide-react';
-import type { CsvComparisonResult } from '../../types/csv';
+import type { CsvComparisonResult, ProductComparisonRow } from '../../types/csv';
 
 interface Props {
   comparison: CsvComparisonResult;
@@ -153,10 +153,17 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
   const moneyDiff = grandTotalA - grandTotalB;
   const { label: pctTotal, dir: dirTotal } = fmtPct(grandTotalA, grandTotalB);
 
+  // Un producto "está en A/B" si cualquiera de sus métricas tiene valor definido.
+  // Esto cubre CSVs sin columna Total (que solo tienen qty o precio).
+  const inDatasetA = (r: ProductComparisonRow) =>
+    r.totalA !== undefined || r.qtyA !== undefined || r.priceA !== undefined;
+  const inDatasetB = (r: ProductComparisonRow) =>
+    r.totalB !== undefined || r.qtyB !== undefined || r.priceB !== undefined;
+
   // Productos que aparecen en ambos / solo A / solo B
-  const inBoth = productRows.filter(r => r.totalA !== undefined && r.totalB !== undefined);
-  const onlyInA = productRows.filter(r => r.totalA !== undefined && r.totalB === undefined);
-  const onlyInB = productRows.filter(r => r.totalA === undefined && r.totalB !== undefined);
+  const inBoth  = productRows.filter(r => inDatasetA(r) && inDatasetB(r));
+  const onlyInA = productRows.filter(r => inDatasetA(r) && !inDatasetB(r));
+  const onlyInB = productRows.filter(r => !inDatasetA(r) && inDatasetB(r));
 
   // Datos gráfico top-10 productos en ambos
   const chartData = useMemo(() => {
@@ -424,8 +431,8 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
                   </thead>
                   <tbody>
                     {productRows.map((r, i) => {
-                      const hasA = r.totalA !== undefined;
-                      const hasB = r.totalB !== undefined;
+                      const hasA = r.totalA !== undefined || r.qtyA !== undefined || r.priceA !== undefined;
+                      const hasB = r.totalB !== undefined || r.qtyB !== undefined || r.priceB !== undefined;
                       return (
                         <tr key={i} style={{
                           background: i % 2 === 0 ? '#ffffff' : '#fafbfc',

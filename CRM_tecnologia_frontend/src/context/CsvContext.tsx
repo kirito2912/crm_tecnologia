@@ -71,11 +71,12 @@ const DEFAULT_INITIAL_DATASETS: CsvDataset[] = [
 ];
 
 import Papa from 'papaparse';
+import { normalizeRow, detectMissingColumns } from '../utils/csvParser';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
 /** Parsea texto CSV a array de CsvRow con PapaParse de alto rendimiento para Big Data */
-function parseCsv(text: string): { columns: string[]; rows: CsvRow[] } {
+function parseCsv(text: string): { columns: string[]; rows: CsvRow[]; missingColumns: import('../types/csv').MissingColumnInfo[] } {
   const result = Papa.parse<Record<string, string>>(text, {
     header: true,
     skipEmptyLines: true,
@@ -92,10 +93,12 @@ function parseCsv(text: string): { columns: string[]; rows: CsvRow[] } {
     columns.forEach((col) => {
       clean[col] = String(row[col] ?? '').trim();
     });
-    return clean;
+    // Rellenar valores vacíos con defaults inteligentes
+    return normalizeRow(clean, columns);
   });
 
-  return { columns, rows };
+  const missingColumns = detectMissingColumns(columns);
+  return { columns, rows, missingColumns };
 }
 
 const SKIP_COLUMN_PATTERNS = [
@@ -236,7 +239,7 @@ export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addDataset = useCallback(
     async (file: File): Promise<void> => {
       const text = await file.text();
-      const { columns, rows } = parseCsv(text);
+      const { columns, rows, missingColumns } = parseCsv(text);
       const semantic = detectSemanticColumns(columns);
 
       const colorIndex = datasets.length % CARD_COLORS.length;
@@ -250,6 +253,7 @@ export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         color: CARD_COLORS[colorIndex],
         categoria: 'Empresarial',
         rowsLoaded: true,
+        missingColumns: missingColumns.length > 0 ? missingColumns : undefined,
         ...semantic,
       };
 
@@ -329,8 +333,16 @@ export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const normalizeProduct = (name: string): string =>
         name
           .trim()
+          // Elimina prefijos de cantidad: "2x ", "10X ", "3x"
           .replace(/^\d+x\s*/i, '')
+          // Elimina sufijos entre paréntesis con unidades/cantidades:
+          // "(8ud)", "(x8)", "(x 8)", "(8 uds)", "(pack 6)", "(6pack)", "(250ml)", etc.
+          // También elimina paréntesis solo con número: "(8)"
+          .replace(/\s*\(\s*(?:x\s*)?\d+\s*(?:ud[s]?|uni[t]?[s]?|pack|ml|cl|gr?|kg|lt?|pzas?|pcs?)?\s*\)/gi, '')
+          // Elimina guiones y puntos al final que puedan quedar
+          .replace(/[\s\-–_]+$/, '')
           .replace(/\s+/g, ' ')
+          .trim()
           .toLowerCase();
 
       const productRows: import('../types/csv').ProductComparisonRow[] = [];
@@ -343,7 +355,7 @@ export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           const key = normalizeProduct(raw);
           if (!mapA.has(key))
             mapA.set(key, {
-              display: raw.replace(/^\d+x\s*/i, '').trim(),
+              display: raw.replace(/^\d+x\s*/i, '').replace(/\s*\(\s*(?:x\s*)?\d+\s*(?:ud[s]?|uni[t]?[s]?|pack|ml|cl|gr?|kg|lt?|pzas?|pcs?)?\s*\)/gi, '').trim(),
               rows: [],
             });
           mapA.get(key)!.rows.push(r);
@@ -354,7 +366,7 @@ export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           const key = normalizeProduct(raw);
           if (!mapB.has(key))
             mapB.set(key, {
-              display: raw.replace(/^\d+x\s*/i, '').trim(),
+              display: raw.replace(/^\d+x\s*/i, '').replace(/\s*\(\s*(?:x\s*)?\d+\s*(?:ud[s]?|uni[t]?[s]?|pack|ml|cl|gr?|kg|lt?|pzas?|pcs?)?\s*\)/gi, '').trim(),
               rows: [],
             });
           mapB.get(key)!.rows.push(r);
@@ -362,21 +374,27 @@ export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
         const allKeys = new Set([...mapA.keys(), ...mapB.keys()]);
 
-        const sumCol = (rows: CsvRow[], col?: string): number | undefined => {
+        // col: nombre de la columna a sumar; si col no existe en el esquema → undefined.
+        // rows vacías (producto ausente en este dataset) → undefined para indicar ausencia.
+        // rows no vacías pero sin valores numéricos → 0 (columna existe, datos vacíos).
+        const sumCol = (rows: CsvRow[], col?: string, hasEntry?: boolean): number | undefined => {
           if (!col) return undefined;
+          if (!hasEntry) return undefined;          // producto no existe en este dataset
           const vals = rows
             .map((r) => parseNumeric(r[col] ?? ''))
             .filter((v) => !isNaN(v));
-          return vals.length ? vals.reduce((a, b) => a + b, 0) : undefined;
+          return vals.length ? vals.reduce((a, b) => a + b, 0) : 0;
         };
-        const avgCol = (rows: CsvRow[], col?: string): number | undefined => {
+        // Para precio: si el producto existe en el dataset pero no tiene valor → 0.
+        const avgCol = (rows: CsvRow[], col?: string, hasEntry?: boolean): number | undefined => {
           if (!col) return undefined;
+          if (!hasEntry) return undefined;          // producto no existe en este dataset
           const vals = rows
             .map((r) => parseNumeric(r[col] ?? ''))
             .filter((v) => !isNaN(v));
           return vals.length
             ? vals.reduce((a, b) => a + b, 0) / vals.length
-            : undefined;
+            : 0;
         };
 
         allKeys.forEach((key) => {
@@ -385,15 +403,17 @@ export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           const displayName = entryA?.display ?? entryB?.display ?? key;
           const rowsA = entryA?.rows ?? [];
           const rowsB = entryB?.rows ?? [];
+          const inA = entryA !== undefined;  // el producto existe en dataset A
+          const inB = entryB !== undefined;  // el producto existe en dataset B
 
           productRows.push({
             product: displayName,
-            qtyA: sumCol(rowsA, qtyCol),
-            qtyB: sumCol(rowsB, qtyCol),
-            priceA: avgCol(rowsA, priceCol),
-            priceB: avgCol(rowsB, priceCol),
-            totalA: sumCol(rowsA, totalCol),
-            totalB: sumCol(rowsB, totalCol),
+            qtyA:    sumCol(rowsA, qtyCol,   inA),
+            qtyB:    sumCol(rowsB, qtyCol,   inB),
+            priceA:  avgCol(rowsA, priceCol, inA),
+            priceB:  avgCol(rowsB, priceCol, inB),
+            totalA:  sumCol(rowsA, totalCol, inA),
+            totalB:  sumCol(rowsB, totalCol, inB),
           });
         });
 

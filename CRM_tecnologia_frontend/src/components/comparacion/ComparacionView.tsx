@@ -161,12 +161,19 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
   const grandQtyA    = cmp?.productRows.reduce((s, r) => s + (r.qtyA   ?? 0), 0) ?? 0;
   const grandQtyB    = cmp?.productRows.reduce((s, r) => s + (r.qtyB   ?? 0), 0) ?? 0;
 
-  const avgPriceA = useMemo(() => { if (!cmp) return undefined; const r = cmp.productRows.filter(x => x.priceA); return r.length ? r.reduce((s, x) => s + (x.priceA ?? 0), 0) / r.length : undefined; }, [cmp]);
-  const avgPriceB = useMemo(() => { if (!cmp) return undefined; const r = cmp.productRows.filter(x => x.priceB); return r.length ? r.reduce((s, x) => s + (x.priceB ?? 0), 0) / r.length : undefined; }, [cmp]);
+  const avgPriceA = useMemo(() => { if (!cmp) return undefined; const r = cmp.productRows.filter(x => x.priceA !== undefined); return r.length ? r.reduce((s, x) => s + (x.priceA ?? 0), 0) / r.length : undefined; }, [cmp]);
+  const avgPriceB = useMemo(() => { if (!cmp) return undefined; const r = cmp.productRows.filter(x => x.priceB !== undefined); return r.length ? r.reduce((s, x) => s + (x.priceB ?? 0), 0) / r.length : undefined; }, [cmp]);
 
-  const inBoth = cmp?.productRows.filter(r => r.totalA !== undefined && r.totalB !== undefined) ?? [];
-  const onlyA  = cmp?.productRows.filter(r => r.totalA !== undefined && r.totalB === undefined) ?? [];
-  const onlyB  = cmp?.productRows.filter(r => r.totalA === undefined && r.totalB !== undefined) ?? [];
+  // Un producto "está en A" si cualquiera de sus métricas de A tiene valor definido.
+  // Esto cubre CSVs sin columna Total (solo tienen qtyA o priceA).
+  const inDatasetA = (r: import('../../types/csv').ProductComparisonRow) =>
+    r.totalA !== undefined || r.qtyA !== undefined || r.priceA !== undefined;
+  const inDatasetB = (r: import('../../types/csv').ProductComparisonRow) =>
+    r.totalB !== undefined || r.qtyB !== undefined || r.priceB !== undefined;
+
+  const inBoth = cmp?.productRows.filter(r => inDatasetA(r) && inDatasetB(r)) ?? [];
+  const onlyA  = cmp?.productRows.filter(r => inDatasetA(r) && !inDatasetB(r)) ?? [];
+  const onlyB  = cmp?.productRows.filter(r => !inDatasetA(r) && inDatasetB(r)) ?? [];
 
   // ── Gráfico de Línea: Evolución Mensual por Cantidad de Ventas (Enero - Diciembre) ──
 

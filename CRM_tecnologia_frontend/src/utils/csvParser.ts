@@ -4,6 +4,131 @@ import type { CsvRow, ColumnStats } from '../types/csv';
 export interface ParsedCsv {
   columns: string[];
   rows: CsvRow[];
+  /** Columnas esperadas que no existían en el archivo y se rellenaron con valores por defecto */
+  missingColumns: MissingColumnInfo[];
+}
+
+/** Descripción de una columna ausente y el valor por defecto aplicado */
+export interface MissingColumnInfo {
+  /** Nombre canónico de la columna (ej: "Categoría") */
+  label: string;
+  /** Tipo semántico de la columna */
+  type: 'numeric' | 'text' | 'date';
+  /** Valor por defecto asignado en string para mostrar al usuario */
+  defaultValue: string;
+}
+
+// ─── Columnas semánticas esperadas ────────────────────────────────────────
+// Define qué columnas "conoce" el sistema, cómo detectarlas y qué valor
+// por defecto asignar cuando faltan o tienen valores vacíos.
+
+interface SemanticColumnDef {
+  /** Nombre legible para mostrar al usuario */
+  label: string;
+  /** Regex para detectar la columna en el CSV */
+  pattern: RegExp;
+  /** Tipo de dato que determina la regla de default */
+  type: 'numeric' | 'text' | 'date';
+  /** Valor por defecto cuando la columna no existe o está vacía */
+  default: string;
+}
+
+const SEMANTIC_COLUMN_DEFS: SemanticColumnDef[] = [
+  {
+    label: 'Producto',
+    pattern: /^(producto|product|descripcion|description|item|articulo|nombre|name|modelo|model|servicio)/i,
+    type: 'text',
+    default: 'Sin nombre',
+  },
+  {
+    label: 'Categoría',
+    pattern: /^(categoria|category|rubro|sector|tipo|type|familia)/i,
+    type: 'text',
+    default: 'Sin categoría',
+  },
+  {
+    label: 'Cantidad',
+    pattern: /^(cantidad|qty|quantity|cant|units|unidades|piezas|pieces|volumen)/i,
+    type: 'numeric',
+    default: '0',
+  },
+  {
+    label: 'Precio',
+    pattern: /^(precio|price|p\.unit|p_unit|precio_unit|precio_unitario|unit_price|costo|cost|valor_unit)/i,
+    type: 'numeric',
+    default: '0',
+  },
+  {
+    label: 'Total',
+    pattern: /^(total|total_ventas|total_sales|monto|importe|subtotal|amount|valor_total|total_usd|total_s|ventas|revenue|ingreso)/i,
+    type: 'numeric',
+    default: '0',
+  },
+  {
+    label: 'Fecha',
+    pattern: /^(fecha|date|año|year|mes|month|dia|day|hora|time|timestamp)/i,
+    type: 'date',
+    default: '',
+  },
+];
+
+/**
+ * Analiza qué columnas semánticas esperadas están ausentes en el CSV.
+ * Retorna solo las que realmente faltan (no tienen ninguna columna que las matchee).
+ */
+export function detectMissingColumns(columns: string[]): MissingColumnInfo[] {
+  const missing: MissingColumnInfo[] = [];
+  for (const def of SEMANTIC_COLUMN_DEFS) {
+    const found = columns.some((c) => def.pattern.test(c.trim()));
+    if (!found) {
+      missing.push({
+        label: def.label,
+        type: def.type,
+        defaultValue: def.type === 'date' ? 'null (omitido)' : def.default,
+      });
+    }
+  }
+  return missing;
+}
+
+/**
+ * Normaliza una fila del CSV aplicando valores por defecto inteligentes:
+ * - Columna NUMÉRICA ausente o vacía → "0"
+ * - Columna de TEXTO ausente o vacía → "Sin nombre" / "Sin categoría"
+ * - Columna de FECHA ausente o vacía → "" (null en procesamiento)
+ *
+ * Modifica la fila in-place y devuelve la misma referencia.
+ */
+export function normalizeRow(row: CsvRow, columns: string[]): CsvRow {
+  for (const def of SEMANTIC_COLUMN_DEFS) {
+    // Buscar si existe alguna columna del CSV que matchee esta definición semántica
+    const matchingCol = columns.find((c) => def.pattern.test(c.trim()));
+
+    if (!matchingCol) {
+      // La columna no existe en el CSV — no la insertamos, los valores por
+      // defecto se aplican al leer en getComparison/productRows via getSemanticDefault()
+      continue;
+    }
+
+    const currentValue = row[matchingCol]?.trim() ?? '';
+    if (currentValue === '') {
+      // La columna existe pero está vacía — aplicar el valor por defecto
+      row[matchingCol] = def.type === 'date' ? '' : def.default;
+    }
+  }
+  return row;
+}
+
+/**
+ * Devuelve el valor por defecto para una columna semántica dado su tipo.
+ * Útil cuando la columna directamente no existe en el dataset.
+ */
+export function getSemanticDefault(type: 'numeric' | 'text' | 'date', label?: string): string {
+  if (type === 'numeric') return '0';
+  if (type === 'date') return '';
+  // text: diferenciar producto de categoría
+  if (label === 'Categoría') return 'Sin categoría';
+  return 'Sin nombre';
 }
 
 const SKIP_COLUMN_PATTERNS = [
@@ -32,10 +157,12 @@ export function parseCsvText(text: string): ParsedCsv {
     columns.forEach((col) => {
       clean[col] = String(row[col] ?? '').trim();
     });
-    return clean;
+    // Rellenar valores vacíos con defaults inteligentes
+    return normalizeRow(clean, columns);
   });
 
-  return { columns, rows };
+  const missingColumns = detectMissingColumns(columns);
+  return { columns, rows, missingColumns };
 }
 
 export function parseJsonText(text: string): ParsedCsv {
@@ -53,9 +180,11 @@ export function parseJsonText(text: string): ParsedCsv {
     columns.forEach((col) => {
       row[col] = String((item as Record<string, unknown>)[col] ?? '');
     });
-    return row;
+    // Rellenar valores vacíos con defaults inteligentes
+    return normalizeRow(row, columns);
   });
-  return { columns, rows };
+  const missingColumns = detectMissingColumns(columns);
+  return { columns, rows, missingColumns };
 }
 
 export function parseDatasetFile(text: string, fileName: string): ParsedCsv {
