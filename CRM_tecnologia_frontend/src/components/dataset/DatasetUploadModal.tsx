@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, FileSpreadsheet, Tag, Target, AlignLeft } from 'lucide-react';
+import { X, Upload, FileSpreadsheet, Tag, Target, AlignLeft, AlertTriangle } from 'lucide-react';
 import { DATASET_CATEGORIES, type DatasetUploadMeta } from '../../types/dataset';
 import { detectTargetColumn } from '../../utils/csvParser';
-import type { ParsedCsv } from '../../utils/csvParser';
+import type { ParsedCsv, MissingColumnInfo } from '../../utils/csvParser';
+
+// Etiquetas legibles para cada tipo de default
+const DEFAULT_LABEL: Record<MissingColumnInfo['type'], string> = {
+  numeric: '→ 0',
+  text:    '→ "Sin nombre / Sin categoría"',
+  date:    '→ null (omitida)',
+};
 
 interface DatasetUploadModalProps {
   file: File;
@@ -64,6 +71,30 @@ export const DatasetUploadModal: React.FC<DatasetUploadModalProps> = ({
             {parsed.rows.length.toLocaleString('es-PE')} filas · {parsed.columns.length} columnas
           </span>
         </div>
+
+        {parsed.missingColumns && parsed.missingColumns.length > 0 && (
+          <div className="dataset-modal__missing-warn" role="alert">
+            <div className="dataset-modal__missing-warn-header">
+              <AlertTriangle size={15} aria-hidden="true" />
+              <span>
+                {parsed.missingColumns.length === 1
+                  ? '1 columna esperada no encontrada'
+                  : `${parsed.missingColumns.length} columnas esperadas no encontradas`}
+                — se asignaron valores por defecto
+              </span>
+            </div>
+            <ul className="dataset-modal__missing-list">
+              {parsed.missingColumns.map((col) => (
+                <li key={col.label}>
+                  <span className="dataset-modal__missing-col">{col.label}</span>
+                  <span className="dataset-modal__missing-default">
+                    {DEFAULT_LABEL[col.type]}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="dataset-modal__form">
           <label>

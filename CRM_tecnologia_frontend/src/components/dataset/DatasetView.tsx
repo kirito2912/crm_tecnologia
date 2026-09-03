@@ -8,16 +8,21 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowRight,
-  Zap,
   Database,
   Sparkles,
   Layers,
+  LayoutGrid,
+  List,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useCsv } from '../../context/CsvContext';
 import { CsvCard } from '../csv/CsvCard';
 import { CsvDetailModal } from '../csv/CsvDetailModal';
 import { CsvComparisonPanel } from '../csv/CsvComparisonPanel';
-import type { CsvDataset, CsvRow } from '../../types/csv';
+import type { CsvDataset } from '../../types/csv';
+
+const PAGE_SIZE = 12;
 
 interface DatasetViewProps {
   searchQuery?: string;
@@ -25,7 +30,7 @@ interface DatasetViewProps {
 }
 
 export const DatasetView: React.FC<DatasetViewProps> = ({ searchQuery = '', onGoToComparativa }) => {
-  const { datasets, addDataset, addDirectDataset, removeDataset, getComparison } = useCsv();
+  const { datasets, addDataset, removeDataset, getComparison } = useCsv();
 
   // Estado de la vista
   const [isDragging, setIsDragging] = useState(false);
@@ -38,6 +43,10 @@ export const DatasetView: React.FC<DatasetViewProps> = ({ searchQuery = '', onGo
   // Selección para comparar (máx 2)
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showComparison, setShowComparison] = useState(false);
+
+  // Vista y paginación
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -76,98 +85,6 @@ export const DatasetView: React.FC<DatasetViewProps> = ({ searchQuery = '', onGo
     if (file) processFile(file);
   };
 
-  // ── Generador Rápido de Datasets Big Data para Demostración ──────────────
-
-  const handleGenerateBigData = () => {
-    setIsUploading(true);
-    setUploadError(null);
-    setTimeout(() => {
-      try {
-        const PRODUCTS = [
-          { name: 'Servidor Dell PowerEdge R750', cat: 'Servidores', priceA: 8450, priceB: 8600 },
-          { name: 'Lenovo ThinkPad P16 Workstation', cat: 'Laptops', priceA: 2890, priceB: 2750 },
-          { name: 'Dell UltraSharp 32 4K USB-C', cat: 'Monitores', priceA: 820, priceB: 850 },
-          { name: 'Cisco Catalyst 9300 24-Port', cat: 'Redes', priceA: 4150, priceB: 3890 },
-          { name: 'Synology Enterprise NAS 96TB', cat: 'Storage', priceA: 6200, priceB: 6350 },
-          { name: 'Fortinet FortiGate 100F Firewall', cat: 'Seguridad', priceA: 3100, priceB: 3250 },
-          { name: 'HPE ProLiant DL380 Gen10 Server', cat: 'Servidores', priceA: 9200, priceB: 9100 },
-          { name: 'Apple MacBook Pro 16 M3 Max', cat: 'Laptops', priceA: 3499, priceB: 3450 },
-          { name: 'Ubiquiti UniFi Dream Machine Pro', cat: 'Redes', priceA: 1450, priceB: 1520 },
-          { name: 'APC Smart-UPS RT 5000VA On-Line', cat: 'Energía', priceA: 2800, priceB: 2900 },
-        ];
-
-        const COUNT = 50000;
-        const rowsA: CsvRow[] = [];
-        const rowsB: CsvRow[] = [];
-
-        for (let i = 0; i < COUNT; i++) {
-          const p = PRODUCTS[i % PRODUCTS.length];
-          const qtyA = Math.floor(1 + Math.random() * 8);
-          const qtyB = Math.floor(1 + Math.random() * 9);
-          rowsA.push({
-            Producto: p.name,
-            Categoria: p.cat,
-            Cantidad: String(qtyA),
-            Precio_Unitario: String(p.priceA),
-            Total_Ventas: String(qtyA * p.priceA),
-            Transaccion_ID: `TX-A-${100000 + i}`,
-          });
-          rowsB.push({
-            Producto: p.name,
-            Categoria: p.cat,
-            Cantidad: String(qtyB),
-            Precio_Unitario: String(p.priceB),
-            Total_Ventas: String(qtyB * p.priceB),
-            Transaccion_ID: `TX-B-${100000 + i}`,
-          });
-        }
-
-        const dsA: CsvDataset = {
-          id: `bigdata-alfa-${Date.now()}`,
-          name: 'TechCore Global Enterprise (50,000 transacciones)',
-          uploadedAt: new Date().toISOString(),
-          rowCount: COUNT,
-          columns: ['Producto', 'Categoria', 'Cantidad', 'Precio_Unitario', 'Total_Ventas', 'Transaccion_ID'],
-          rows: rowsA,
-          color: '#2563eb',
-          categoria: 'Big Data & Enterprise',
-          rowsLoaded: true,
-          productCol: 'Producto',
-          qtyCol: 'Cantidad',
-          priceCol: 'Precio_Unitario',
-          totalCol: 'Total_Ventas',
-          categoryCol: 'Categoria',
-        };
-
-        const dsB: CsvDataset = {
-          id: `bigdata-beta-${Date.now()}`,
-          name: 'NovaTech Global Solutions (50,000 transacciones)',
-          uploadedAt: new Date().toISOString(),
-          rowCount: COUNT,
-          columns: ['Producto', 'Categoria', 'Cantidad', 'Precio_Unitario', 'Total_Ventas', 'Transaccion_ID'],
-          rows: rowsB,
-          color: '#7c3aed',
-          categoria: 'Big Data & Enterprise',
-          rowsLoaded: true,
-          productCol: 'Producto',
-          qtyCol: 'Cantidad',
-          priceCol: 'Precio_Unitario',
-          totalCol: 'Total_Ventas',
-          categoryCol: 'Categoria',
-        };
-
-        if (addDirectDataset) {
-          addDirectDataset(dsA);
-          addDirectDataset(dsB);
-        }
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        setUploadError('Error al generar datasets Big Data: ' + message);
-      } finally {
-        setIsUploading(false);
-      }
-    }, 100);
-  };
 
   // ── Selección para comparar ──────────────────────────────────────────────
 
@@ -206,6 +123,18 @@ export const DatasetView: React.FC<DatasetViewProps> = ({ searchQuery = '', onGo
     );
   }, [datasets, searchQuery]);
 
+  // ── Paginación ───────────────────────────────────────────────────────────
+
+  const totalPages = Math.max(1, Math.ceil(filteredDatasets.length / PAGE_SIZE));
+  const safePage   = Math.min(Math.max(1, currentPage), totalPages);
+  const pagedDatasets = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filteredDatasets.slice(start, start + PAGE_SIZE);
+  }, [filteredDatasets, safePage]);
+
+  // Resetear página al buscar
+  const handlePageChange = (p: number) => setCurrentPage(Math.min(Math.max(1, p), totalPages));
+
   // ── Comparación de los dos seleccionados ─────────────────────────────────
 
   const canCompare = selectedIds.length === 2;
@@ -226,16 +155,6 @@ export const DatasetView: React.FC<DatasetViewProps> = ({ searchQuery = '', onGo
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button
-            type="button"
-            className="csv-bigdata-btn"
-            onClick={handleGenerateBigData}
-            disabled={isUploading}
-            title="Generar 2 datasets masivos con 50,000 registros cada uno"
-          >
-            <Zap size={15} color="#eab308" />
-            <span>Generar Datasets Big Data (50,000 filas c/u)</span>
-          </button>
           {datasets.length > 0 && (
             <div className="dataset-view__header-stats">
               <span>
@@ -297,24 +216,37 @@ export const DatasetView: React.FC<DatasetViewProps> = ({ searchQuery = '', onGo
               Catálogos y Datasets Disponibles
               <span className="dataset-view__count-badge">{filteredDatasets.length}</span>
             </h3>
-            {selectedIds.length > 0 && (
-              <div className="dataset-view__selection-info">
-                <span>
-                  {selectedIds.length} de 2 seleccionados para comparar
-                </span>
+            <div className="dataset-view__section-controls">
+              {selectedIds.length > 0 && (
+                <div className="dataset-view__selection-info">
+                  <span>{selectedIds.length} de 2 seleccionados</span>
+                  <button type="button" className="dataset-view__clear-sel-btn" onClick={handleClearSelection}>
+                    Limpiar
+                  </button>
+                </div>
+              )}
+              {/* Toggle vista */}
+              <div className="dataset-view__view-toggle">
                 <button
-                  type="button"
-                  className="dataset-view__clear-sel-btn"
-                  onClick={handleClearSelection}
+                  className={`dataset-view__view-btn${viewMode === 'grid' ? ' dataset-view__view-btn--active' : ''}`}
+                  onClick={() => setViewMode('grid')}
+                  title="Vista grilla"
                 >
-                  Limpiar
+                  <LayoutGrid size={15} />
+                </button>
+                <button
+                  className={`dataset-view__view-btn${viewMode === 'list' ? ' dataset-view__view-btn--active' : ''}`}
+                  onClick={() => setViewMode('list')}
+                  title="Vista lista"
+                >
+                  <List size={15} />
                 </button>
               </div>
-            )}
+            </div>
           </div>
 
-          <div className="csv-grid">
-            {filteredDatasets.map((dataset) => (
+          <div className={viewMode === 'grid' ? 'csv-grid csv-grid--compact' : 'csv-grid csv-grid--list'}>
+            {pagedDatasets.map((dataset) => (
               <CsvCard
                 key={dataset.id}
                 dataset={dataset}
@@ -335,6 +267,53 @@ export const DatasetView: React.FC<DatasetViewProps> = ({ searchQuery = '', onGo
               />
             ))}
           </div>
+
+          {/* ── Paginación ── */}
+          {totalPages > 1 && (
+            <div className="dataset-view__pagination">
+              <span className="dataset-view__pagination-info">
+                Página {safePage} de {totalPages} &middot; {filteredDatasets.length} datasets
+              </span>
+              <div className="dataset-view__pagination-controls">
+                <button
+                  className="dataset-view__page-btn"
+                  onClick={() => handlePageChange(safePage - 1)}
+                  disabled={safePage === 1}
+                  title="Anterior"
+                >
+                  <ChevronLeft size={15} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+                  .reduce<(number | '…')[]>((acc, p, idx, arr) => {
+                    if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push('…');
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, i) =>
+                    p === '…' ? (
+                      <span key={`dots-${i}`} className="dataset-view__page-dots">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        className={`dataset-view__page-btn${p === safePage ? ' dataset-view__page-btn--active' : ''}`}
+                        onClick={() => handlePageChange(p as number)}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+                <button
+                  className="dataset-view__page-btn"
+                  onClick={() => handlePageChange(safePage + 1)}
+                  disabled={safePage === totalPages}
+                  title="Siguiente"
+                >
+                  <ChevronRight size={15} />
+                </button>
+              </div>
+            </div>
+          )}
         </section>
       )}
 
@@ -344,7 +323,7 @@ export const DatasetView: React.FC<DatasetViewProps> = ({ searchQuery = '', onGo
           <FileSpreadsheet size={48} className="dataset-view__empty-icon" />
           <p className="dataset-view__empty-title">No se encontraron datasets.</p>
           <p className="dataset-view__empty-sub">
-            Sube un archivo CSV o haz clic en "Generar Datasets Big Data" para comenzar el análisis comparativo.
+            Sube un archivo CSV para comenzar el análisis comparativo.
           </p>
         </div>
       )}

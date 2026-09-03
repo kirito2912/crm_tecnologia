@@ -84,7 +84,10 @@ export function generateBusinessInsights(comparison: CsvComparisonResult): Busin
   }
 
   // ── Insight 3: Productos exclusivos de competencia ─────────────────────
-  const onlyInB = productRows.filter((r) => r.totalA === undefined && r.totalB !== undefined);
+  const onlyInB = productRows.filter((r) =>
+    (r.totalA === undefined && r.qtyA === undefined && r.priceA === undefined) &&
+    (r.totalB !== undefined || r.qtyB !== undefined || r.priceB !== undefined)
+  );
   if (onlyInB.length > 0 && isCompetitorCompare) {
     const topCompetitor = onlyInB.sort((a, b) => (b.totalB ?? 0) - (a.totalB ?? 0))[0];
     insights.push({
@@ -97,7 +100,10 @@ export function generateBusinessInsights(comparison: CsvComparisonResult): Busin
   }
 
   // ── Insight 4: Productos exclusivos propios ────────────────────────────
-  const onlyInA = productRows.filter((r) => r.totalA !== undefined && r.totalB === undefined);
+  const onlyInA = productRows.filter((r) =>
+    (r.totalA !== undefined || r.qtyA !== undefined || r.priceA !== undefined) &&
+    (r.totalB === undefined && r.qtyB === undefined && r.priceB === undefined)
+  );
   if (onlyInA.length > 0) {
     insights.push({
       id: 'own-exclusive',

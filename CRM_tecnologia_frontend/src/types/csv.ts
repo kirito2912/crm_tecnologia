@@ -3,6 +3,16 @@
 /** Una fila genérica de un CSV — claves son los encabezados */
 export type CsvRow = Record<string, string>;
 
+/** Columna semántica esperada que no se encontró en el CSV */
+export interface MissingColumnInfo {
+  /** Nombre legible de la columna (ej: "Categoría") */
+  label: string;
+  /** Tipo de dato que determina la regla de default */
+  type: 'numeric' | 'text' | 'date';
+  /** Valor por defecto que se aplicó, en forma de string para mostrar al usuario */
+  defaultValue: string;
+}
+
 /** Dataset CSV cargado y persistido */
 export interface CsvDataset {
   id: string;
@@ -22,6 +32,8 @@ export interface CsvDataset {
   dateCol?: string;
   clientCol?: string;
   categoryCol?: string;
+  /** Columnas semánticas esperadas que no estaban en el CSV (se usaron valores por defecto) */
+  missingColumns?: MissingColumnInfo[];
 }
 
 /** Fila de comparación por producto */
