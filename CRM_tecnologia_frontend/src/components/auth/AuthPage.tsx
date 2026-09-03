@@ -1,29 +1,90 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, ArrowRight, User, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  Eye,
+  EyeOff,
+  ArrowRight,
+  User,
+  Shield,
+  Code,
+  FileCheck,
+  Sparkles,
+  Lock,
+  Mail,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  ArrowLeft,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { OtpVerificationStep } from './OtpVerificationStep';
-import type { UserRole } from '../../types/auth';
+import { validarTokenInvitacion, completarRegistroInvitado } from '../../services/invitacionesApi';
+import type { UserRole, User as AuthUser } from '../../types/auth';
+import type { ValidateTokenResult } from '../../types/invitacion';
 
 export const AuthPage: React.FC = () => {
-  const { login, requestOtp, quickDemoLogin } = useAuth();
+  const { login, requestOtp, quickDemoLogin, completeOtpAuth } = useAuth();
+
+  // Mode: 'login' or 'invite_register'
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [inviteValidation, setInviteValidation] = useState<ValidateTokenResult | null>(null);
+  const [isValidatingInvite, setIsValidatingInvite] = useState(false);
 
   const [stage, setStage] = useState<'form' | 'otp'>('form');
   const [pendingUserData, setPendingUserData] = useState<{
     email: string;
     fullName: string;
     company: string;
-    role: UserRole;
+    role: UserRole | string;
     password?: string;
+    isInvite?: boolean;
   } | null>(null);
 
+  // Standard Login Fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+
+  // Invite Register Fields
+  const [inviteFullName, setInviteFullName] = useState('');
+  const [invitePassword, setInvitePassword] = useState('');
+  const [inviteConfirmPassword, setInviteConfirmPassword] = useState('');
+  const [showInvitePassword, setShowInvitePassword] = useState(false);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Detectar token de invitación en la URL al cargar
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tok = params.get('invite_token');
+    if (tok) {
+      setInviteToken(tok);
+      setIsValidatingInvite(true);
+      validarTokenInvitacion(tok)
+        .then((res) => {
+          setInviteValidation(res);
+          if (res.valido && res.email) {
+            setEmail(res.email);
+            if (res.nombre_referencial) {
+              setInviteFullName(res.nombre_referencial);
+            }
+          }
+        })
+        .catch(() => {
+          setInviteValidation({
+            valido: false,
+            mensaje: 'Error al conectar con el servidor para validar la invitación.',
+          });
+        })
+        .finally(() => {
+          setIsValidatingInvite(false);
+        });
+    }
+  }, []);
+
+  // Submit standard login
+  const handleStandardLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -55,6 +116,7 @@ export const AuthPage: React.FC = () => {
       company: email.split('@')[1]?.split('.')[0].toUpperCase() || 'DataTech Analytics',
       role: effectiveRole,
       password,
+      isInvite: false,
     };
     setPendingUserData(userData);
 
@@ -72,15 +134,134 @@ export const AuthPage: React.FC = () => {
     }
   };
 
+  // Submit invited worker registration
+  const handleInviteRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    if (!inviteFullName.trim()) {
+      setErrorMessage('Por favor introduce tu nombre completo.');
+      return;
+    }
+    if (!invitePassword || invitePassword.length < 6) {
+      setErrorMessage('La contraseña debe tener como mínimo 6 caracteres.');
+      return;
+    }
+    if (invitePassword !== inviteConfirmPassword) {
+      setErrorMessage('Las contraseñas no coinciden. Por favor verifícalas.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const targetEmail = inviteValidation?.email || email;
+    const assignedRole = inviteValidation?.rol_asignado || 'programador';
+
+    const userData = {
+      email: targetEmail.toLowerCase().trim(),
+      fullName: inviteFullName.trim(),
+      company: 'DataTech Analytics',
+      role: assignedRole,
+      password: invitePassword,
+      isInvite: true,
+    };
+    setPendingUserData(userData);
+
+    try {
+      const res = await requestOtp(
+        userData.email,
+        userData.fullName,
+        userData.password,
+        'register',
+        userData.company
+      );
+      if (res.success) {
+        setStage('otp');
+      } else {
+        setErrorMessage(res.error || 'No se pudo enviar el código OTP al correo.');
+      }
+    } catch {
+      setErrorMessage('Error de comunicación con el servicio de autenticación.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleOtpSuccess = async () => {
     if (!pendingUserData) return;
 
-    await login({
-      email: pendingUserData.email,
-      password: pendingUserData.password,
-      role: pendingUserData.role,
-      rememberMe,
-    });
+    if (pendingUserData.isInvite && inviteToken) {
+      try {
+        // Completar registro de invitado
+        const res = await completarRegistroInvitado({
+          token: inviteToken,
+          full_name: pendingUserData.fullName,
+          password: pendingUserData.password || '',
+        });
+
+        // Limpiar parámetro URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        const newUser: AuthUser = {
+          id: res.user?.id || `USR-${Math.floor(1000 + Math.random() * 9000)}`,
+          name: pendingUserData.fullName,
+          email: pendingUserData.email,
+          role: pendingUserData.role,
+          company: 'DataTech Analytics',
+          avatar: pendingUserData.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase(),
+          biometricVerified: true,
+          registeredAt: new Date().toISOString(),
+          habilitado: false, // Bloqueo preventivo
+          estado: 'pendiente_aprobacion',
+          invitadoPor: 'Administrador',
+        };
+
+        completeOtpAuth(newUser);
+      } catch (err: any) {
+        setErrorMessage(err.message || 'Error al completar el registro.');
+        setStage('form');
+      }
+    } else {
+      await login({
+        email: pendingUserData.email,
+        password: pendingUserData.password,
+        role: pendingUserData.role as UserRole,
+        rememberMe,
+      });
+    }
+  };
+
+  const getRoleIconAndBadge = (roleStr: string) => {
+    const r = roleStr.toLowerCase();
+    if (r === 'programador' || r === 'developer' || r === 'dev') {
+      return (
+        <span className="role-badge badge-dev">
+          <Code size={13} />
+          Programador / Developer
+        </span>
+      );
+    }
+    if (r === 'auditor') {
+      return (
+        <span className="role-badge badge-auditor">
+          <FileCheck size={13} />
+          Auditor IT & Seguridad
+        </span>
+      );
+    }
+    if (r === 'administrador' || r === 'admin') {
+      return (
+        <span className="role-badge badge-admin">
+          <Shield size={13} />
+          Administrador
+        </span>
+      );
+    }
+    return (
+      <span className="role-badge badge-analista">
+        <User size={13} />
+        Analista de Datos
+      </span>
+    );
   };
 
   return (
@@ -104,10 +285,10 @@ export const AuthPage: React.FC = () => {
           </div>
 
           <h2 className="auth-hero-title">
-            Inteligencia Comparativa de Empresas y Datasets
+            Inteligencia Comparativa & Control de Accesos
           </h2>
           <p className="auth-hero-desc">
-            Plataforma especializada en auditoría de catálogos, análisis de brechas de precios, evolución temporal de ventas y generación de reportes ejecutivos.
+            Plataforma corporativa de auditoría y análisis de datos con sistema de invitaciones seguras estilo GitHub, verificación OTP en 2 pasos y autorización preventiva de cuentas.
           </p>
 
           <div className="auth-roles-preview-card">
@@ -116,8 +297,8 @@ export const AuthPage: React.FC = () => {
                 <User size={18} />
               </div>
               <div>
-                <strong>Perfil Analista</strong>
-                <p>Carga de Datasets CSV, análisis de discrepancias y emisión de reportes ejecutivos.</p>
+                <strong>Perfil Analista & Programador</strong>
+                <p>Carga de Datasets, comparativa de métricas y gestión de documentos corporativos.</p>
               </div>
             </div>
 
@@ -127,14 +308,14 @@ export const AuthPage: React.FC = () => {
               </div>
               <div>
                 <strong>Perfil Administrador</strong>
-                <p>Bandeja de reportes de comparativas, revisión de hallazgos y aprobación estratégica.</p>
+                <p>Generación de invitaciones, habilitación de cuentas y supervisión de reportes ejecutivos.</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 50% Right Side: Form / OTP */}
+      {/* 50% Right Side: Form / OTP / Invite Flow */}
       <div className="auth-right-pane">
         <div className="auth-form-container">
           {stage === 'otp' ? (
@@ -147,7 +328,160 @@ export const AuthPage: React.FC = () => {
                 setErrorMessage(null);
               }}
             />
+          ) : inviteToken ? (
+            /* Flujo de Registro por Invitación */
+            <div>
+              {isValidatingInvite ? (
+                <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+                  <Clock className="animate-spin" size={32} color="#4f46e5" style={{ margin: '0 auto 1rem' }} />
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b' }}>
+                    Validando enlace de invitación...
+                  </h3>
+                </div>
+              ) : inviteValidation && !inviteValidation.valido ? (
+                <div className="auth-invite-invalid-card">
+                  <div className="auth-invite-invalid-icon">
+                    <AlertCircle size={36} color="#ef4444" />
+                  </div>
+                  <h3>Invitación no válida</h3>
+                  <p>{inviteValidation.mensaje}</p>
+                  <button
+                    type="button"
+                    className="auth-btn-back"
+                    onClick={() => {
+                      setInviteToken(null);
+                      window.history.replaceState({}, document.title, window.location.pathname);
+                    }}
+                  >
+                    <ArrowLeft size={16} />
+                    <span>Ir al Inicio de Sesión Estándar</span>
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="auth-invite-banner">
+                    <Sparkles size={16} />
+                    <span>INVITACIÓN DE ACCESO CORPORATIVO</span>
+                  </div>
+
+                  <h2 className="auth-title">
+                    Te han invitado al equipo
+                  </h2>
+
+                  <p className="auth-lead">
+                    Configura tu contraseña y valida tu identidad con un código OTP para registrar tu cuenta en la plataforma.
+                  </p>
+
+                  {inviteValidation?.rol_asignado && (
+                    <div className="auth-assigned-role-box">
+                      <label>Rol asignado por el Administrador:</label>
+                      <div>{getRoleIconAndBadge(inviteValidation.rol_asignado)}</div>
+                    </div>
+                  )}
+
+                  {errorMessage && (
+                    <div className="auth-error-banner">
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleInviteRegisterSubmit} className="auth-main-form">
+                    {/* Email (Locked) */}
+                    <div className="auth-input-group">
+                      <label className="auth-label">Correo Electrónico Asignado</label>
+                      <div className="auth-locked-input">
+                        <Mail size={16} />
+                        <span>{inviteValidation?.email || email}</span>
+                        <Lock size={14} className="locked-icon" />
+                      </div>
+                    </div>
+
+                    {/* Full Name */}
+                    <div className="auth-input-group">
+                      <label htmlFor="invite-fullname" className="auth-label">
+                        Tu Nombre Completo *
+                      </label>
+                      <input
+                        id="invite-fullname"
+                        type="text"
+                        required
+                        className="auth-input-field"
+                        placeholder="ej. Lucía Ramos"
+                        value={inviteFullName}
+                        onChange={(e) => setInviteFullName(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Password */}
+                    <div className="auth-input-group">
+                      <label htmlFor="invite-pwd" className="auth-label">
+                        Definir Contraseña *
+                      </label>
+                      <div className="auth-password-input-wrapper">
+                        <input
+                          id="invite-pwd"
+                          type={showInvitePassword ? 'text' : 'password'}
+                          required
+                          minLength={6}
+                          className="auth-input-field password-field"
+                          placeholder="Mínimo 6 caracteres"
+                          value={invitePassword}
+                          onChange={(e) => setInvitePassword(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="password-toggle-btn"
+                          onClick={() => setShowInvitePassword(!showInvitePassword)}
+                        >
+                          {showInvitePassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div className="auth-input-group">
+                      <label htmlFor="invite-confirm-pwd" className="auth-label">
+                        Confirmar Contraseña *
+                      </label>
+                      <input
+                        id="invite-confirm-pwd"
+                        type="password"
+                        required
+                        minLength={6}
+                        className="auth-input-field"
+                        placeholder="Repite tu contraseña"
+                        value={inviteConfirmPassword}
+                        onChange={(e) => setInviteConfirmPassword(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Note about pending approval */}
+                    <div className="auth-pending-info-note">
+                      <Clock size={15} />
+                      <span>
+                        Al completar la verificación OTP, tu cuenta quedará registrada y enviada a la bandeja del Administrador para su <strong>habilitación</strong>.
+                      </span>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="auth-submit-btn"
+                    >
+                      <span>
+                        {isSubmitting
+                          ? 'Enviando código OTP...'
+                          : 'Solicitar Código OTP y Registrarme →'}
+                      </span>
+                      <ArrowRight size={17} />
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
           ) : (
+            /* Flujo Estándar de Login */
             <>
               <span className="auth-kicker">AUTENTICACIÓN 2FA & OTP</span>
 
@@ -193,7 +527,7 @@ export const AuthPage: React.FC = () => {
                     </div>
                     <div className="demo-chip-text">
                       <strong>Jane Doe</strong>
-                      <span>Administrador (Bandeja de Reportes)</span>
+                      <span>Administrador (Bandeja & Invitaciones)</span>
                     </div>
                   </button>
                 </div>
@@ -204,7 +538,7 @@ export const AuthPage: React.FC = () => {
               </div>
 
               {/* Formulario */}
-              <form onSubmit={handleSubmit} className="auth-main-form">
+              <form onSubmit={handleStandardLoginSubmit} className="auth-main-form">
                 {errorMessage && (
                   <div className="auth-error-banner">
                     <span>{errorMessage}</span>

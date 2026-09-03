@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useReports } from '../../context/ReportsContext';
 import { useCsv } from '../../context/CsvContext';
+import { useAuth } from '../../context/AuthContext';
 import { ReportDetailModal } from './ReportDetailModal';
 import type { ReporteComparativo, EstadoReporte } from '../../types/reportes';
 
@@ -30,8 +31,13 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
   searchQuery = '',
   onOpenComparison,
 }) => {
+  const { user } = useAuth();
+  const role = (user?.role || 'analista').toLowerCase();
+  const isAdmin = role === 'administrador' || role === 'admin';
+
   const { reportes, isLoading, fetchReportes } = useReports();
   const { datasets } = useCsv();
+
 
   const [selectedReporte, setSelectedReporte] = useState<ReporteComparativo | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('todos');
@@ -102,11 +108,16 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
       {/* Encabezado */}
       <div className="admin-reports-header">
         <div>
-          <h2>Bandeja de Reportes de Comparativas</h2>
+          <h2>
+            {isAdmin ? 'Bandeja de Reportes de Comparativas' : 'Reportes de Comparativas y Auditoría'}
+          </h2>
           <p>
-            Revisa, audita y retroalimenta los análisis de empresas y catálogos preparados por los analistas.
+            {isAdmin
+              ? 'Revisa, audita y retroalimenta los análisis de empresas y catálogos preparados por los analistas.'
+              : 'Consulta el historial de análisis comparativos, auditorías de precios y el estado de revisión ejecutiva.'}
           </p>
         </div>
+
         <button
           className="admin-refresh-btn"
           onClick={() => fetchReportes()}

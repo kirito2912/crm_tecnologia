@@ -9,6 +9,9 @@ export interface User {
   avatar?: string;
   biometricVerified: boolean;
   registeredAt: string;
+  habilitado?: boolean;
+  estado?: 'activo' | 'deshabilitado' | 'pendiente_aprobacion';
+  invitadoPor?: string;
 }
 
 export interface RegisterFormData {

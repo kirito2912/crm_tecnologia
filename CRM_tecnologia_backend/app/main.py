@@ -19,17 +19,27 @@ async def lifespan(app: FastAPI):
     # 2. Migración segura de columnas existentes si se usa SQLite
     try:
         with engine.connect() as conn:
-            if engine.dialect.name == "sqlite":
-                res = conn.execute(text("PRAGMA table_info(users);")).fetchall()
-                cols = [row[1] for row in res]
-                if "password_hash" not in cols:
+                # Tabla users
+                res_u = conn.execute(text("PRAGMA table_info(users);")).fetchall()
+                cols_u = [row[1] for row in res_u]
+                if "password_hash" not in cols_u:
                     conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255);"))
-                    conn.commit()
-                if "role" not in cols:
+                if "role" not in cols_u:
                     conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'analista';"))
-                    conn.commit()
+
+                # Tabla usuarios
+                res_usr = conn.execute(text("PRAGMA table_info(usuarios);")).fetchall()
+                cols_usr = [row[1] for row in res_usr]
+                if "habilitado" not in cols_usr:
+                    conn.execute(text("ALTER TABLE usuarios ADD COLUMN habilitado BOOLEAN DEFAULT 1;"))
+                if "estado" not in cols_usr:
+                    conn.execute(text("ALTER TABLE usuarios ADD COLUMN estado VARCHAR(50) DEFAULT 'activo';"))
+                if "invitado_por" not in cols_usr:
+                    conn.execute(text("ALTER TABLE usuarios ADD COLUMN invitado_por VARCHAR(150);"))
+                conn.commit()
     except Exception as mig_err:
         print(f"[Aviso Migración] {mig_err}")
+
 
     # 3. Sembrar datos iniciales si la base está vacía o actualizar roles
     db = SessionLocal()

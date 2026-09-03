@@ -1,13 +1,15 @@
-import React from 'react';
 import {
   FileText,
   Database,
   GitCompare,
   LogOut,
+  Files,
+  UserPlus,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useInvitaciones } from '../../context/InvitacionesContext';
 
-export type NavTab = 'reports' | 'dataset' | 'comparativa';
+export type NavTab = 'reports' | 'dataset' | 'documentos' | 'comparativa' | 'invitaciones';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -16,21 +18,34 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
   const { user, logout } = useAuth();
+  const { kpis } = useInvitaciones();
 
   const role = (user?.role || 'analista').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
 
-  // Ítems de navegación dinámicos según el rol
+  // Ítems de navegación dinámicos según el rol:
+  // - Administrador: Reportes, Gestión de Personal e Invitaciones, Documentos Word y PDF, Comparativa
+  // - Analista: Reportes, Datasets CSV, Documentos Word y PDF y Comparativa
   const menuItems = isAdmin
     ? [
         { id: 'reports' as NavTab, label: 'Reportes de Comparativas', icon: FileText },
-        { id: 'dataset' as NavTab, label: 'Datasets', icon: Database },
+        {
+          id: 'invitaciones' as NavTab,
+          label: 'Gestión de Invitaciones',
+          icon: UserPlus,
+          badge: kpis.usuariosPendientes > 0 ? kpis.usuariosPendientes : undefined,
+        },
+        { id: 'documentos' as NavTab, label: 'Documentos Word y PDF', icon: Files },
         { id: 'comparativa' as NavTab, label: 'Comparativa', icon: GitCompare },
       ]
     : [
+        { id: 'reports' as NavTab, label: 'Reportes de Comparativas', icon: FileText },
         { id: 'dataset' as NavTab, label: 'Datasets de Empresas', icon: Database },
+        { id: 'documentos' as NavTab, label: 'Documentos Word y PDF', icon: Files },
         { id: 'comparativa' as NavTab, label: 'Módulo Comparativa', icon: GitCompare },
       ];
+
+
 
   const displayName = user?.name || (isAdmin ? 'Jane Doe (Admin)' : 'Carlos Mendoza (Analista)');
   const displayRole = isAdmin ? 'Administrador' : 'Analista de Datos';
@@ -60,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
       </div>
 
       <nav className="sidebar-menu">
-        {menuItems.map((item) => {
+        {menuItems.map((item: any) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
@@ -72,7 +87,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
               <span className="sidebar-link-icon">
                 <Icon size={18} strokeWidth={isActive ? 2.3 : 1.9} />
               </span>
-              <span>{item.label}</span>
+              <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
+              {item.badge !== undefined && (
+                <span className="sidebar-badge-alert">
+                  {item.badge}
+                </span>
+              )}
             </button>
           );
         })}

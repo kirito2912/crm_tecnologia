@@ -25,6 +25,21 @@ from app.schemas.reporte import (
     ReporteUpdateEstado,
     ReporteResponse,
 )
+from app.schemas.documento import (
+    DocumentoBase,
+    DocumentoCreate,
+    DocumentoUpdate,
+    DocumentoResponse,
+)
+from app.schemas.invitacion import (
+    InvitacionCreate,
+    InvitacionResponse,
+    ValidateTokenResponse,
+    RegisterInvitedRequest,
+    ToggleUserStatusRequest,
+    NotificacionSolicitud,
+    InvitacionDashboardResponse,
+)
 
 __all__ = [
     "UsuarioBase",
@@ -46,4 +61,17 @@ __all__ = [
     "ReporteCreate",
     "ReporteUpdateEstado",
     "ReporteResponse",
+    "DocumentoBase",
+    "DocumentoCreate",
+    "DocumentoUpdate",
+    "DocumentoResponse",
+    "InvitacionCreate",
+    "InvitacionResponse",
+    "ValidateTokenResponse",
+    "RegisterInvitedRequest",
+    "ToggleUserStatusRequest",
+    "NotificacionSolicitud",
+    "InvitacionDashboardResponse",
 ]
+
+

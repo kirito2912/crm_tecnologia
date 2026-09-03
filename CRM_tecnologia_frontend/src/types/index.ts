@@ -80,3 +80,6 @@ export interface CsvRowData {
   precioUnitario: number;
   totalVenta: number;
 }
+
+export * from './documento';
+

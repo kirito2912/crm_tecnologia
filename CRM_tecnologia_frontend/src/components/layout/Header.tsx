@@ -26,13 +26,26 @@ export const Header: React.FC<HeaderProps> = ({
     switch (activeTab) {
       case 'reports':
         return {
-          title: 'Bandeja de Reportes de Comparativas',
-          subtitle: 'Revisión y retroalimentación ejecutiva de los análisis de empresas',
+          title: isAdmin ? 'Bandeja de Reportes de Comparativas' : 'Reportes de Comparativas y Auditoría',
+          subtitle: isAdmin
+            ? 'Revisión y retroalimentación ejecutiva de los análisis de empresas'
+            : 'Historial de análisis comparativos, auditorías y retroalimentación de la administración',
         };
+
       case 'dataset':
         return {
           title: 'Datasets de Empresas',
           subtitle: 'Catálogos CSV, registros de ventas y preparación de comparativas',
+        };
+      case 'documentos':
+        return {
+          title: 'Documentos Word y PDF',
+          subtitle: 'Repositorio corporativo compartido de contratos, especificaciones e informes',
+        };
+      case 'invitaciones':
+        return {
+          title: 'Gestión de Invitaciones y Personal',
+          subtitle: 'Generación de enlaces únicos estilo GitHub, control de altas y autorización de cuentas',
         };
       case 'comparativa':
         return {
@@ -84,12 +97,17 @@ export const Header: React.FC<HeaderProps> = ({
             placeholder={
               activeTab === 'reports'
                 ? 'Buscar por reporte, empresa o analista...'
+                : activeTab === 'documentos'
+                ? 'Buscar documentos por nombre, categoría, tags o autor...'
+                : activeTab === 'invitaciones'
+                ? 'Buscar por nombre, correo o rol de trabajador...'
                 : 'Buscar dataset, producto o empresa...'
             }
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
+
 
         <button
           className="icon-button"

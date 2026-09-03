@@ -16,4 +16,8 @@ class Usuario(Base):
     empresa = Column(String(150), nullable=True)
     avatar = Column(String(10), nullable=True)
     biometric_verified = Column(Boolean, default=False)
+    habilitado = Column(Boolean, default=True, nullable=False)  # True = Acceso permitido, False = Deshabilitado/Pendiente
+    estado = Column(String(50), default="activo", nullable=False)  # "activo", "deshabilitado", "pendiente_aprobacion"
+    invitado_por = Column(String(150), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+

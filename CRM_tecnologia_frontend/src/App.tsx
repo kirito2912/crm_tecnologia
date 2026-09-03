@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CsvProvider } from './context/CsvContext';
 import { ReportsProvider } from './context/ReportsContext';
+import { DocumentosProvider } from './context/DocumentosContext';
+import { InvitacionesProvider } from './context/InvitacionesContext';
 
 import { AuthPage } from './components/auth/AuthPage';
+import { PendingApprovalScreen } from './components/auth/PendingApprovalScreen';
 import { Sidebar } from './components/layout/Sidebar';
 import type { NavTab } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
@@ -12,6 +15,8 @@ import { NotificationsModal } from './components/layout/NotificationsModal';
 import { DatasetView } from './components/dataset/DatasetView';
 import { ComparacionView } from './components/comparacion/ComparacionView';
 import { AdminReportsView } from './components/admin/AdminReportsView';
+import { DocumentosView } from './components/documentos/DocumentosView';
+import { InvitacionesView } from './components/admin/InvitacionesView';
 
 import { Cpu } from 'lucide-react';
 
@@ -28,12 +33,12 @@ function DashboardContent() {
   const [preselectedA, setPreselectedA] = useState<string | undefined>(undefined);
   const [preselectedB, setPreselectedB] = useState<string | undefined>(undefined);
 
-  // Ajustar tab por defecto si cambia el rol
+  // Ajustar tab por defecto si cambia el rol:
+  // - Administrador reemplaza CSV por Documentos
+  // - Analista puede navegar libremente por Reportes, Datasets, Documentos y Comparativa
   useEffect(() => {
-    if (isAdmin && activeTab !== 'reports' && activeTab !== 'dataset' && activeTab !== 'comparativa') {
-      setActiveTab('reports');
-    } else if (!isAdmin && activeTab === 'reports') {
-      setActiveTab('dataset');
+    if (isAdmin && activeTab === 'dataset') {
+      setActiveTab('documentos');
     }
   }, [isAdmin, activeTab]);
 
@@ -70,7 +75,10 @@ function DashboardContent() {
           />
         )}
 
-        {/* Tab 2: Datasets de Empresas (Analista & Admin) */}
+        {/* Tab 2: Gestión de Invitaciones y Personal (Solo Administrador) */}
+        {activeTab === 'invitaciones' && <InvitacionesView />}
+
+        {/* Tab 3: Datasets de Empresas CSV (Analista) */}
         {activeTab === 'dataset' && (
           <DatasetView
             searchQuery={searchQuery}
@@ -82,7 +90,12 @@ function DashboardContent() {
           />
         )}
 
-        {/* Tab 3: Módulo de Comparativa Interactiva (Analista & Admin) */}
+        {/* Tab 4: Módulo Compartido de Documentos Word y PDF (Administrador & Analista) */}
+        {activeTab === 'documentos' && (
+          <DocumentosView searchQuery={searchQuery} />
+        )}
+
+        {/* Tab 5: Módulo de Comparativa Interactiva (Analista & Admin) */}
         {activeTab === 'comparativa' && (
           <ComparacionView
             preselectedA={preselectedA}
@@ -101,7 +114,7 @@ function DashboardContent() {
 }
 
 function MainApp() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -126,24 +139,36 @@ function MainApp() {
   }
 
   // 1. Si no está autenticado, entrar directo a la pantalla de Inicio de Sesión
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <AuthPage />;
   }
 
-  // 2. Si está autenticado, entrar directo a la plataforma
+  // 2. Si la cuenta está deshabilitada o pendiente de autorización, mostrar pantalla de bloqueo
+  const isPendingApproval = user.habilitado === false || user.estado === 'pendiente_aprobacion';
+  if (isPendingApproval) {
+    return <PendingApprovalScreen />;
+  }
+
+  // 3. Si está autenticado y habilitado, ingresar a la plataforma
   return <DashboardContent />;
 }
 
 export function App() {
   return (
     <AuthProvider>
-      <ReportsProvider>
-        <CsvProvider>
-          <MainApp />
-        </CsvProvider>
-      </ReportsProvider>
+      <InvitacionesProvider>
+        <ReportsProvider>
+          <CsvProvider>
+            <DocumentosProvider>
+              <MainApp />
+            </DocumentosProvider>
+          </CsvProvider>
+        </ReportsProvider>
+      </InvitacionesProvider>
     </AuthProvider>
   );
 }
 
 export default App;
+
+

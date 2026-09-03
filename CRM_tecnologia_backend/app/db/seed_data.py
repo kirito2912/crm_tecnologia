@@ -4,9 +4,11 @@ from app.models.usuario import Usuario
 from app.models.user import User
 from app.models.dataset_ml import DatasetML
 from app.models.reporte_comparativo import ReporteComparativo
+from app.models.documento import Documento
 from app.core.security import hash_password
 
 INITIAL_USUARIOS = [
+
     {
         "id": "USR-ADMIN",
         "nombre": "Jane Doe",
@@ -114,9 +116,90 @@ INITIAL_REPORTES = [
 ]
 
 
+INITIAL_DOCUMENTOS = [
+    {
+        "id": "DOC-2026-001",
+        "nombre": "Contrato Marco de Suministro Tecnológico 2026 - Alfa Corp.pdf",
+        "tipo": "pdf",
+        "tamanio": "2.84 MB",
+        "tamanio_bytes": 2977955,
+        "categoria": "Contratos",
+        "descripcion": "Acuerdo legal de provisión mayorista de hardware Dell PowerEdge y switches Cisco con condiciones de pago a 60 días.",
+        "subido_por": "Jane Doe",
+        "usuario_id": "USR-ADMIN",
+        "usuario_rol": "administrador",
+        "tags_json": ["contrato", "legal", "alfa corp", "hardware"],
+    },
+    {
+        "id": "DOC-2026-002",
+        "nombre": "Especificaciones Técnicas y SLA de Servidores Enterprise.docx",
+        "tipo": "docx",
+        "tamanio": "1.45 MB",
+        "tamanio_bytes": 1520435,
+        "categoria": "Especificaciones Técnicas",
+        "descripcion": "Requisitos de arquitectura, memoria ECC, redundancia de fuentes y soporte 24/7 para despliegue de infraestructura.",
+        "subido_por": "Carlos Mendoza",
+        "usuario_id": "USR-ANALISTA",
+        "usuario_rol": "analista",
+        "tags_json": ["hardware", "sla", "servidores", "datacenter"],
+    },
+    {
+        "id": "DOC-2026-003",
+        "nombre": "Informe Ejecutivo de Auditoría y Precios Competitivos Q3.pdf",
+        "tipo": "pdf",
+        "tamanio": "3.12 MB",
+        "tamanio_bytes": 3271557,
+        "categoria": "Reportes Ejecutivos",
+        "descripcion": "Dossier con gráficos de dispersión de precios de mercado, márgenes brutos por línea de producto y comparativa con competidores.",
+        "subido_por": "Carlos Mendoza",
+        "usuario_id": "USR-ANALISTA",
+        "usuario_rol": "analista",
+        "tags_json": ["auditoria", "q3", "precios", "competencia"],
+    },
+    {
+        "id": "DOC-2026-004",
+        "nombre": "Propuesta Comercial y Cotización Licitación Hardware.docx",
+        "tipo": "docx",
+        "tamanio": "980 KB",
+        "tamanio_bytes": 1003520,
+        "categoria": "Propuestas Comerciales",
+        "descripcion": "Pliego de cotización para licitación pública corporativa de 80 Workstations Lenovo ThinkPad y 20 Monitores 4K.",
+        "subido_por": "Jane Doe",
+        "usuario_id": "USR-ADMIN",
+        "usuario_rol": "administrador",
+        "tags_json": ["licitacion", "propuesta", "ventas", "b2b"],
+    },
+]
+
+INITIAL_INVITACIONES = [
+    {
+        "id": "INV-DEV01",
+        "email": "dev.frontend@empresa.com",
+        "nombre_referencial": "Lucía Ramos",
+        "rol_asignado": "programador",
+        "token": "inv_tok_lucia_ramosp982",
+        "estado": "pendiente",
+        "creado_por": "Jane Doe (Administrador)",
+    },
+    {
+        "id": "INV-AUD02",
+        "email": "auditor.it@empresa.com",
+        "nombre_referencial": "Roberto Silva",
+        "rol_asignado": "auditor",
+        "token": "inv_tok_roberto_silva841",
+        "estado": "pendiente",
+        "creado_por": "Jane Doe (Administrador)",
+    },
+]
+
+
 def seed_database(db: Session, force_reset: bool = False):
-    """Puebla la base de datos con los usuarios analista/admin, datasets y reporte comparativo inicial."""
+    """Puebla la base de datos con los usuarios, datasets, reportes, documentos e invitaciones iniciales."""
+    from app.models.invitacion import Invitacion
+
     if force_reset:
+        db.query(Invitacion).delete()
+        db.query(Documento).delete()
         db.query(ReporteComparativo).delete()
         db.query(DatasetML).delete()
         db.query(Usuario).delete()
@@ -127,10 +210,17 @@ def seed_database(db: Session, force_reset: bool = False):
     for u in INITIAL_USUARIOS:
         existing = db.query(Usuario).filter(Usuario.email == u["email"]).first()
         if not existing:
-            db.add(Usuario(**u))
+            db.add(Usuario(
+                **u,
+                habilitado=True,
+                estado="activo",
+                invitado_por="Sistema Principal",
+            ))
         else:
             existing.rol = u["rol"]
             existing.nombre = u["nombre"]
+            existing.habilitado = True
+            existing.estado = "activo"
 
     # 2. Users (User)
     for usr in INITIAL_USERS:
@@ -152,4 +242,18 @@ def seed_database(db: Session, force_reset: bool = False):
         if not existing_r:
             db.add(ReporteComparativo(**r))
 
+    # 5. Documentos compartidos
+    for doc in INITIAL_DOCUMENTOS:
+        existing_doc = db.query(Documento).filter(Documento.id == doc["id"]).first()
+        if not existing_doc:
+            db.add(Documento(**doc))
+
+    # 6. Invitaciones iniciales
+    for inv in INITIAL_INVITACIONES:
+        existing_inv = db.query(Invitacion).filter(Invitacion.id == inv["id"]).first()
+        if not existing_inv:
+            db.add(Invitacion(**inv))
+
     db.commit()
+
+

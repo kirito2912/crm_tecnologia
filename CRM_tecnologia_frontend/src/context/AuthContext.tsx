@@ -43,6 +43,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       assignedRole = 'administrador';
     }
 
+    // Comprobar estado de habilitación si existe en usuarios locales o backend
+    let isHabilitado = true;
+    let estadoAcceso: 'activo' | 'deshabilitado' | 'pendiente_aprobacion' = 'activo';
+
+    const rawUsers = localStorage.getItem('hardcrm_users_directory_v2');
+    if (rawUsers) {
+      try {
+        const users = JSON.parse(rawUsers);
+        const match = users.find((u: any) => u.email.toLowerCase() === emailClean);
+        if (match) {
+          isHabilitado = match.habilitado !== false;
+          estadoAcceso = match.estado || (isHabilitado ? 'activo' : 'deshabilitado');
+        }
+      } catch {}
+    }
+
     const authUser: User = {
       id: `USR-${Math.floor(1000 + Math.random() * 9000)}`,
       name: formattedName,
@@ -52,6 +68,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       avatar: formattedName.split(' ').map((n) => n[0]).join('').slice(0, 2),
       biometricVerified: true,
       registeredAt: new Date().toISOString(),
+      habilitado: isHabilitado,
+      estado: estadoAcceso,
     };
 
     setUser(authUser);
@@ -93,6 +111,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       avatar: formattedName.split(' ').map((n) => n[0]).join('').slice(0, 2),
       biometricVerified: true,
       registeredAt: new Date().toISOString(),
+      habilitado: true,
+      estado: 'activo',
     };
 
     setUser(authUser);
@@ -147,6 +167,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       avatar: initials,
       biometricVerified: true,
       registeredAt: new Date().toISOString(),
+      habilitado: true,
+      estado: 'activo',
     };
 
     setUser(newUser);
@@ -208,6 +230,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         avatar: userData?.avatar || formattedName.split(' ').map((n) => n[0]).join('').slice(0, 2),
         biometricVerified: true,
         registeredAt: new Date().toISOString(),
+        habilitado: userData?.habilitado !== undefined ? userData.habilitado : true,
+        estado: userData?.estado || 'activo',
       };
 
       setUser(authUser);
@@ -239,6 +263,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         avatar: 'JD',
         biometricVerified: true,
         registeredAt: new Date().toISOString(),
+        habilitado: true,
+        estado: 'activo',
       };
     } else {
       demoUser = {
@@ -250,6 +276,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         avatar: 'CM',
         biometricVerified: true,
         registeredAt: new Date().toISOString(),
+        habilitado: true,
+        estado: 'activo',
       };
     }
 

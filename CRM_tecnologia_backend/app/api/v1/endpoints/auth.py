@@ -49,15 +49,18 @@ def login_standard(body: LoginRequest, db: Session = Depends(get_db)):
                 detail="Contraseña incorrecta. Por favor verifica tus credenciales.",
             )
 
+    requiere_aprobacion = False
     if usuario:
         user_response = UsuarioResponse.model_validate(usuario)
         user_id = usuario.id
         user_name = usuario.nombre
         user_rol = usuario.rol
+        requiere_aprobacion = not bool(usuario.habilitado) or usuario.estado == "pendiente_aprobacion"
     else:
         user_id = f"USR-{user_otp.id}"
         user_name = user_otp.full_name or "Usuario"
         user_rol = user_otp.role or "analista"
+        requiere_aprobacion = not bool(user_otp.is_active)
         user_response = UsuarioResponse(
             id=user_id,
             nombre=user_name,
@@ -66,6 +69,8 @@ def login_standard(body: LoginRequest, db: Session = Depends(get_db)):
             empresa="Empresa Registrada",
             avatar="US",
             biometric_verified=True,
+            habilitado=user_otp.is_active,
+            estado="activo" if user_otp.is_active else "deshabilitado",
         )
 
     token = f"hardcrm_jwt_session_{user_id}_{email_clean.split('@')[0]}"
@@ -74,6 +79,7 @@ def login_standard(body: LoginRequest, db: Session = Depends(get_db)):
         message=f"Bienvenido de nuevo, {user_name} ({user_rol})",
         user=user_response,
         token=token,
+        requiere_aprobacion=requiere_aprobacion,
     )
 
 
@@ -110,12 +116,14 @@ def login_biometric(body: BiometricLoginRequest, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(usuario)
 
+    requiere_aprobacion = not bool(usuario.habilitado) or usuario.estado == "pendiente_aprobacion"
     token = f"hardcrm_biometric_jwt_{usuario.id}_{round(confidence)}"
     return AuthResponse(
         success=True,
         message=f"Acceso biométrico concedido. Coincidencia facial: {confidence:.1f}%",
         user=UsuarioResponse.model_validate(usuario),
         token=token,
+        requiere_aprobacion=requiere_aprobacion,
     )
 
 
