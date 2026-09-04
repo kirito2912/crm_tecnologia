@@ -16,8 +16,6 @@ import {
   RefreshCw,
   Mail,
   Shield,
-  Code,
-  FileCheck,
   Sparkles,
   ExternalLink,
 } from 'lucide-react';
@@ -41,7 +39,7 @@ export const InvitacionesView: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
-  const [inviteRole, setInviteRole] = useState<RolAsignado>('programador');
+  const [inviteRole, setInviteRole] = useState<RolAsignado>('analista');
   const [isSubmittingInvite, setIsSubmittingInvite] = useState(false);
   const [createdInviteLink, setCreatedInviteLink] = useState<string | null>(null);
   const [emailEnviado, setEmailEnviado] = useState<boolean | null>(null);
@@ -161,22 +159,6 @@ export const InvitacionesView: React.FC = () => {
         </span>
       );
     }
-    if (r === 'programador' || r === 'developer' || r === 'dev') {
-      return (
-        <span className="role-badge badge-dev">
-          <Code size={12} />
-          Programador
-        </span>
-      );
-    }
-    if (r === 'auditor') {
-      return (
-        <span className="role-badge badge-auditor">
-          <FileCheck size={12} />
-          Auditor
-        </span>
-      );
-    }
     return (
       <span className="role-badge badge-analista">
         <Users size={12} />
@@ -223,7 +205,7 @@ export const InvitacionesView: React.FC = () => {
               setEmailEnviado(null);
               setInviteEmail('');
               setInviteName('');
-              setInviteRole('programador');
+              setInviteRole('analista');
               setIsModalOpen(true);
             }}
           >
@@ -367,8 +349,6 @@ export const InvitacionesView: React.FC = () => {
                 >
                   <option value="todos">Todos los Roles</option>
                   <option value="analista">Analista</option>
-                  <option value="programador">Programador</option>
-                  <option value="auditor">Auditor</option>
                   <option value="administrador">Administrador</option>
                 </select>
               </div>
@@ -720,9 +700,7 @@ export const InvitacionesView: React.FC = () => {
                     onChange={(e) => setInviteRole(e.target.value as RolAsignado)}
                     className="inv-form-select"
                   >
-                    <option value="programador">Programador / Desarrollador Frontend & Backend</option>
                     <option value="analista">Analista de Datos (Datasets & Comparativas)</option>
-                    <option value="auditor">Auditor IT & Seguridad</option>
                     <option value="administrador">Administrador de Plataforma</option>
                   </select>
                 </div>

@@ -22,12 +22,13 @@ import {
   Shield,
   Layers,
   X,
+  Send,
 } from 'lucide-react';
 import { useDocumentos } from '../../context/DocumentosContext';
 import { useAuth } from '../../context/AuthContext';
 import { DocumentCard } from './DocumentCard';
 import { DocumentPreviewModal } from './DocumentPreviewModal';
-import type { Documento, DocumentoCategoria } from '../../types/documento';
+import type { Documento } from '../../types/documento';
 
 interface DocumentosViewProps {
   searchQuery?: string;
@@ -64,15 +65,20 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
   // Formulario de Carga
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [formCategory, setFormCategory] = useState<DocumentoCategoria>('General');
   const [formDescription, setFormDescription] = useState('');
-  const [formTags, setFormTags] = useState('');
+  // Roles destinatarios: array de roles seleccionados; vacío = "Todos los roles"
+  const [formDestinatarios, setFormDestinatarios] = useState<string[]>([]);
 
   // Modal de Vista Previa
   const [previewDoc, setPreviewDoc] = useState<Documento | null>(null);
 
   // Modal de Confirmación de Borrado
   const [docToDelete, setDocToDelete] = useState<Documento | null>(null);
+
+  // Modal de Envío a rol
+  const [docToSend, setDocToSend] = useState<Documento | null>(null);
+  const [sendRol, setSendRol] = useState<string>('analista');
+  const [sendSuccess, setSendSuccess] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modalFileInputRef = useRef<HTMLInputElement>(null);
@@ -187,15 +193,12 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
     e.preventDefault();
     if (!selectedFile) return;
 
-    const tagsArray = formTags
-      .split(',')
-      .map((t) => t.trim().toLowerCase())
-      .filter((t) => t.length > 0);
+    // formDestinatarios vacío significa "todos los roles"
+    const destinatarios = formDestinatarios.length > 0 ? formDestinatarios : ['todos'];
 
     const res = await uploadDocumentoFile(selectedFile, {
-      categoria: formCategory,
       descripcion: formDescription,
-      tags: tagsArray,
+      destinatarios_roles: destinatarios,
     });
 
     if (res.success) {
@@ -204,7 +207,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
       setShowUploadModal(false);
       setSelectedFile(null);
       setFormDescription('');
-      setFormTags('');
+      setFormDestinatarios([]);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } else {
       setUploadError(res.error || 'Error al subir documento');
@@ -397,42 +400,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
           </button>
         </div>
 
-        {/* Categoría */}
-        <div className="doc-select-wrapper">
-          <Filter size={14} color="#94a3b8" />
-          <select
-            className="doc-filter-select"
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-          >
-            <option value="todos">Todas las categorías</option>
-            <option value="Contratos">Contratos</option>
-            <option value="Reportes Ejecutivos">Reportes Ejecutivos</option>
-            <option value="Propuestas Comerciales">Propuestas Comerciales</option>
-            <option value="Especificaciones Técnicas">Especificaciones Técnicas</option>
-            <option value="Financiero">Financiero</option>
-            <option value="Auditoría">Auditoría</option>
-            <option value="General">General</option>
-            {uniqueCategories
-              .filter(
-                (c) =>
-                  ![
-                    'Contratos',
-                    'Reportes Ejecutivos',
-                    'Propuestas Comerciales',
-                    'Especificaciones Técnicas',
-                    'Financiero',
-                    'Auditoría',
-                    'General',
-                  ].includes(c)
-              )
-              .map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-          </select>
-        </div>
+        {/* Categoría eliminada */}
 
         {/* Rol del autor */}
         <div className="doc-select-wrapper">
@@ -523,6 +491,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
               onPreview={(d) => setPreviewDoc(d)}
               onDownload={(d) => downloadDocumento(d)}
               onDelete={() => setDocToDelete(doc)}
+              onSend={(d) => { setDocToSend(d); setSendRol('analista'); }}
             />
           ))}
         </div>
@@ -707,23 +676,6 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
               </div>
 
               {/* Categoría */}
-              <div className="doc-form-group">
-                <label className="doc-form-label">Categoría Empresarial *</label>
-                <select
-                  className="doc-form-select"
-                  value={formCategory}
-                  onChange={(e) => setFormCategory(e.target.value as DocumentoCategoria)}
-                  required
-                >
-                  <option value="Contratos">Contratos</option>
-                  <option value="Reportes Ejecutivos">Reportes Ejecutivos</option>
-                  <option value="Propuestas Comerciales">Propuestas Comerciales</option>
-                  <option value="Especificaciones Técnicas">Especificaciones Técnicas</option>
-                  <option value="Financiero">Financiero</option>
-                  <option value="Auditoría">Auditoría</option>
-                  <option value="General">General</option>
-                </select>
-              </div>
 
               {/* Descripción */}
               <div className="doc-form-group">
@@ -737,16 +689,58 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
                 />
               </div>
 
-              {/* Tags */}
+              {/* Destinatarios por rol */}
               <div className="doc-form-group">
-                <label className="doc-form-label">Etiquetas (separadas por coma)</label>
-                <input
-                  type="text"
-                  className="doc-form-input"
-                  placeholder="ej: hardware, contrato, alfa corp, licitacion"
-                  value={formTags}
-                  onChange={(e) => setFormTags(e.target.value)}
-                />
+                <label className="doc-form-label">
+                  Enviar a roles específicos
+                  <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '11px', marginLeft: 6 }}>
+                    (opcional — sin selección = todos los roles)
+                  </span>
+                </label>
+                <div className="doc-roles-picker">
+                  {[
+                    { id: 'analista',      label: 'Analista de Datos', color: '#15803d', bg: '#dcfce7', border: '#bbf7d0' },
+                    { id: 'administrador', label: 'Administrador',      color: '#4338ca', bg: '#e0e7ff', border: '#c7d2fe' },
+                  ].map((rol) => {
+                    const selected = formDestinatarios.includes(rol.id);
+                    return (
+                      <button
+                        key={rol.id}
+                        type="button"
+                        className={`doc-role-chip ${selected ? 'selected' : ''}`}
+                        style={selected ? {
+                          background: rol.bg,
+                          borderColor: rol.border,
+                          color: rol.color,
+                        } : {}}
+                        onClick={() =>
+                          setFormDestinatarios((prev) =>
+                            prev.includes(rol.id)
+                              ? prev.filter((r) => r !== rol.id)
+                              : [...prev, rol.id]
+                          )
+                        }
+                      >
+                        {selected && (
+                          <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0 }}>
+                            <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                        {rol.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {formDestinatarios.length === 0 && (
+                  <span style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: 4 }}>
+                    Visible para todos los roles del sistema.
+                  </span>
+                )}
+                {formDestinatarios.length > 0 && (
+                  <span style={{ fontSize: '11.5px', color: '#4f46e5', marginTop: 4, fontWeight: 600 }}>
+                    Solo visible para: {formDestinatarios.map((r) => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')}.
+                  </span>
+                )}
               </div>
 
               {/* Metadata del Autor */}
@@ -823,6 +817,100 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
                 onClick={handleConfirmDelete}
               >
                 Sí, eliminar documento
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal de Envío a Rol ── */}
+      {docToSend && (
+        <div className="doc-modal-overlay" onClick={() => setDocToSend(null)}>
+          <div
+            className="doc-send-modal-container"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="doc-send-modal-header">
+              <div className="doc-send-modal-icon">
+                <Send size={20} />
+              </div>
+              <div>
+                <h3>Enviar Documento</h3>
+                <p>Selecciona el rol al que deseas enviar este documento.</p>
+              </div>
+              <button
+                type="button"
+                className="doc-modal-close-btn"
+                style={{ marginLeft: 'auto' }}
+                onClick={() => setDocToSend(null)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Nombre del documento */}
+            <div className="doc-send-doc-name">
+              <FileText size={15} color="#6366f1" />
+              <span>{docToSend.nombre}</span>
+            </div>
+
+            {/* Selector de rol */}
+            <div className="doc-send-roles">
+              <p className="doc-send-roles-label">Enviar a:</p>
+              <div className="doc-roles-picker">
+                {[
+                  { id: 'analista',      label: 'Analista de Datos', color: '#15803d', bg: '#dcfce7', border: '#bbf7d0' },
+                  { id: 'administrador', label: 'Administrador',      color: '#4338ca', bg: '#e0e7ff', border: '#c7d2fe' },
+                ].map((rol) => {
+                  const selected = sendRol === rol.id;
+                  return (
+                    <button
+                      key={rol.id}
+                      type="button"
+                      className={`doc-role-chip ${selected ? 'selected' : ''}`}
+                      style={selected ? { background: rol.bg, borderColor: rol.border, color: rol.color } : {}}
+                      onClick={() => setSendRol(rol.id)}
+                    >
+                      {selected && (
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0 }}>
+                          <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                      {rol.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Feedback de éxito */}
+            {sendSuccess && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 8, padding: '9px 14px', fontSize: 13, color: '#065f46', fontWeight: 600 }}>
+                <CheckCircle2 size={15} />
+                {sendSuccess}
+              </div>
+            )}
+
+            {/* Acciones */}
+            <div className="doc-send-actions">
+              <button
+                type="button"
+                className="doc-modal-btn-close"
+                onClick={() => { setDocToSend(null); setSendSuccess(null); }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="doc-send-confirm-btn"
+                onClick={() => {
+                  setSendSuccess(`Documento enviado al rol "${sendRol.charAt(0).toUpperCase() + sendRol.slice(1)}" exitosamente.`);
+                  setTimeout(() => { setDocToSend(null); setSendSuccess(null); }, 2000);
+                }}
+              >
+                <Send size={14} />
+                Enviar ahora
               </button>
             </div>
           </div>

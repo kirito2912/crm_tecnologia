@@ -141,6 +141,7 @@ export const DocumentosProvider: React.FC<{ children: ReactNode }> = ({ children
       categoria?: DocumentoCategoria | string;
       descripcion?: string;
       tags?: string[];
+      destinatarios_roles?: string[];
     }
   ): Promise<{ success: boolean; documento?: Documento; error?: string }> => {
     setIsUploading(true);
@@ -170,6 +171,10 @@ export const DocumentosProvider: React.FC<{ children: ReactNode }> = ({ children
         return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
       };
 
+      const destinatarios = meta.destinatarios_roles && meta.destinatarios_roles.length > 0
+        ? meta.destinatarios_roles
+        : ['todos'];
+
       let createdDoc: Documento;
 
       try {
@@ -180,6 +185,7 @@ export const DocumentosProvider: React.FC<{ children: ReactNode }> = ({ children
           usuario_id: currentUserId,
           usuario_rol: currentUserRole.includes('admin') ? 'administrador' : 'analista',
           tags: meta.tags,
+          destinatarios_roles: destinatarios,
         });
       } catch (remoteErr) {
         console.warn('Backend upload no disponible, guardando localmente con base64:', remoteErr);
@@ -196,6 +202,7 @@ export const DocumentosProvider: React.FC<{ children: ReactNode }> = ({ children
           usuario_id: currentUserId,
           usuario_rol: currentUserRole.includes('admin') ? 'administrador' : 'analista',
           tags_json: meta.tags || ['documento', docTipo],
+          destinatarios_roles: destinatarios,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };

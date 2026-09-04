@@ -10,6 +10,7 @@ import {
   Tag,
   Shield,
   FileSpreadsheet,
+  Send,
 } from 'lucide-react';
 import type { Documento } from '../../types/documento';
 
@@ -18,6 +19,7 @@ interface DocumentCardProps {
   onPreview: (doc: Documento) => void;
   onDownload: (doc: Documento) => void;
   onDelete: (id: string) => void;
+  onSend?: (doc: Documento) => void;
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({
@@ -25,6 +27,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   onPreview,
   onDownload,
   onDelete,
+  onSend,
 }) => {
   const isPdf = documento.tipo.toLowerCase().includes('pdf');
   const isWord =
@@ -158,6 +161,18 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           <Download size={14} />
           <span>Descargar</span>
         </button>
+
+        {onSend && (
+          <button
+            type="button"
+            className="doc-action-btn doc-action-btn--send"
+            onClick={() => onSend(documento)}
+            title="Enviar documento a un rol"
+          >
+            <Send size={14} />
+            <span>Enviar</span>
+          </button>
+        )}
 
         <button
           type="button"

@@ -23,6 +23,8 @@ export interface Documento {
   usuario_id?: string | null;
   usuario_rol: 'analista' | 'administrador' | string;
   tags_json?: string[] | null;
+  /** Roles que pueden ver este documento. ["todos"] o subconjunto de los roles del sistema. */
+  destinatarios_roles?: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,6 +42,7 @@ export interface DocumentoCreatePayload {
   usuario_id?: string;
   usuario_rol?: 'analista' | 'administrador' | string;
   tags_json?: string[];
+  destinatarios_roles?: string[];
 }
 
 export interface DocumentoUpdatePayload {
@@ -61,6 +64,7 @@ export interface DocumentosContextType {
       categoria?: DocumentoCategoria | string;
       descripcion?: string;
       tags?: string[];
+      destinatarios_roles?: string[];
     }
   ) => Promise<{ success: boolean; documento?: Documento; error?: string }>;
   createDocumentoDirect: (

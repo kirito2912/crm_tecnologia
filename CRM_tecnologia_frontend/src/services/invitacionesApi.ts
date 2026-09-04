@@ -311,17 +311,19 @@ export async function revocarInvitacion(invitacionId: string): Promise<{ message
       method: 'DELETE',
     });
     if (res.ok) {
+      // Eliminar también del localStorage para sincronía inmediata
+      const invs = getStoredInvitaciones();
+      const filtered = invs.filter((i) => i.id !== invitacionId);
+      saveStoredInvitaciones(filtered);
       return await res.json();
     }
   } catch (err) {
     console.warn('[InvitacionesApi] Revocar error fallback:', err);
   }
 
+  // Fallback local: eliminar completamente del array
   const invs = getStoredInvitaciones();
-  const idx = invs.findIndex((i) => i.id === invitacionId);
-  if (idx >= 0) {
-    invs[idx].estado = 'cancelado';
-    saveStoredInvitaciones(invs);
-  }
-  return { message: 'Invitación cancelada correctamente.' };
+  const filtered = invs.filter((i) => i.id !== invitacionId);
+  saveStoredInvitaciones(filtered);
+  return { message: 'Invitación eliminada correctamente.' };
 }

@@ -55,6 +55,7 @@ export async function uploadDocumentoFileApi(
     usuario_id?: string;
     usuario_rol?: string;
     tags?: string[];
+    destinatarios_roles?: string[];
   }
 ): Promise<Documento> {
   const formData = new FormData();
@@ -65,6 +66,8 @@ export async function uploadDocumentoFileApi(
   if (meta.usuario_id) formData.append('usuario_id', meta.usuario_id);
   if (meta.usuario_rol) formData.append('usuario_rol', meta.usuario_rol);
   if (meta.tags && meta.tags.length > 0) formData.append('tags', JSON.stringify(meta.tags));
+  if (meta.destinatarios_roles && meta.destinatarios_roles.length > 0)
+    formData.append('destinatarios_roles', JSON.stringify(meta.destinatarios_roles));
 
   const res = await fetch(`${API_BASE_URL}/documentos/upload`, {
     method: 'POST',

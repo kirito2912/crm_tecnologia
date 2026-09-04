@@ -20,5 +20,7 @@ class Documento(Base):
     usuario_id = Column(String(50), nullable=True, index=True)
     usuario_rol = Column(String(50), default="analista", nullable=False)  # 'analista' | 'administrador'
     tags_json = Column(JSON, nullable=True)
+    # Roles que pueden ver este documento: ['todos'] | ['analista', 'programador', ...] | etc.
+    destinatarios_roles = Column(JSON, nullable=True, default=lambda: ["todos"])
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

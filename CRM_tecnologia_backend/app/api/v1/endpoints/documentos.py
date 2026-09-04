@@ -143,6 +143,7 @@ async def subir_documento_archivo(
     usuario_id: Optional[str] = Form(None),
     usuario_rol: str = Form("analista"),
     tags: Optional[str] = Form(None),
+    destinatarios_roles: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
     """Sube un archivo Word o PDF, guarda una copia binaria y su registro en la base de datos."""
@@ -177,6 +178,18 @@ async def subir_documento_archivo(
         except Exception:
             parsed_tags = [t.strip() for t in tags.split(",") if t.strip()]
 
+    parsed_destinatarios = ["todos"]
+    if destinatarios_roles:
+        try:
+            parsed_destinatarios = json.loads(destinatarios_roles)
+            if not isinstance(parsed_destinatarios, list):
+                parsed_destinatarios = [str(destinatarios_roles)]
+        except Exception:
+            parsed_destinatarios = [r.strip() for r in destinatarios_roles.split(",") if r.strip()]
+        # Si está vacío o solo contiene "todos", normalizar
+        if not parsed_destinatarios:
+            parsed_destinatarios = ["todos"]
+
     nuevo = Documento(
         id=nuevo_id,
         nombre=file.filename or "Documento",
@@ -191,6 +204,7 @@ async def subir_documento_archivo(
         usuario_id=usuario_id,
         usuario_rol=usuario_rol.lower(),
         tags_json=parsed_tags,
+        destinatarios_roles=parsed_destinatarios,
     )
 
     db.add(nuevo)

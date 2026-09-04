@@ -17,6 +17,8 @@ class DocumentoBase(BaseModel):
     usuario_id: Optional[str] = None
     usuario_rol: Optional[str] = "analista"
     tags_json: Optional[List[str]] = None
+    # Roles destinatarios: ["todos"] o subconjunto de ["analista","programador","auditor","administrador"]
+    destinatarios_roles: Optional[List[str]] = ["todos"]
 
 
 class DocumentoCreate(DocumentoBase):
@@ -28,6 +30,7 @@ class DocumentoUpdate(BaseModel):
     categoria: Optional[str] = None
     descripcion: Optional[str] = None
     tags_json: Optional[List[str]] = None
+    destinatarios_roles: Optional[List[str]] = None
 
 
 class DocumentoResponse(BaseModel):
@@ -44,6 +47,7 @@ class DocumentoResponse(BaseModel):
     usuario_id: Optional[str] = None
     usuario_rol: str
     tags_json: Optional[List[Any]] = None
+    destinatarios_roles: Optional[List[Any]] = None
     created_at: datetime
     updated_at: datetime
 

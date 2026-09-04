@@ -100,22 +100,34 @@ export const InvitacionesProvider: React.FC<{ children: ReactNode }> = ({ childr
     motivo?: string
   ): Promise<boolean> => {
     try {
+      // Actualización optimista — cambia el estado en memoria de inmediato
+      setUsuarios((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? { ...u, habilitado, estado: habilitado ? 'activo' : 'deshabilitado' }
+            : u
+        )
+      );
       await toggleUserStatus(userId, habilitado, motivo);
       await refreshDashboard();
       return true;
     } catch (err) {
       console.error('[InvitacionesContext] Error alternando estado:', err);
+      await refreshDashboard(); // revertir al estado real
       return false;
     }
   };
 
   const cancelarInvitacion = async (invitacionId: string): Promise<boolean> => {
     try {
+      // Actualización optimista — elimina la invitación de memoria de inmediato
+      setInvitaciones((prev) => prev.filter((i) => i.id !== invitacionId));
       await revocarInvitacion(invitacionId);
       await refreshDashboard();
       return true;
     } catch (err) {
       console.error('[InvitacionesContext] Error revocando invitación:', err);
+      await refreshDashboard(); // revertir al estado real
       return false;
     }
   };
