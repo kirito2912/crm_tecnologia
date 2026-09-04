@@ -29,7 +29,7 @@ function DashboardContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
-  // Estados para compartir selección entre Datasets/Reportes y Comparativa
+  // Estados para compartir selección entre Datasets y Comparativa (analista)
   const [preselectedA, setPreselectedA] = useState<string | undefined>(undefined);
   const [preselectedB, setPreselectedB] = useState<string | undefined>(undefined);
 
@@ -67,11 +67,6 @@ function DashboardContent() {
         {activeTab === 'reports' && (
           <AdminReportsView
             searchQuery={searchQuery}
-            onOpenComparison={(idA, idB) => {
-              setPreselectedA(idA);
-              setPreselectedB(idB);
-              setActiveTab('comparativa');
-            }}
           />
         )}
 

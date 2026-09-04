@@ -22,6 +22,7 @@ class InvitacionResponse(BaseModel):
     creado_por: str
     created_at: datetime
     expires_at: datetime
+    email_enviado: Optional[bool] = None  # True si el correo de invitación fue enviado con éxito
 
     model_config = ConfigDict(from_attributes=True)
 

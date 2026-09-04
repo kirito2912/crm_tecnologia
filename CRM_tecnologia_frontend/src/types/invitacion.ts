@@ -15,6 +15,7 @@ export interface Invitacion {
   creado_por: string;
   created_at: string;
   expires_at: string;
+  email_enviado?: boolean | null;
 }
 
 export interface InvitacionCreatePayload {

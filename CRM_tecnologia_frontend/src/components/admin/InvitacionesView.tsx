@@ -44,6 +44,7 @@ export const InvitacionesView: React.FC = () => {
   const [inviteRole, setInviteRole] = useState<RolAsignado>('programador');
   const [isSubmittingInvite, setIsSubmittingInvite] = useState(false);
   const [createdInviteLink, setCreatedInviteLink] = useState<string | null>(null);
+  const [emailEnviado, setEmailEnviado] = useState<boolean | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   // Filters
@@ -81,6 +82,7 @@ export const InvitacionesView: React.FC = () => {
         `${window.location.origin}/?invite_token=${inv.token}`;
 
       setCreatedInviteLink(fullLink);
+      setEmailEnviado(inv.email_enviado ?? null);
       showToast(`¡Invitación creada con éxito para ${inv.email}!`);
     } catch (err: any) {
       showToast(err.message || 'Error al generar la invitación');
@@ -218,6 +220,7 @@ export const InvitacionesView: React.FC = () => {
             className="inv-btn-primary"
             onClick={() => {
               setCreatedInviteLink(null);
+              setEmailEnviado(null);
               setInviteEmail('');
               setInviteName('');
               setInviteRole('programador');
@@ -496,22 +499,39 @@ export const InvitacionesView: React.FC = () => {
 
                 return (
                   <div key={inv.id} className={`inv-link-card ${inv.estado}`}>
+                    {/* Fila 1: Email + nombre referencial */}
                     <div className="inv-link-top-row">
                       <div className="inv-link-email-info">
-                        <Mail size={15} />
+                        <Mail size={15} color="#6366f1" style={{ flexShrink: 0 }} />
                         <strong>{inv.email}</strong>
                         {inv.nombre_referencial && (
                           <span className="inv-link-ref-name">({inv.nombre_referencial})</span>
                         )}
                       </div>
-                      <div>{getRoleBadge(inv.rol_asignado)}</div>
                     </div>
 
-                    <div className="inv-link-token-row">
-                      <div className="inv-token-display">
-                        <span className="inv-token-text">
-                          {inv.enlace_completo || `${window.location.origin}/?invite_token=${inv.token}`}
+                    {/* Fila 2: URL del enlace (solo display, truncado) */}
+                    <div className="inv-token-display">
+                      <span className="inv-token-text">
+                        {inv.enlace_completo || `${window.location.origin}/?invite_token=${inv.token}`}
+                      </span>
+                    </div>
+
+                    {/* Fila 3: Acciones + meta info */}
+                    <div className="inv-link-footer-row">
+                      <div className="inv-link-left-meta">
+                        <span className="inv-link-meta">
+                          {new Date(inv.created_at).toLocaleDateString('es-PE')} · {inv.creado_por}
                         </span>
+                        <div className="inv-link-badges-row">
+                          {getRoleBadge(inv.rol_asignado)}
+                          <span className={`inv-status-tag ${inv.estado}`}>
+                            {inv.estado === 'pendiente' && 'Vigente'}
+                            {inv.estado === 'registrado' && 'Registrado'}
+                            {inv.estado === 'cancelado' && 'Revocado'}
+                            {inv.estado === 'expirado' && 'Expirado'}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="inv-link-actions-group">
@@ -522,7 +542,7 @@ export const InvitacionesView: React.FC = () => {
                           title="Copiar enlace de invitación"
                         >
                           {isCopied ? <Check size={14} /> : <Copy size={14} />}
-                          <span>{isCopied ? 'Copiado' : 'Copiar Enlace'}</span>
+                          <span>{isCopied ? 'Copiado' : 'Copiar'}</span>
                         </button>
 
                         {isPending && (
@@ -536,18 +556,6 @@ export const InvitacionesView: React.FC = () => {
                           </button>
                         )}
                       </div>
-                    </div>
-
-                    <div className="inv-link-footer-row">
-                      <span className="inv-link-meta">
-                        Creado: {new Date(inv.created_at).toLocaleDateString()} por {inv.creado_por}
-                      </span>
-                      <span className={`inv-status-tag ${inv.estado}`}>
-                        {inv.estado === 'pendiente' && 'Vigente / Enlace Activo'}
-                        {inv.estado === 'registrado' && 'Registro Completado'}
-                        {inv.estado === 'cancelado' && 'Revocado'}
-                        {inv.estado === 'expirado' && 'Expirado'}
-                      </span>
                     </div>
                   </div>
                 );
@@ -584,8 +592,64 @@ export const InvitacionesView: React.FC = () => {
                   <CheckCircle size={36} />
                 </div>
                 <h4>¡Enlace de Invitación Creado!</h4>
+
+                {/* Indicador de envío de correo */}
+                {emailEnviado === true && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: 8,
+                    padding: '9px 14px',
+                    marginBottom: 14,
+                    fontSize: 13,
+                    color: '#15803d',
+                    fontWeight: 600,
+                  }}>
+                    <Mail size={15} />
+                    <span>Correo de invitación enviado a <strong>{inviteEmail}</strong></span>
+                  </div>
+                )}
+                {emailEnviado === false && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    background: '#fffbeb',
+                    border: '1px solid #fde68a',
+                    borderRadius: 8,
+                    padding: '9px 14px',
+                    marginBottom: 14,
+                    fontSize: 13,
+                    color: '#92400e',
+                    fontWeight: 600,
+                  }}>
+                    <AlertTriangle size={15} />
+                    <span>No se pudo enviar el correo. Comparte el enlace manualmente.</span>
+                  </div>
+                )}
+                {emailEnviado === null && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 8,
+                    padding: '9px 14px',
+                    marginBottom: 14,
+                    fontSize: 13,
+                    color: '#64748b',
+                  }}>
+                    <Mail size={15} />
+                    <span>Copia el enlace y envíalo manualmente al trabajador.</span>
+                  </div>
+                )}
+
                 <p>
-                  Comparte este enlace con el trabajador. Podrá definir su contraseña, validar su código OTP y quedará en espera de tu aprobación.
+                  Podrá definir su contraseña, validar su código OTP y quedará en espera de tu aprobación.
                 </p>
 
                 <div className="inv-success-link-box">
@@ -611,6 +675,7 @@ export const InvitacionesView: React.FC = () => {
                     className="inv-btn-primary"
                     onClick={() => {
                       setCreatedInviteLink(null);
+                      setEmailEnviado(null);
                       setInviteEmail('');
                       setInviteName('');
                       setIsModalOpen(false);

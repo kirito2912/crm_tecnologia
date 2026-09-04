@@ -24,12 +24,10 @@ import type { ReporteComparativo, EstadoReporte } from '../../types/reportes';
 
 interface AdminReportsViewProps {
   searchQuery?: string;
-  onOpenComparison?: (idA: string, idB: string) => void;
 }
 
 export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
   searchQuery = '',
-  onOpenComparison,
 }) => {
   const { user } = useAuth();
   const role = (user?.role || 'analista').toLowerCase();
@@ -325,7 +323,6 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
         <ReportDetailModal
           reporte={selectedReporte}
           onClose={() => setSelectedReporte(null)}
-          onOpenComparison={onOpenComparison}
         />
       )}
     </div>

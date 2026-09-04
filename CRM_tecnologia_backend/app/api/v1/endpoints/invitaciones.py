@@ -24,6 +24,7 @@ from app.schemas.invitacion import (
     NotificacionSolicitud,
     InvitacionDashboardResponse,
 )
+from app.services.email_service import send_invitation_email
 
 router = APIRouter(prefix="/invitaciones", tags=["Gestión de Invitaciones y Personal"])
 
@@ -84,7 +85,20 @@ def crear_invitacion(
     db.commit()
     db.refresh(nueva)
 
-    nueva.enlace_completo = f"{FRONTEND_URL}/?invite_token={token_str}"
+    enlace = f"{FRONTEND_URL}/?invite_token={token_str}"
+    nueva.enlace_completo = enlace
+
+    # Enviar el enlace al correo del trabajador invitado
+    email_enviado = send_invitation_email(
+        recipient_email=email_clean,
+        invite_link=enlace,
+        nombre_referencial=nueva.nombre_referencial,
+        rol_asignado=nueva.rol_asignado,
+        creado_por=creado_por or "el Administrador",
+        expires_days=7,
+    )
+    nueva.email_enviado = email_enviado
+
     return nueva
 
 

@@ -8,8 +8,6 @@ import {
   AlertCircle,
   Clock,
   MessageSquare,
-  ArrowUpRight,
-  Send,
   Save,
   Trash2,
   Sparkles,
@@ -21,13 +19,11 @@ import type { ReporteComparativo, EstadoReporte } from '../../types/reportes';
 interface ReportDetailModalProps {
   reporte: ReporteComparativo;
   onClose: () => void;
-  onOpenComparison?: (idA: string, idB: string) => void;
 }
 
 export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
   reporte,
   onClose,
-  onOpenComparison,
 }) => {
   const { user } = useAuth();
   const { updateReporteEstado, deleteReporte } = useReports();
@@ -127,19 +123,6 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
                 <span className="rep-comp-badge" style={{ color: '#7c3aed', background: '#f5f3ff' }}>
                   {reporte.dataset_b_nombre}
                 </span>
-                {onOpenComparison && (
-                  <button
-                    type="button"
-                    className="rep-btn-open-comp"
-                    onClick={() => {
-                      onOpenComparison(reporte.dataset_a_id, reporte.dataset_b_id);
-                      onClose();
-                    }}
-                  >
-                    <ArrowUpRight size={14} />
-                    Ver Comparativa Interactiva en Vivo
-                  </button>
-                )}
               </div>
             </div>
           </div>

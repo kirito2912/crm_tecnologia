@@ -24,7 +24,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
   const isAdmin = role === 'administrador' || role === 'admin';
 
   // Ítems de navegación dinámicos según el rol:
-  // - Administrador: Reportes, Gestión de Personal e Invitaciones, Documentos Word y PDF, Comparativa
+  // - Administrador: Reportes, Gestión de Personal e Invitaciones, Documentos Word y PDF
   // - Analista: Reportes, Datasets CSV, Documentos Word y PDF y Comparativa
   const menuItems = isAdmin
     ? [
@@ -36,7 +36,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
           badge: kpis.usuariosPendientes > 0 ? kpis.usuariosPendientes : undefined,
         },
         { id: 'documentos' as NavTab, label: 'Documentos Word y PDF', icon: Files },
-        { id: 'comparativa' as NavTab, label: 'Comparativa', icon: GitCompare },
       ]
     : [
         { id: 'reports' as NavTab, label: 'Reportes de Comparativas', icon: FileText },
