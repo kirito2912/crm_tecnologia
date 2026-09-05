@@ -16,10 +16,10 @@ async def lifespan(app: FastAPI):
     # 1. Crear tablas si no existen
     Base.metadata.create_all(bind=engine)
 
-    # 2. Migración segura de columnas existentes si se usa SQLite
-    try:
-        with engine.connect() as conn:
-                # Tabla users
+    # 2. Migración segura de columnas (solo aplica a SQLite)
+    if engine.dialect.name == "sqlite":
+        try:
+            with engine.connect() as conn:
                 res_u = conn.execute(text("PRAGMA table_info(users);")).fetchall()
                 cols_u = [row[1] for row in res_u]
                 if "password_hash" not in cols_u:
@@ -27,7 +27,6 @@ async def lifespan(app: FastAPI):
                 if "role" not in cols_u:
                     conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'analista';"))
 
-                # Tabla usuarios
                 res_usr = conn.execute(text("PRAGMA table_info(usuarios);")).fetchall()
                 cols_usr = [row[1] for row in res_usr]
                 if "habilitado" not in cols_usr:
@@ -37,8 +36,8 @@ async def lifespan(app: FastAPI):
                 if "invitado_por" not in cols_usr:
                     conn.execute(text("ALTER TABLE usuarios ADD COLUMN invitado_por VARCHAR(150);"))
                 conn.commit()
-    except Exception as mig_err:
-        print(f"[Aviso Migración] {mig_err}")
+        except Exception as mig_err:
+            print(f"[Aviso Migración SQLite] {mig_err}")
 
 
     # 3. Sembrar datos iniciales si la base está vacía o actualizar roles

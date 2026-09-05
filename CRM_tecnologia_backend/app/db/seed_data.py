@@ -8,15 +8,14 @@ from app.models.documento import Documento
 from app.core.security import hash_password
 
 INITIAL_USUARIOS = [
-
     {
         "id": "USR-ADMIN",
-        "nombre": "Jane Doe",
-        "email": "admin@empresa.com",
-        "password_hash": hash_password("admin123"),
+        "nombre": "Eduardo Caballero",
+        "email": "eduardocaballero392@gmail.com",
+        "password_hash": hash_password("4n6yFksPaxQwzNMI"),
         "rol": "administrador",
         "empresa": "DataTech Analytics",
-        "avatar": "JD",
+        "avatar": "EC",
         "biometric_verified": True,
     },
     {
@@ -33,9 +32,9 @@ INITIAL_USUARIOS = [
 
 INITIAL_USERS = [
     {
-        "email": "admin@empresa.com",
-        "full_name": "Jane Doe",
-        "password_hash": hash_password("admin123"),
+        "email": "eduardocaballero392@gmail.com",
+        "full_name": "Eduardo Caballero",
+        "password_hash": hash_password("4n6yFksPaxQwzNMI"),
         "role": "administrador",
         "is_active": True,
         "is_verified": True,
@@ -125,7 +124,7 @@ INITIAL_DOCUMENTOS = [
         "tamanio_bytes": 2977955,
         "categoria": "Contratos",
         "descripcion": "Acuerdo legal de provisión mayorista de hardware Dell PowerEdge y switches Cisco con condiciones de pago a 60 días.",
-        "subido_por": "Jane Doe",
+        "subido_por": "Eduardo Caballero",
         "usuario_id": "USR-ADMIN",
         "usuario_rol": "administrador",
         "tags_json": ["contrato", "legal", "alfa corp", "hardware"],
@@ -164,7 +163,7 @@ INITIAL_DOCUMENTOS = [
         "tamanio_bytes": 1003520,
         "categoria": "Propuestas Comerciales",
         "descripcion": "Pliego de cotización para licitación pública corporativa de 80 Workstations Lenovo ThinkPad y 20 Monitores 4K.",
-        "subido_por": "Jane Doe",
+        "subido_por": "Eduardo Caballero",
         "usuario_id": "USR-ADMIN",
         "usuario_rol": "administrador",
         "tags_json": ["licitacion", "propuesta", "ventas", "b2b"],
@@ -206,29 +205,38 @@ def seed_database(db: Session, force_reset: bool = False):
         db.query(User).delete()
         db.commit()
 
-    # 1. Usuarios (Usuario)
+    # 1. Usuarios (Usuario) — upsert por id
     for u in INITIAL_USUARIOS:
-        existing = db.query(Usuario).filter(Usuario.email == u["email"]).first()
+        existing = db.query(Usuario).filter(Usuario.id == u["id"]).first()
         if not existing:
-            db.add(Usuario(
-                **u,
-                habilitado=True,
-                estado="activo",
-                invitado_por="Sistema Principal",
-            ))
+            # Verificar también que el email no esté tomado por otro registro
+            email_taken = db.query(Usuario).filter(Usuario.email == u["email"]).first()
+            if not email_taken:
+                db.add(Usuario(
+                    **u,
+                    habilitado=True,
+                    estado="activo",
+                    invitado_por="Sistema Principal",
+                ))
         else:
-            existing.rol = u["rol"]
+            # Actualizar datos del existente
+            existing.email = u["email"]
             existing.nombre = u["nombre"]
+            existing.rol = u["rol"]
+            existing.password_hash = u["password_hash"]
+            existing.avatar = u.get("avatar", existing.avatar)
             existing.habilitado = True
             existing.estado = "activo"
 
-    # 2. Users (User)
+    # 2. Users (User) — upsert por email
     for usr in INITIAL_USERS:
         existing_u = db.query(User).filter(User.email == usr["email"]).first()
         if not existing_u:
             db.add(User(**usr))
         else:
             existing_u.role = usr["role"]
+            existing_u.full_name = usr["full_name"]
+            existing_u.password_hash = usr["password_hash"]
 
     # 3. Datasets
     for d in INITIAL_DATASETS_ML:

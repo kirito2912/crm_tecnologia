@@ -1,64 +1,98 @@
 import os
-import urllib.parse
+from pathlib import Path
+
 from dotenv import load_dotenv
+
 # pyrefly: ignore [missing-import]
 from sqlalchemy import create_engine, text
+
 # pyrefly: ignore [missing-import]
 from sqlalchemy.engine import URL
+
 # pyrefly: ignore [missing-import]
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-load_dotenv()
+# Cargar .env desde la raíz del backend (un nivel arriba de /app)
+_BASE_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(_BASE_DIR / ".env")
+load_dotenv()  # fallback por si se ejecuta desde otro directorio
 
-DATABASE_URL_ENV = os.getenv("DATABASE_URL")
+# ---------------------------------------------------------------
+# Construir la URL de conexión
+# ---------------------------------------------------------------
+_DATABASE_URL_ENV = os.getenv("DATABASE_URL")
 
-connect_args = {}
+_SUPABASE_HOSTS = ("supabase.co", "supabase.com", "neon.tech", "render.com")
 
-if DATABASE_URL_ENV:
-    db_url = DATABASE_URL_ENV
-    if db_url.startswith("sqlite"):
+connect_args: dict = {}
+
+if _DATABASE_URL_ENV:
+    db_url: str | URL = _DATABASE_URL_ENV
+    if str(db_url).startswith("sqlite"):
         connect_args = {"check_same_thread": False}
-    elif any(host_key in db_url for host_key in ["supabase.co", "neon.tech", "render.com"]):
-        connect_args = {"sslmode": "require", "connect_timeout": 5}
+    elif any(h in str(db_url) for h in _SUPABASE_HOSTS):
+        connect_args = {"sslmode": "require", "connect_timeout": 10}
 else:
-    DB_USER = os.getenv("DB_USER", "postgres")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "crm89SeM#12")
-    DB_HOST = os.getenv("DB_HOST", "db.ctvzryjpycworkkaarkx.supabase.co")
-    DB_PORT = int(os.getenv("DB_PORT", "5432"))
-    DB_NAME = os.getenv("DB_NAME", "postgres")
+    # Variables separadas como alternativa
+    _DB_USER     = os.getenv("DB_USER",     "postgres")
+    _DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    _DB_HOST     = os.getenv("DB_HOST",     "localhost")
+    _DB_PORT     = int(os.getenv("DB_PORT", "5432"))
+    _DB_NAME     = os.getenv("DB_NAME",     "postgres")
 
     db_url = URL.create(
         drivername="postgresql+psycopg2",
-        username=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT,
-        database=DB_NAME,
+        username=_DB_USER,
+        password=_DB_PASSWORD,
+        host=_DB_HOST,
+        port=_DB_PORT,
+        database=_DB_NAME,
     )
-    if any(host_key in DB_HOST for host_key in ["supabase.co", "neon.tech", "render.com"]):
-        connect_args = {"sslmode": "require", "connect_timeout": 5}
+    if any(h in _DB_HOST for h in _SUPABASE_HOSTS):
+        connect_args = {"sslmode": "require", "connect_timeout": 10}
 
 
+# ---------------------------------------------------------------
+# Crear el engine con fallback automático a SQLite
+# ---------------------------------------------------------------
 def create_db_engine():
-    """Intenta inicializar el engine con la URL configurada y recurre a SQLite si falla la conexión."""
+    """
+    Intenta conectar a la base de datos configurada (Supabase/PostgreSQL).
+    Si la conexión falla, cae automáticamente a SQLite local para que el
+    servidor pueda arrancar sin interrupciones durante desarrollo.
+    """
     is_sqlite = str(db_url).startswith("sqlite")
+
+    # Pool args solo aplican a PostgreSQL
+    pool_kwargs: dict = {}
+    if not is_sqlite:
+        pool_kwargs = {
+            "pool_pre_ping": True,    # verifica conexión antes de usarla
+            "pool_recycle": 1800,     # recicla conexiones cada 30 min (evita timeouts de Supabase)
+            "pool_size": 5,
+            "max_overflow": 10,
+        }
+
     try:
         eng = create_engine(
             db_url,
             connect_args=connect_args,
-            pool_pre_ping=True,
-            pool_recycle=3600 if not is_sqlite else None,
+            **pool_kwargs,
         )
-        # Probar conexión rápidamente
+        # Prueba real de conexión
         with eng.connect() as conn:
             conn.execute(text("SELECT 1"))
+
+        host_label = str(db_url).split("@")[-1].split("/")[0] if "@" in str(db_url) else str(db_url)
+        print(f"\n[Base de Datos] ✓ Conectado correctamente a: {host_label}\n")
         return eng
+
     except Exception as exc:
-        print(f"\n[Aviso Base de Datos] No se pudo conectar a la base de datos principal ({exc}).")
-        print("[Aviso Base de Datos] Utilizando base de datos local SQLite (crm.db) para continuar sin interrupciones.\n")
-        fallback_url = "sqlite:///./crm.db"
+        print(f"\n[Base de Datos] ✗ No se pudo conectar a la base de datos principal.")
+        print(f"[Base de Datos]   Motivo: {exc}")
+        print(f"[Base de Datos]   Usando SQLite local (crm.db) como fallback.\n")
         return create_engine(
-            fallback_url,
+            "sqlite:///./crm.db",
             connect_args={"check_same_thread": False},
         )
 
@@ -69,10 +103,9 @@ Base = declarative_base()
 
 
 def get_db():
-    """Generador de sesiones de base de datos para FastAPI."""
+    """Generador de sesiones de base de datos para FastAPI (dependency injection)."""
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
