@@ -24,7 +24,7 @@ VALUES
         NOW(), NOW()
     ),
     (
-        'analista@empresa.com',
+        'Carlosluna.enrique@gmail.com',
         'Carlos Mendoza',
         'pbkdf2:sha256:100000$a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6$ade226df75d4fbb50c90504b60165da20c4a4f8d0eb9ed4973f0f4acaf99c198',
         'analista',
@@ -61,7 +61,7 @@ VALUES
     (
         'USR-ANALISTA',
         'Carlos Mendoza',
-        'analista@empresa.com',
+        'Carlosluna.enrique@gmail.com',
         'pbkdf2:sha256:100000$a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6$ade226df75d4fbb50c90504b60165da20c4a4f8d0eb9ed4973f0f4acaf99c198',
         'analista',
         'DataTech Analytics',

@@ -21,7 +21,7 @@ INITIAL_USUARIOS = [
     {
         "id": "USR-ANALISTA",
         "nombre": "Carlos Mendoza",
-        "email": "analista@empresa.com",
+        "email": "Carlosluna.enrique@gmail.com",
         "password_hash": hash_password("analista123"),
         "rol": "analista",
         "empresa": "DataTech Analytics",
@@ -40,7 +40,7 @@ INITIAL_USERS = [
         "is_verified": True,
     },
     {
-        "email": "analista@empresa.com",
+        "email": "Carlosluna.enrique@gmail.com",
         "full_name": "Carlos Mendoza",
         "password_hash": hash_password("analista123"),
         "role": "analista",
