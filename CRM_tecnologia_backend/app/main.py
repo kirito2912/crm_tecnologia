@@ -59,10 +59,25 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+import os
+
+# Orígenes permitidos: desarrollo local + producción en Vercel
+_FRONTEND_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:4173",
+    "http://127.0.0.1:5173",
+]
+
+# En producción se agrega el dominio de Vercel desde variable de entorno
+_VERCEL_URL = os.getenv("FRONTEND_URL", "")
+if _VERCEL_URL:
+    _FRONTEND_ORIGINS.append(_VERCEL_URL)
+
 # Configuración de CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_FRONTEND_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",  # cualquier deploy de Vercel
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
