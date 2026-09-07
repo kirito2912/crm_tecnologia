@@ -13735,7 +13735,8 @@ textarea {
   justify-content: space-between;
   align-items: flex-end;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: 100%;
 }
 
 .inv-link-left-meta {
@@ -13744,6 +13745,7 @@ textarea {
   gap: 5px;
   min-width: 0;
   flex: 1;
+  overflow: hidden;
 }
 
 .inv-link-meta {
