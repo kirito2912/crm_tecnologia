@@ -64,8 +64,13 @@ import os
 # Orígenes permitidos: desarrollo local + producción en Vercel
 _FRONTEND_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",
     "http://localhost:4173",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "http://127.0.0.1:5175",
 ]
 
 # En producción se agrega el dominio de Vercel desde variable de entorno
@@ -77,7 +82,7 @@ if _VERCEL_URL:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_FRONTEND_ORIGINS,
-    allow_origin_regex=r"https://.*\.vercel\.app",  # cualquier deploy de Vercel
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:\d+|http://127\.0\.0\.1:\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

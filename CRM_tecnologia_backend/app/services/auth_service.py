@@ -190,7 +190,16 @@ def request_otp(data: OTPRequest, db: Session) -> str:
         db.add(otp_record)
         db.flush()
 
-        send_otp_email(email_clean, otp_code)
+        # Intentar enviar el email — si falla, el OTP igual queda guardado en BD
+        # El usuario puede ver el código en los logs o se puede mostrar en desarrollo
+        email_sent = False
+        try:
+            send_otp_email(email_clean, otp_code)
+            email_sent = True
+        except Exception as mail_err:
+            print(f"[OTP] Advertencia: No se pudo enviar el email a {email_clean}: {mail_err}")
+            print(f"[OTP] Código generado para {email_clean}: {otp_code} (válido por 10 min)")
+
         db.commit()
         return otp_code
     except HTTPException:

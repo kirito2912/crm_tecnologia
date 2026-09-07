@@ -248,8 +248,8 @@ def send_otp_email(recipient_email: str, otp_code: str) -> None:
         return
 
     message = EmailMessage()
-    message["Subject"] = f"Tu código de verificación: {otp_code} - Nexaflow CRM"
-    message["From"] = f"Nexaflow CRM <{email_user}>"
+    message["Subject"] = f"Tu código de verificación: {otp_code} - CLI CRM"
+    message["From"] = f"CLI CRM <{email_user}>"
     message["To"] = recipient_email
     message["Reply-To"] = email_user
 
@@ -282,7 +282,7 @@ def send_otp_email(recipient_email: str, otp_code: str) -> None:
     <body>
       <div class="card">
         <div class="header">
-          <div class="brand">NEXAFLOW CRM</div>
+          <div class="brand">CLI CRM</div>
           <div class="title">Código de Verificación en 2 Pasos</div>
         </div>
         <p class="text">Hola,</p>
@@ -303,13 +303,13 @@ def send_otp_email(recipient_email: str, otp_code: str) -> None:
     sent = _send_message(message, email_user, email_password, smtp_host)
     if sent:
         print("\n" + "=" * 60)
-        print(f"📧 [EMAIL ENVIADO CON ÉXITO]")
+        print(f" [EMAIL ENVIADO CON ÉXITO]")
         print(f"Destinatario: {recipient_email}")
         print(f"Código OTP: {otp_code}")
         print("=" * 60 + "\n")
     else:
         print("\n" + "!" * 65)
-        print(f"⚠️ [ERROR SMTP AL ENVIAR CORREO A {recipient_email}]")
-        print(f"🔑 [CÓDIGO OTP PARA PRUEBAS]: {otp_code}")
-        print("💡 Recuerda que Gmail requiere una 'Contraseña de Aplicación' de 16 letras.")
+        print(f" [ERROR SMTP AL ENVIAR CORREO A {recipient_email}]")
+        print(f" [CÓDIGO OTP PARA PRUEBAS]: {otp_code}")
+        print(" Recuerda que Gmail requiere una 'Contraseña de Aplicación' de 16 letras.")
         print("!" * 65 + "\n")
