@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { CsvProvider } from './context/CsvContext';
 import { ReportsProvider } from './context/ReportsContext';
 import { DocumentosProvider } from './context/DocumentosContext';
-import { InvitacionesProvider } from './context/InvitacionesContext';
+import { InvitacionesProvider, useInvitaciones } from './context/InvitacionesContext';
 
 import { AuthPage } from './components/auth/AuthPage';
 import { PendingApprovalScreen } from './components/auth/PendingApprovalScreen';
@@ -22,12 +22,17 @@ import { Cpu } from 'lucide-react';
 
 function DashboardContent() {
   const { user } = useAuth();
+  const { solicitudesPendientes } = useInvitaciones();
   const role = (user?.role || 'analista').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
 
   const [activeTab, setActiveTab] = useState<NavTab>(isAdmin ? 'reports' : 'dataset');
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+  const baseNotifications = 3;
+  const pendingApprovalCount = solicitudesPendientes.length;
+  const totalUnread = isAdmin ? baseNotifications + pendingApprovalCount : baseNotifications - 1;
 
   // Estados para compartir selección entre Datasets y Comparativa (analista)
   const [preselectedA, setPreselectedA] = useState<string | undefined>(undefined);
@@ -60,7 +65,7 @@ function DashboardContent() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onOpenNotifications={() => setIsNotificationsOpen(true)}
-          unreadCount={isAdmin ? 2 : 1}
+          unreadCount={totalUnread}
         />
 
         {/* Tab 1: Bandeja de Reportes de Comparativas (Solo Administrador) */}

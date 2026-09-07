@@ -49,10 +49,36 @@ def request_otp(data: OTPRequest, db: Session) -> str:
         mode = (data.mode or "").lower().strip()
         email_clean = data.email.lower().strip()
 
-        # 1. Modo REGISTER: no permitir registrar dos veces con el mismo correo si ya está registrado
-        if mode == "register":
+        # 1. Modo INVITE: flujo especial para trabajadores invitados via link de invitación
+        #    - No bloquea si el usuario ya existe en tabla Usuario (por ejemplo registro parcial previo)
+        #    - Crea/actualiza User (OTP) con is_active=False (bloqueo preventivo hasta aprobación admin)
+        if mode == "invite":
+            usuario = db.query(Usuario).filter(Usuario.email.ilike(email_clean)).first()
+            user = db.query(User).filter(User.email.ilike(email_clean)).first()
+
+            if not user:
+                user = User(
+                    email=email_clean,
+                    full_name=data.full_name or (usuario.nombre if usuario else None),
+                    password_hash=hash_password(data.password) if data.password else None,
+                    is_active=False,
+                    is_verified=False,
+                )
+                db.add(user)
+                db.flush()
+            else:
+                if data.full_name:
+                    user.full_name = data.full_name
+                if data.password:
+                    user.password_hash = hash_password(data.password)
+                user.is_active = False
+                user.is_verified = False
+                db.flush()
+
+        # 2. Modo REGISTER: no permitir registrar dos veces con el mismo correo si ya está registrado activo
+        elif mode == "register":
             existing_usuario = db.query(Usuario).filter(Usuario.email.ilike(email_clean)).first()
-            if existing_usuario:
+            if existing_usuario and existing_usuario.habilitado:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Este correo electrónico ya se encuentra registrado. Por favor inicia sesión.",
@@ -77,7 +103,7 @@ def request_otp(data: OTPRequest, db: Session) -> str:
                     user.password_hash = hash_password(data.password)
                 db.flush()
 
-        # 2. Modo LOGIN: validar que el usuario exista y que la contraseña sea la correcta
+        # 3. Modo LOGIN: validar que el usuario exista y que la contraseña sea la correcta
         elif mode == "login":
             usuario = db.query(Usuario).filter(Usuario.email.ilike(email_clean)).first()
             user = db.query(User).filter(User.email.ilike(email_clean)).first()
@@ -119,7 +145,7 @@ def request_otp(data: OTPRequest, db: Session) -> str:
                 db.add(user)
                 db.flush()
 
-        # 3. Modo general / Testing / Fallback
+        # 4. Modo general / Testing / Fallback
         else:
             user = db.query(User).filter(User.email.ilike(email_clean)).first()
             usuario = db.query(Usuario).filter(Usuario.email.ilike(email_clean)).first()

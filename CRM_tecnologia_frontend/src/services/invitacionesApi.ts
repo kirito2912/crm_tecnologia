@@ -5,11 +5,56 @@ import type {
   RegisterInvitedPayload,
   ToggleUserStatusPayload,
   InvitacionDashboardData,
+  NotificacionSolicitud,
+  EstadoUsuario,
 } from '../types/invitacion';
 
 const API_BASE_URL = 'http://localhost:8000/api/v1/invitaciones';
 const LOCAL_STORAGE_INVITACIONES_KEY = 'hardcrm_invitaciones_list_v2';
 const LOCAL_STORAGE_USERS_KEY = 'hardcrm_users_directory_v2';
+
+interface UsuarioLocal {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: string;
+  empresa?: string;
+  avatar?: string;
+  biometric_verified?: boolean;
+  habilitado?: boolean;
+  estado?: EstadoUsuario | string;
+  invitado_por?: string;
+  created_at?: string;
+}
+
+const INITIAL_LOCAL_USERS: UsuarioLocal[] = [
+  {
+    id: 'USR-ADMIN',
+    nombre: 'Jane Doe',
+    email: 'admin@empresa.com',
+    rol: 'administrador',
+    empresa: 'DataTech Analytics',
+    avatar: 'JD',
+    biometric_verified: true,
+    habilitado: true,
+    estado: 'activo',
+    invitado_por: 'Sistema Principal',
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'USR-ANALISTA',
+    nombre: 'Carlos Mendoza',
+    email: 'analista@empresa.com',
+    rol: 'analista',
+    empresa: 'DataTech Analytics',
+    avatar: 'CM',
+    biometric_verified: true,
+    habilitado: true,
+    estado: 'activo',
+    invitado_por: 'Sistema Principal',
+    created_at: new Date().toISOString(),
+  },
+];
 
 const INITIAL_LOCAL_INVITACIONES: Invitacion[] = [
   {
@@ -68,51 +113,28 @@ export async function getInvitacionesDashboard(): Promise<InvitacionDashboardDat
   // Fallback local
   const invs = getStoredInvitaciones();
   const rawUsers = localStorage.getItem(LOCAL_STORAGE_USERS_KEY);
-  const users = rawUsers
+  const users: UsuarioLocal[] = rawUsers
     ? JSON.parse(rawUsers)
-    : [
-        {
-          id: 'USR-ADMIN',
-          nombre: 'Jane Doe',
-          email: 'admin@empresa.com',
-          rol: 'administrador',
-          empresa: 'DataTech Analytics',
-          avatar: 'JD',
-          biometric_verified: true,
-          habilitado: true,
-          estado: 'activo',
-          invitado_por: 'Sistema Principal',
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: 'USR-ANALISTA',
-          nombre: 'Carlos Mendoza',
-          email: 'analista@empresa.com',
-          rol: 'analista',
-          empresa: 'DataTech Analytics',
-          avatar: 'CM',
-          biometric_verified: true,
-          habilitado: true,
-          estado: 'activo',
-          invitado_por: 'Sistema Principal',
-          created_at: new Date().toISOString(),
-        },
-      ];
+    : INITIAL_LOCAL_USERS;
 
-  const habilitados = users.filter((u: any) => u.habilitado !== false && u.estado !== 'pendiente_aprobacion').length;
-  const pendientes = users.filter((u: any) => u.habilitado === false || u.estado === 'pendiente_aprobacion').length;
+  const habilitados = users.filter(
+    (u) => u.habilitado !== false && u.estado !== 'pendiente_aprobacion'
+  ).length;
+  const pendientes = users.filter(
+    (u) => u.habilitado === false || u.estado === 'pendiente_aprobacion'
+  ).length;
   const activas = invs.filter((i) => i.estado === 'pendiente').length;
 
-  const solicitudes = users
-    .filter((u: any) => u.habilitado === false || u.estado === 'pendiente_aprobacion')
-    .map((u: any) => ({
+  const solicitudes: NotificacionSolicitud[] = users
+    .filter((u) => u.habilitado === false || u.estado === 'pendiente_aprobacion')
+    .map((u) => ({
       id: `SOL-${u.id}`,
       usuario_id: u.id,
       nombre: u.nombre,
       email: u.email,
       rol: u.rol,
       fecha: u.created_at || new Date().toISOString(),
-      mensaje: `El trabajador ${u.nombre} (${u.email}) completó su verificación OTP con rol '${u.rol}'. Requiere autorización.`,
+      mensaje: `Habilitar el acceso al sistema de ${u.nombre} (${u.email}).`,
     }));
 
   return {
@@ -153,8 +175,9 @@ export async function crearInvitacion(
     }
     const errData = await res.json();
     throw new Error(errData.detail || 'Error al generar la invitación');
-  } catch (err: any) {
-    if (err.message && !err.message.includes('fetch')) {
+  } catch (err: unknown) {
+    const mensaje = err instanceof Error ? err.message : String(err);
+    if (mensaje && !mensaje.includes('fetch')) {
       throw err;
     }
     // Fallback local
@@ -212,7 +235,7 @@ export async function validarTokenInvitacion(token: string): Promise<ValidateTok
 export async function completarRegistroInvitado(data: RegisterInvitedPayload): Promise<{
   success: boolean;
   message: string;
-  user: any;
+  user: UsuarioLocal;
   requiere_aprobacion: boolean;
 }> {
   try {
@@ -226,8 +249,9 @@ export async function completarRegistroInvitado(data: RegisterInvitedPayload): P
     }
     const errData = await res.json();
     throw new Error(errData.detail || 'Error al completar registro');
-  } catch (err: any) {
-    if (err.message && !err.message.includes('fetch')) {
+  } catch (err: unknown) {
+    const mensaje = err instanceof Error ? err.message : String(err);
+    if (mensaje && !mensaje.includes('fetch')) {
       throw err;
     }
     // Fallback local
@@ -242,22 +266,22 @@ export async function completarRegistroInvitado(data: RegisterInvitedPayload): P
       saveStoredInvitaciones(invs);
     }
 
-    const newUser = {
+    const newUser: UsuarioLocal = {
       id: `USR-${Math.floor(100 + Math.random() * 900)}`,
       nombre: data.full_name,
       email,
-      rol,
+      rol: typeof rol === 'string' ? rol : 'programador',
       empresa: 'DataTech Analytics',
       avatar: data.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase(),
       biometric_verified: true,
-      habilitado: false, // Deshabilitado hasta aprobación
+      habilitado: false,
       estado: 'pendiente_aprobacion',
       invitado_por: inv ? inv.creado_por : 'Jane Doe (Administrador)',
       created_at: new Date().toISOString(),
     };
 
     const rawUsers = localStorage.getItem(LOCAL_STORAGE_USERS_KEY);
-    const users = rawUsers ? JSON.parse(rawUsers) : [];
+    const users: UsuarioLocal[] = rawUsers ? JSON.parse(rawUsers) : [];
     users.unshift(newUser);
     localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users));
 
@@ -274,7 +298,7 @@ export async function toggleUserStatus(
   userId: string,
   habilitado: boolean,
   motivo?: string
-): Promise<any> {
+): Promise<UsuarioLocal & { motivo?: string }> {
   try {
     const payload: ToggleUserStatusPayload = { habilitado, motivo };
     const res = await fetch(`${API_BASE_URL}/usuarios/${userId}/toggle-status`, {
@@ -287,21 +311,30 @@ export async function toggleUserStatus(
     }
     const errData = await res.json();
     throw new Error(errData.detail || 'Error al cambiar estado del usuario');
-  } catch (err: any) {
-    if (err.message && !err.message.includes('fetch')) {
+  } catch (err: unknown) {
+    const mensaje = err instanceof Error ? err.message : String(err);
+    if (mensaje && !mensaje.includes('fetch')) {
       throw err;
     }
     // Fallback local
     const rawUsers = localStorage.getItem(LOCAL_STORAGE_USERS_KEY);
-    const users = rawUsers ? JSON.parse(rawUsers) : [];
-    const idx = users.findIndex((u: any) => u.id === userId);
+    const users: UsuarioLocal[] = rawUsers ? JSON.parse(rawUsers) : [];
+    const idx = users.findIndex((u) => u.id === userId);
     if (idx >= 0) {
       users[idx].habilitado = habilitado;
       users[idx].estado = habilitado ? 'activo' : 'deshabilitado';
       localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users));
-      return users[idx];
+      return { ...users[idx], motivo };
     }
-    return { id: userId, habilitado, estado: habilitado ? 'activo' : 'deshabilitado' };
+    return {
+      id: userId,
+      nombre: 'Usuario Actualizado',
+      email: `usuario+${userId}@empresa.com`,
+      rol: 'analista',
+      habilitado,
+      estado: habilitado ? 'activo' : 'deshabilitado',
+      motivo,
+    };
   }
 }
 

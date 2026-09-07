@@ -93,15 +93,15 @@ export const PendingApprovalScreen: React.FC<PendingApprovalScreenProps> = () =>
         {/* Badge */}
         <div className="pending-status-pill">
           <Clock size={14} className="animate-spin" />
-          <span>ESPERANDO AUTORIZACIÓN DEL ADMINISTRADOR</span>
+          <span>REGISTRO HECHO · ESPERANDO HABILITACIÓN</span>
         </div>
 
         {/* Title */}
-        <h1 className="pending-title">Cuenta Registrada con Éxito</h1>
+        <h1 className="pending-title">Registro hecho</h1>
 
         {/* Description */}
         <p className="pending-lead">
-          Has completado la validación de identidad <strong>OTP de 6 dígitos</strong>. Por motivos de seguridad y control de acceso corporativo, tu cuenta debe ser autorizada y habilitada por el <strong>Administrador</strong> antes de poder visualizar las herramientas y datos de la empresa.
+          Has completado la validación de identidad con <strong>OTP de 6 dígitos</strong>. Tu cuenta quedó registrada correctamente y ahora está en espera de que el <strong>Administrador</strong> habilite tu acceso al sistema. Hasta que sea habilitada, no podrás ver el contenido de la plataforma.
         </p>
 
         {/* Worker Details Card */}

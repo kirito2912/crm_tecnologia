@@ -60,7 +60,7 @@ export interface AuthContextType {
     email: string,
     fullName?: string,
     password?: string,
-    mode?: 'login' | 'register',
+    mode?: 'login' | 'register' | 'invite',
     company?: string
   ) => Promise<{ success: boolean; otpCode?: string; error?: string }>;
   verifyOtpAndLogin: (

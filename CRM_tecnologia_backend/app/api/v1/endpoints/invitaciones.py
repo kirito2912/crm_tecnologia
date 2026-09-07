@@ -247,7 +247,7 @@ def obtener_dashboard_invitaciones(db: Session = Depends(get_db)):
             email=u.email,
             rol=u.rol,
             fecha=u.created_at or datetime.utcnow(),
-            mensaje=f"El trabajador {u.nombre} ({u.email}) completó su verificación OTP con rol '{u.rol}'. Requiere autorización.",
+            mensaje=f"Habilitar el acceso al sistema de {u.nombre} ({u.email}).",
         )
         for u in usuarios
         if not u.habilitado or u.estado == "pendiente_aprobacion"

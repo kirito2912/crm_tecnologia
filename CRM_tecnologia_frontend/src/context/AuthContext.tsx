@@ -12,16 +12,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Initialize auth from localStorage on mount only
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setUser(JSON.parse(stored));
+    const init = () => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          setUser(JSON.parse(stored));
+        }
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
-    } finally {
-      setIsLoading(false);
-    }
+    };
+    // Evita setState sincrónico dentro del cuerpo del effect
+    const id = window.setTimeout(init, 0);
+    return () => window.clearTimeout(id);
   }, []);
 
   const login = async (formData: LoginFormData): Promise<{ success: boolean; error?: string }> => {
@@ -30,6 +35,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     const emailClean = formData.email.toLowerCase().trim();
+
+    try {
+      const { loginBackend } = await import('../services/authApi');
+      const res = await loginBackend(emailClean, formData.password || '', formData.role);
+
+      if (!res.success) {
+        return { success: false, error: res.error || 'No se pudo iniciar sesión. Verifica tus credenciales.' };
+      }
+
+      if (res.user) {
+        const u = res.user;
+        const authUser: User = {
+          id: u.id,
+          name: u.nombre,
+          email: u.email,
+          role: u.rol,
+          company: u.empresa || 'DataTech Analytics',
+          avatar: u.avatar || u.nombre.slice(0, 2).toUpperCase(),
+          biometricVerified: u.biometric_verified !== false,
+          registeredAt: new Date().toISOString(),
+          habilitado: u.habilitado !== false && u.estado !== 'pendiente_aprobacion',
+          estado: (u.estado as User['estado']) || (u.habilitado !== false ? 'activo' : 'deshabilitado'),
+          invitadoPor: u.invitado_por,
+        };
+        setUser(authUser);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
+        if (res.token) {
+          localStorage.setItem('hardcrm_access_token', res.token);
+        }
+        return { success: true };
+      }
+    } catch (e) {
+      console.warn('[AuthContext] Error usando backend login, usando fallback local:', e);
+    }
+
+    // Fallback local (si backend falla o no está disponible)
     const nameFromEmail = emailClean.split('@')[0];
     const formattedName =
       nameFromEmail
@@ -37,26 +78,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' ') || 'Usuario';
 
-    // Determinar rol
     let assignedRole = formData.role || 'analista';
     if (emailClean.includes('admin') || emailClean.includes('jane')) {
       assignedRole = 'administrador';
     }
 
-    // Comprobar estado de habilitación si existe en usuarios locales o backend
     let isHabilitado = true;
     let estadoAcceso: 'activo' | 'deshabilitado' | 'pendiente_aprobacion' = 'activo';
 
-    const rawUsers = localStorage.getItem('hardcrm_users_directory_v2');
-    if (rawUsers) {
-      try {
-        const users = JSON.parse(rawUsers);
-        const match = users.find((u: any) => u.email.toLowerCase() === emailClean);
-        if (match) {
-          isHabilitado = match.habilitado !== false;
-          estadoAcceso = match.estado || (isHabilitado ? 'activo' : 'deshabilitado');
-        }
-      } catch {}
+    try {
+      const { getInvitacionesDashboard } = await import('../services/invitacionesApi');
+      const dashboard = await getInvitacionesDashboard();
+      interface UsuarioBusqueda {
+        email?: string;
+        estado?: 'activo' | 'deshabilitado' | 'pendiente_aprobacion' | string;
+        habilitado?: boolean;
+        nombre?: string;
+        rol?: string;
+      }
+      const found = (dashboard.usuarios || []).find(
+        (u: UsuarioBusqueda) => (u.email || '').toLowerCase() === emailClean
+      );
+      if (found) {
+        const estadoRaw = found.estado;
+        const estado: 'activo' | 'deshabilitado' | 'pendiente_aprobacion' =
+          estadoRaw === 'activo' ||
+          estadoRaw === 'deshabilitado' ||
+          estadoRaw === 'pendiente_aprobacion'
+            ? estadoRaw
+            : found.habilitado === true
+              ? 'activo'
+              : 'deshabilitado';
+        isHabilitado = found.habilitado === true && estado === 'activo';
+        estadoAcceso = estado;
+        formattedName = found.nombre || formattedName;
+        assignedRole = found.rol || assignedRole;
+      }
+    } catch {
+      // Silenciar errores de red; continuar con el fallback local
     }
 
     const authUser: User = {
@@ -83,14 +142,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     const emailClean = email.toLowerCase().trim();
-    let formattedName = 'Jane Doe';
-    let role = 'administrador';
-    let company = 'DataTech Analytics';
+    let formattedName: string;
+    let assignedRole: 'analista' | 'administrador' | string;
+    let companyName: string;
 
     if (emailClean.includes('analista') || emailClean.includes('carlos')) {
       formattedName = 'Carlos Mendoza';
-      role = 'analista';
-      company = 'DataTech Analytics';
+      assignedRole = 'analista';
+      companyName = 'DataTech Analytics';
+    } else if (emailClean.includes('admin') || emailClean.includes('jane')) {
+      formattedName = 'Jane Doe';
+      assignedRole = 'administrador';
+      companyName = 'DataTech Analytics';
     } else {
       const nameFromEmail = emailClean.split('@')[0];
       formattedName =
@@ -98,16 +161,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           .split(/[._-]/)
           .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
           .join(' ') || 'Usuario';
-      company = emailClean.split('@')[1]?.split('.')[0].toUpperCase() || 'DataTech Analytics';
-      role = emailClean.includes('admin') ? 'administrador' : 'analista';
+      assignedRole = 'analista';
+      companyName = emailClean.split('@')[1]?.split('.')[0].toUpperCase() || 'DataTech Analytics';
     }
 
     const authUser: User = {
       id: `USR-${Math.floor(1000 + Math.random() * 9000)}`,
       name: formattedName,
       email: emailClean,
-      role,
-      company,
+      role: assignedRole,
+      company: companyName,
       avatar: formattedName.split(' ').map((n) => n[0]).join('').slice(0, 2),
       biometricVerified: true,
       registeredAt: new Date().toISOString(),
@@ -180,7 +243,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     email: string,
     fullName?: string,
     password?: string,
-    mode?: 'login' | 'register',
+    mode?: 'login' | 'register' | 'invite',
     company?: string
   ): Promise<{ success: boolean; otpCode?: string; error?: string }> => {
     try {

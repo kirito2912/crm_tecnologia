@@ -216,7 +216,7 @@ export const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({
         style={{ marginTop: '20px' }}
         onClick={() => handleVerify()}
       >
-        <span>{isVerifying ? 'Verificando código...' : 'Verificar e Ingresar'}</span>
+        <span>{isVerifying ? 'Verificando código...' : 'Verificar código OTP'}</span>
         <ArrowRight size={17} />
       </button>
 
