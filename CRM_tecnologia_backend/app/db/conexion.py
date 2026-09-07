@@ -84,11 +84,11 @@ def create_db_engine():
             conn.execute(text("SELECT 1"))
 
         host_label = str(db_url).split("@")[-1].split("/")[0] if "@" in str(db_url) else str(db_url)
-        print(f"\n[Base de Datos] ✓ Conectado correctamente a: {host_label}\n")
+        print(f"\n[Base de Datos] OK Conectado correctamente a: {host_label}\n")
         return eng
 
     except Exception as exc:
-        print(f"\n[Base de Datos] ✗ No se pudo conectar a la base de datos principal.")
+        print(f"\n[Base de Datos] ERROR No se pudo conectar a la base de datos principal.")
         print(f"[Base de Datos]   Motivo: {exc}")
         print(f"[Base de Datos]   Usando SQLite local (crm.db) como fallback.\n")
         return create_engine(

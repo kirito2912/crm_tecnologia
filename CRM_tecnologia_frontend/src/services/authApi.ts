@@ -90,7 +90,7 @@ export async function requestOtpApi(
   email: string,
   fullName?: string,
   password?: string,
-  mode?: 'login' | 'register',
+  mode?: 'login' | 'register' | 'invite',
   company?: string
 ): Promise<RequestOtpResponse> {
   const cleanEmail = email.trim().toLowerCase();
@@ -265,6 +265,168 @@ export async function verifyOtpApi(email: string, otpCode: string): Promise<Veri
   return {
     success: false,
     error: 'El código OTP es inválido o no coincide.',
+  };
+}
+
+export interface LoginBackendResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+  requiere_aprobacion?: boolean;
+  user?: {
+    id: string;
+    nombre: string;
+    email: string;
+    rol: string;
+    empresa?: string;
+    avatar?: string;
+    biometric_verified?: boolean;
+    habilitado?: boolean;
+    estado?: string;
+    invitado_por?: string;
+  };
+  error?: string;
+}
+
+export async function loginBackend(
+  email: string,
+  password: string,
+  role?: string
+): Promise<LoginBackendResponse> {
+  const cleanEmail = email.trim().toLowerCase();
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const response = await fetch(`${BACKEND_BASE_URL}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        email: cleanEmail,
+        password,
+        role: role || null,
+      }),
+    });
+
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: data.success === true,
+        message: data.message || 'Inicio de sesión exitoso.',
+        token: data.token,
+        requiere_aprobacion: data.requiere_aprobacion === true,
+        user: data.user,
+      };
+    } else {
+      let errorMsg = 'Error al iniciar sesión.';
+      try {
+        const errorData = await response.json();
+        if (errorData?.detail) {
+          errorMsg = errorData.detail;
+        }
+      } catch {
+        // Fallback
+      }
+      return {
+        success: false,
+        message: '',
+        error: errorMsg,
+      };
+    }
+  } catch (err) {
+    console.warn('[authApi] Backend login offline, usando validación local:', err);
+  }
+
+  // Fallback local
+  const accounts = getLocalRegisteredAccounts();
+  const existing = accounts.find((a) => a.email.toLowerCase() === cleanEmail);
+
+  if (!existing && !cleanEmail.includes('admin') && !cleanEmail.includes('analista')) {
+    return {
+      success: false,
+      message: '',
+      error: 'El correo electrónico no se encuentra registrado.',
+    };
+  }
+
+  if (password) {
+    if (existing && existing.password && existing.password !== password) {
+      return {
+        success: false,
+        message: '',
+        error: 'Contraseña incorrecta.',
+      };
+    }
+  }
+
+  // Revisar directorio local para ver estado de habilitación
+  let habilitado = true;
+  let estado: 'activo' | 'deshabilitado' | 'pendiente_aprobacion' = 'activo';
+  let nombre = existing?.fullName || cleanEmail.split('@')[0];
+  let rol: string = cleanEmail.includes('admin') ? 'administrador' : 'analista';
+  let empresa = 'DataTech Analytics';
+  let avatar = nombre.slice(0, 2).toUpperCase();
+  let invitadoPor: string | undefined;
+
+  try {
+    const rawUsers = localStorage.getItem('hardcrm_users_directory_v2');
+    if (rawUsers) {
+      interface LocalUserEntry {
+        email?: string;
+        habilitado?: boolean;
+        estado?: 'activo' | 'deshabilitado' | 'pendiente_aprobacion' | string;
+        nombre?: string;
+        rol?: string;
+        empresa?: string;
+        avatar?: string;
+        invitado_por?: string;
+      }
+      const users: LocalUserEntry[] = JSON.parse(rawUsers);
+      const match = users.find((u) => (u.email || '').toLowerCase() === cleanEmail);
+      if (match) {
+        habilitado = match.habilitado !== false;
+        const rawEstado = match.estado;
+        estado =
+          rawEstado === 'activo' ||
+          rawEstado === 'deshabilitado' ||
+          rawEstado === 'pendiente_aprobacion'
+            ? rawEstado
+            : habilitado
+            ? 'activo'
+            : 'deshabilitado';
+        nombre = match.nombre || nombre;
+        rol = match.rol || rol;
+        empresa = match.empresa || empresa;
+        avatar = match.avatar || avatar;
+        invitadoPor = match.invitado_por;
+      }
+    }
+  } catch {
+    // Directorio local corrupto o ausente: continuar con valores por defecto
+  }
+
+  return {
+    success: true,
+    message: `Bienvenido, ${nombre}`,
+    token: `hardcrm_local_${Date.now()}`,
+    requiere_aprobacion: !habilitado || estado === 'pendiente_aprobacion',
+    user: {
+      id: existing?.role?.includes('admin') || cleanEmail.includes('admin') ? 'USR-ADMIN' : `USR-${Math.floor(100 + Math.random() * 900)}`,
+      nombre,
+      email: cleanEmail,
+      rol,
+      empresa,
+      avatar,
+      biometric_verified: true,
+      habilitado,
+      estado,
+      invitado_por: invitadoPor,
+    },
   };
 }
 
