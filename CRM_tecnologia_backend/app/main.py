@@ -78,6 +78,12 @@ _VERCEL_URL = os.getenv("FRONTEND_URL", "")
 if _VERCEL_URL:
     _FRONTEND_ORIGINS.append(_VERCEL_URL)
 
+# Aceptar también variantes comunes del dominio de Vercel
+_FRONTEND_ORIGINS.extend([
+    "https://crm-tecnologia.vercel.app",
+    "https://crm-tecnologia-frontend.vercel.app",
+])
+
 # Configuración de CORS
 app.add_middleware(
     CORSMiddleware,
