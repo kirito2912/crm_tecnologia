@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Fallback local (si backend falla o no está disponible)
     const nameFromEmail = emailClean.split('@')[0];
-    const formattedName =
+    let formattedName =
       nameFromEmail
         .split(/[._-]/)
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))

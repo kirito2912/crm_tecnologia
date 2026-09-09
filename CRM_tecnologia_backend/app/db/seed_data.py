@@ -10,38 +10,38 @@ from app.core.security import hash_password
 INITIAL_USUARIOS = [
     {
         "id": "USR-ADMIN",
-        "nombre": "Eduardo Caballero",
-        "email": "eduardocaballero392@gmail.com",
+        "nombre": "Carlos Luna",
+        "email": "carlosluna.enrique@gmail.com",
         "password_hash": hash_password("4n6yFksPaxQwzNMI"),
         "rol": "administrador",
         "empresa": "DataTech Analytics",
-        "avatar": "EC",
+        "avatar": "CL",
         "biometric_verified": True,
     },
     {
         "id": "USR-ANALISTA",
-        "nombre": "Carlos Mendoza",
-        "email": "Carlosluna.enrique@gmail.com",
+        "nombre": "Eduardo Caballero",
+        "email": "eduardocaballero392@gmail.com",
         "password_hash": hash_password("analista123"),
         "rol": "analista",
         "empresa": "DataTech Analytics",
-        "avatar": "CM",
+        "avatar": "EC",
         "biometric_verified": True,
     },
 ]
 
 INITIAL_USERS = [
     {
-        "email": "eduardocaballero392@gmail.com",
-        "full_name": "Eduardo Caballero",
+        "email": "carlosluna.enrique@gmail.com",
+        "full_name": "Carlos Luna",
         "password_hash": hash_password("4n6yFksPaxQwzNMI"),
         "role": "administrador",
         "is_active": True,
         "is_verified": True,
     },
     {
-        "email": "Carlosluna.enrique@gmail.com",
-        "full_name": "Carlos Mendoza",
+        "email": "eduardocaballero392@gmail.com",
+        "full_name": "Eduardo Caballero",
         "password_hash": hash_password("analista123"),
         "role": "analista",
         "is_active": True,

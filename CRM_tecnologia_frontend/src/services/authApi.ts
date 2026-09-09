@@ -2,7 +2,7 @@
  * Servicio de comunicación con el Backend FastAPI para Autenticación, Registro y Códigos OTP
  */
 
-const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:8000';
 const LOCAL_USERS_KEY = 'hardcrm_registered_users_v2';
 
 export interface RegisteredAccount {
@@ -165,11 +165,16 @@ export async function requestOtpApi(
   }
 
   if (mode === 'login') {
-    if (!existing && !cleanEmail.includes('admin') && !cleanEmail.includes('analista')) {
+    // Si el backend no responde, permitir el flujo para cualquier email
+    // El OTP se genera localmente y se muestra en pantalla
+    if (!existing) {
+      // Email no está en cuentas locales — igual permitir continuar
+      // El backend es la fuente de verdad; el fallback solo es para cuando está caído
+      sessionStorage.setItem(`dev_otp_${cleanEmail}`, localCode);
       return {
-        success: false,
-        message: '',
-        error: 'El correo electrónico no se encuentra registrado. Por favor crea una cuenta primero.',
+        success: true,
+        message: 'Código de seguridad generado (modo offline). Usa el código que aparece en pantalla.',
+        otpCode: localCode,
       };
     }
     if (password && existing && existing.password && existing.password !== password) {

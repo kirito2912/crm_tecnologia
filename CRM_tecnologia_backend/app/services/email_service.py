@@ -1,58 +1,270 @@
-import os
-from email.message import EmailMessage
-from pathlib import Path
-import smtplib
-import ssl
-from dotenv import load_dotenv
+"""
+Servicio de envío de emails — DataTech Analytics
+=================================================
+Estrategia de envío:
+  1. Si RESEND_API_KEY está configurado → usa Resend (HTTP API, funciona en Render)
+  2. Si no → fallback a SMTP Gmail (solo funciona en desarrollo local)
+  3. Si ninguno está configurado → imprime el código en consola (modo dev sin credenciales)
+"""
 
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 from app.core.config import settings
 
+# Cargar .env explícitamente
+_backend_env = Path(__file__).resolve().parent.parent.parent / ".env"
+load_dotenv(_backend_env, override=True)
+load_dotenv(override=True)
 
-def _load_smtp_credentials() -> tuple[str, str, str, str]:
-    """Carga y limpia las credenciales SMTP desde .env. Retorna (email_user, email_password, smtp_host, email_from)."""
-    backend_env = Path(__file__).resolve().parent.parent.parent / ".env"
-    load_dotenv(backend_env, override=True)
-    load_dotenv(override=True)
 
-    raw_user = os.getenv("EMAIL_USER", "").strip() or settings.email_user
-    raw_pwd = os.getenv("EMAIL_PASSWORD", "").strip() or settings.email_password
+# ──────────────────────────────────────────────
+# MÉTODO 1: Resend (HTTP API — funciona en Render)
+# ──────────────────────────────────────────────
 
-    email_user = raw_user.replace('"', '').replace("'", "").strip()
-    email_password = raw_pwd.replace(" ", "").replace('"', '').replace("'", "").strip()
+def _send_via_resend(to: str, subject: str, html: str, text: str) -> bool:
+    """Envía el email usando la API HTTP de Resend. No usa SMTP."""
+    api_key = os.getenv("RESEND_API_KEY", "").strip() or settings.resend_api_key
+    if not api_key:
+        return False
+
+    try:
+        import resend
+        resend.api_key = api_key
+
+        from_name = settings.email_from_name or "DataTech Analytics"
+        # Resend requiere un dominio verificado para el from.
+        # Con el plan gratuito puedes usar onboarding@resend.dev o tu dominio.
+        from_address = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev").strip()
+
+        params = {
+            "from": f"{from_name} <{from_address}>",
+            "to": [to],
+            "subject": subject,
+            "html": html,
+            "text": text,
+        }
+        response = resend.Emails.send(params)
+        print(f"[Resend] ✓ Email enviado a {to} — ID: {response.get('id', 'ok')}")
+        return True
+
+    except Exception as e:
+        print(f"[Resend] ✗ Error al enviar a {to}: {e}")
+        return False
+
+
+# ──────────────────────────────────────────────
+# MÉTODO 2: SMTP Gmail (solo para desarrollo local)
+# ──────────────────────────────────────────────
+
+def _send_via_smtp(to: str, subject: str, html: str, text: str) -> bool:
+    """Fallback SMTP — solo funciona en local (Render bloquea estos puertos)."""
+    import smtplib
+    import ssl
+    from email.message import EmailMessage
+
+    email_user = os.getenv("EMAIL_USER", "").strip()
+    email_password = os.getenv("EMAIL_PASSWORD", "").replace(" ", "").strip()
     smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip()
-    email_from = os.getenv("EMAIL_FROM", "").strip() or email_user
 
-    return email_user, email_password, smtp_host, email_from
+    if not email_user or not email_password:
+        return False
 
+    message = EmailMessage()
+    message["Subject"] = subject
+    message["From"] = f"DataTech Analytics <{email_user}>"
+    message["To"] = to
+    message.set_content(text)
+    message.add_alternative(html, subtype="html")
 
-def _send_message(message: EmailMessage, email_user: str, email_password: str, smtp_host: str) -> bool:
-    """Intenta enviar el mensaje por STARTTLS:587 y luego por SSL:465. Retorna True si tuvo éxito."""
-    ssl_context = ssl.create_default_context()
+    ssl_ctx = ssl.create_default_context()
 
-    # Intento 1: Puerto 587 STARTTLS
+    # Puerto 587 STARTTLS
     try:
         with smtplib.SMTP(smtp_host, 587, timeout=15) as server:
             server.ehlo()
-            server.starttls(context=ssl_context)
+            server.starttls(context=ssl_ctx)
             server.ehlo()
             server.login(email_user, email_password)
             server.send_message(message)
+            print(f"[SMTP 587] ✓ Email enviado a {to}")
             return True
-    except Exception as tls_err:
-        print(f"⚠️ [STARTTLS 587 falló]: {tls_err}. Intentando SSL 465...")
+    except Exception as e:
+        print(f"[SMTP 587] ✗ {e} — intentando puerto 465...")
 
-    # Intento 2: Puerto 465 SSL Directo
+    # Puerto 465 SSL
     try:
-        with smtplib.SMTP_SSL(smtp_host, 465, timeout=15, context=ssl_context) as server:
+        with smtplib.SMTP_SSL(smtp_host, 465, timeout=15, context=ssl_ctx) as server:
             server.login(email_user, email_password)
             server.send_message(message)
+            print(f"[SMTP 465] ✓ Email enviado a {to}")
             return True
-    except smtplib.SMTPAuthenticationError as auth_err:
-        print(f"❌ [ERROR DE AUTENTICACIÓN GMAIL SMTP]: {auth_err}")
-    except Exception as exc:
-        print(f"⚠️ [ERROR SMTP]: {exc}")
+    except Exception as e:
+        print(f"[SMTP 465] ✗ {e}")
 
     return False
+
+
+# ──────────────────────────────────────────────
+# Función principal de envío
+# ──────────────────────────────────────────────
+
+def _send_email(to: str, subject: str, html: str, text: str) -> bool:
+    """Intenta Resend primero, luego SMTP, luego imprime en consola."""
+
+    # 1. Resend
+    if _send_via_resend(to, subject, html, text):
+        return True
+
+    # 2. SMTP (local)
+    if _send_via_smtp(to, subject, html, text):
+        return True
+
+    # 3. Sin credenciales — solo consola
+    print("\n" + "=" * 60)
+    print(f"[EMAIL NO ENVIADO] Destino: {to}")
+    print(f"Asunto: {subject}")
+    print("Sin credenciales configuradas (RESEND_API_KEY o EMAIL_USER/EMAIL_PASSWORD).")
+    print("=" * 60 + "\n")
+    return False
+
+
+# ──────────────────────────────────────────────
+# Templates HTML
+# ──────────────────────────────────────────────
+
+def _otp_html(otp_code: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {{ font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background: #f4f6fa; margin: 0; padding: 24px; }}
+    .card {{ max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 36px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); border: 1px solid #e2e8f0; }}
+    .brand {{ font-size: 20px; font-weight: 800; color: #4f46e5; letter-spacing: -0.4px; margin-bottom: 24px; }}
+    .badge {{ display: inline-block; background: #eef2ff; color: #4f46e5; border-radius: 99px; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 16px; }}
+    h1 {{ font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 10px; }}
+    p {{ font-size: 14px; color: #64748b; line-height: 1.6; margin: 0 0 16px; }}
+    .code-box {{ background: #f8fafc; border: 2px dashed #6366f1; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0; }}
+    .code {{ font-family: 'Courier New', monospace; font-size: 36px; font-weight: 900; letter-spacing: 10px; color: #4338ca; }}
+    .expire {{ font-size: 12px; color: #f59e0b; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; margin-top: 4px; }}
+    .footer {{ font-size: 11px; color: #94a3b8; text-align: center; margin-top: 24px; border-top: 1px solid #f1f5f9; padding-top: 16px; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">DataTech Analytics</div>
+    <div class="badge">Verificación 2FA</div>
+    <h1>Tu código de acceso</h1>
+    <p>Has solicitado ingresar al sistema. Usa el siguiente código para verificar tu identidad:</p>
+    <div class="code-box">
+      <div class="code">{otp_code}</div>
+    </div>
+    <div class="expire">
+      ⚠️ Este código es de <strong>uso único</strong> y expira en <strong>{settings.otp_expiration_minutes} minutos</strong>.
+      Nunca compartas este código con nadie.
+    </div>
+    <div class="footer">&copy; 2026 DataTech Analytics &mdash; Autenticación Segura</div>
+  </div>
+</body>
+</html>"""
+
+
+def _invite_html(
+    nombre: str,
+    invite_link: str,
+    rol_display: str,
+    rol_color: str,
+    rol_bg: str,
+    creado_por: str,
+    expires_days: int,
+) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {{ font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background: #f4f6fa; margin: 0; padding: 24px; }}
+    .card {{ max-width: 520px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 36px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); border: 1px solid #e2e8f0; }}
+    .brand {{ font-size: 20px; font-weight: 800; color: #4f46e5; margin-bottom: 24px; }}
+    .badge {{ display: inline-block; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; border-radius: 99px; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 16px; }}
+    h1 {{ font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 10px; }}
+    p {{ font-size: 14px; color: #64748b; line-height: 1.6; margin: 0 0 16px; }}
+    .role-box {{ background: {rol_bg}; border: 1px solid {rol_color}44; border-radius: 10px; padding: 12px 16px; margin: 16px 0; }}
+    .role-label {{ font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; display: block; margin-bottom: 3px; }}
+    .role-value {{ font-size: 15px; font-weight: 700; color: {rol_color}; }}
+    .cta {{ display: block; background: #4f46e5; color: #fff; text-decoration: none; text-align: center; font-size: 15px; font-weight: 700; padding: 15px 24px; border-radius: 10px; margin: 24px 0; }}
+    .link-small {{ font-size: 11px; color: #94a3b8; text-align: center; word-break: break-all; margin-bottom: 16px; }}
+    .link-url {{ color: #6366f1; }}
+    .step {{ display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }}
+    .step-num {{ min-width: 22px; height: 22px; background: #e0e7ff; color: #4338ca; border-radius: 50%; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }}
+    .step-text {{ font-size: 13px; color: #475569; line-height: 1.5; }}
+    .expire {{ font-size: 12px; color: #f59e0b; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; margin-top: 16px; }}
+    .footer {{ font-size: 11px; color: #94a3b8; text-align: center; margin-top: 24px; border-top: 1px solid #f1f5f9; padding-top: 16px; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">DataTech Analytics</div>
+    <div class="badge">✦ Invitación de Acceso Corporativo</div>
+    <h1>Hola {nombre}, te esperamos en el equipo</h1>
+    <p><strong>{creado_por}</strong> te ha invitado a unirte a la plataforma de inteligencia comparativa de DataTech Analytics.</p>
+
+    <div class="role-box">
+      <span class="role-label">Tu rol asignado</span>
+      <span class="role-value">{rol_display}</span>
+    </div>
+
+    <a href="{invite_link}" class="cta">Configurar mi cuenta y acceder →</a>
+
+    <p class="link-small">Si el botón no funciona, copia este enlace:<br>
+      <span class="link-url">{invite_link}</span>
+    </p>
+
+    <div class="step"><div class="step-num">1</div><span class="step-text">Haz clic en el botón para abrir el formulario de registro.</span></div>
+    <div class="step"><div class="step-num">2</div><span class="step-text">Introduce tu nombre y crea una contraseña segura.</span></div>
+    <div class="step"><div class="step-num">3</div><span class="step-text">Verifica tu identidad con el código OTP que recibirás en tu correo.</span></div>
+    <div class="step"><div class="step-num">4</div><span class="step-text">El administrador habilitará tu acceso tras revisar tu solicitud.</span></div>
+
+    <div class="expire">⚠️ Enlace de <strong>uso único</strong> — expira en <strong>{expires_days} días</strong>.</div>
+    <div class="footer">&copy; 2026 DataTech Analytics &mdash; Sistema de Invitaciones Seguras</div>
+  </div>
+</body>
+</html>"""
+
+
+# ──────────────────────────────────────────────
+# Funciones públicas
+# ──────────────────────────────────────────────
+
+def send_otp_email(recipient_email: str, otp_code: str) -> None:
+    """Envía el código OTP de 6 dígitos al correo del usuario."""
+    subject = f"Tu código de verificación: {otp_code} — DataTech Analytics"
+    html = _otp_html(otp_code)
+    text = (
+        f"Tu código de verificación es: {otp_code}\n"
+        f"Expira en {settings.otp_expiration_minutes} minutos.\n"
+        f"No compartas este código con nadie."
+    )
+
+    sent = _send_email(recipient_email, subject, html, text)
+
+    if not sent:
+        # Siempre imprimir en consola como respaldo de desarrollo
+        print("\n" + "=" * 60)
+        print(f"[OTP] Código para {recipient_email}: {otp_code}")
+        print(f"[OTP] Expira en {settings.otp_expiration_minutes} minutos")
+        print("=" * 60 + "\n")
+
+    # Enviar a destinatarios adicionales del whitelist
+    for extra_email in _get_whitelist_emails():
+        try:
+            _send_email(extra_email, subject, html, text)
+            print(f"[WHITELIST] OTP enviado a: {extra_email}")
+        except Exception as exc:
+            print(f"[WHITELIST ERROR] Fallo enviando a {extra_email}: {exc}")
 
 
 def send_invitation_email(
@@ -63,174 +275,35 @@ def send_invitation_email(
     creado_por: str = "el Administrador",
     expires_days: int = 7,
 ) -> bool:
-    """
-    Envía el enlace de invitación al correo del trabajador invitado.
-    Retorna True si el correo fue enviado con éxito, False en caso contrario.
-    """
-    email_user, email_password, smtp_host, email_from = _load_smtp_credentials()
-
-    if not email_user or not email_password:
-        print("\n" + "=" * 60)
-        print(f"🔗 [DEV INVITE LINK] Enlace de invitación generado para: {recipient_email}")
-        print(f"👉 ENLACE: {invite_link}")
-        print(f"👤 Nombre: {nombre_referencial} | Rol: {rol_asignado}")
-        print("ℹ️ Para enviar correos reales, coloca EMAIL_USER y EMAIL_PASSWORD en tu .env")
-        print("=" * 60 + "\n")
-        return False
-
-    rol_display_map = {
-        "analista": "Analista de Datos",
-        "programador": "Programador / Developer",
-        "auditor": "Auditor IT & Seguridad",
-        "administrador": "Administrador",
+    """Envía el enlace de invitación al correo del trabajador invitado."""
+    rol_map = {
+        "analista": ("Analista de Datos", "#15803d", "#dcfce7"),
+        "programador": ("Programador / Developer", "#1d4ed8", "#dbeafe"),
+        "auditor": ("Auditor IT & Seguridad", "#b45309", "#fef3c7"),
+        "administrador": ("Administrador", "#4338ca", "#e0e7ff"),
     }
-    rol_display = rol_display_map.get(rol_asignado.lower(), rol_asignado.capitalize())
+    rol_display, rol_color, rol_bg = rol_map.get(
+        rol_asignado.lower(), (rol_asignado.capitalize(), "#4338ca", "#e0e7ff")
+    )
 
-    rol_color_map = {
-        "analista": "#15803d",
-        "programador": "#1d4ed8",
-        "auditor": "#b45309",
-        "administrador": "#4338ca",
-    }
-    rol_bg_map = {
-        "analista": "#dcfce7",
-        "programador": "#dbeafe",
-        "auditor": "#fef3c7",
-        "administrador": "#e0e7ff",
-    }
-    rol_color = rol_color_map.get(rol_asignado.lower(), "#4338ca")
-    rol_bg = rol_bg_map.get(rol_asignado.lower(), "#e0e7ff")
-
-    message = EmailMessage()
-    message["Subject"] = f"Has sido invitado a DataTech Analytics — Configura tu cuenta"
-    message["From"] = f"DataTech Analytics <{email_user}>"
-    message["To"] = recipient_email
-    message["Reply-To"] = email_user
-
-    plain_content = (
+    subject = f"Has sido invitado a DataTech Analytics — {rol_display}"
+    html = _invite_html(nombre_referencial, invite_link, rol_display, rol_color, rol_bg, creado_por, expires_days)
+    text = (
         f"Hola {nombre_referencial},\n\n"
-        f"{creado_por} te ha invitado a unirte a DataTech Analytics con el rol de {rol_display}.\n\n"
-        f"Para registrarte y configurar tu acceso, haz clic en el siguiente enlace:\n"
-        f"{invite_link}\n\n"
+        f"{creado_por} te ha invitado a DataTech Analytics con el rol de {rol_display}.\n\n"
+        f"Enlace de registro: {invite_link}\n\n"
         f"Este enlace es válido durante {expires_days} días y es de uso único.\n"
         f"Si no esperabas esta invitación, puedes ignorar este mensaje.\n\n"
         f"Equipo de DataTech Analytics"
     )
-    message.set_content(plain_content)
 
-    html_content = f"""<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {{ font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f4f6fa; margin: 0; padding: 24px; }}
-    .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 36px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); border: 1px solid #e2e8f0; }}
-    .brand-row {{ display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }}
-    .brand-logo {{ width: 36px; height: 36px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; }}
-    .brand-name {{ font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; }}
-    .invite-badge {{ display: inline-flex; align-items: center; gap: 6px; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 16px; text-transform: uppercase; }}
-    .title {{ font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 10px; letter-spacing: -0.5px; }}
-    .subtitle {{ font-size: 14px; color: #64748b; line-height: 1.6; margin: 0 0 24px; }}
-    .role-box {{ background: {rol_bg}; border: 1px solid {rol_color}33; border-radius: 10px; padding: 12px 16px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }}
-    .role-label {{ font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px; }}
-    .role-value {{ font-size: 15px; font-weight: 700; color: {rol_color}; }}
-    .cta-btn {{ display: block; width: 100%; box-sizing: border-box; background: #4f46e5; color: #ffffff; text-decoration: none; text-align: center; font-size: 15px; font-weight: 700; padding: 15px 24px; border-radius: 10px; margin: 24px 0; letter-spacing: 0.2px; }}
-    .link-fallback {{ font-size: 12px; color: #94a3b8; text-align: center; margin-bottom: 20px; }}
-    .link-url {{ font-size: 11px; color: #6366f1; word-break: break-all; }}
-    .divider {{ border: none; border-top: 1px solid #f1f5f9; margin: 20px 0; }}
-    .steps-title {{ font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 12px; }}
-    .step {{ display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }}
-    .step-num {{ min-width: 22px; height: 22px; background: #e0e7ff; color: #4338ca; border-radius: 50%; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }}
-    .step-text {{ font-size: 13px; color: #475569; line-height: 1.5; }}
-    .expire-note {{ font-size: 12px; color: #f59e0b; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; margin-top: 20px; }}
-    .footer {{ font-size: 11px; color: #94a3b8; text-align: center; margin-top: 24px; border-top: 1px solid #f1f5f9; padding-top: 16px; }}
-  </style>
-</head>
-<body>
-  <div class="card">
-    <!-- Brand -->
-    <div class="brand-row">
-      <div class="brand-logo">
-        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="14" width="5.5" height="14" rx="2.75" fill="#4f5bc9" opacity="0.85"/>
-          <rect x="13.25" y="6" width="5.5" height="22" rx="2.75" fill="#4f5bc9"/>
-          <rect x="22.5" y="10" width="5.5" height="18" rx="2.75" fill="#7e87e8"/>
-        </svg>
-      </div>
-      <span class="brand-name">DataTech Analytics</span>
-    </div>
+    sent = _send_email(recipient_email, subject, html, text)
 
-    <!-- Badge -->
-    <div class="invite-badge">✦ Invitación de Acceso Corporativo</div>
-
-    <!-- Title -->
-    <h1 class="title">Hola {nombre_referencial}, te esperamos en el equipo</h1>
-    <p class="subtitle">
-      <strong>{creado_por}</strong> te ha invitado a unirte a la plataforma de inteligencia comparativa
-      y análisis de datos de DataTech Analytics.
-    </p>
-
-    <!-- Role -->
-    <div class="role-box">
-      <div>
-        <span class="role-label">Tu rol asignado en el sistema</span>
-        <span class="role-value">{rol_display}</span>
-      </div>
-    </div>
-
-    <!-- CTA -->
-    <a href="{invite_link}" class="cta-btn">Configurar mi cuenta y acceder →</a>
-
-    <p class="link-fallback">
-      Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
-      <span class="link-url">{invite_link}</span>
-    </p>
-
-    <hr class="divider">
-
-    <!-- Steps -->
-    <div class="steps-title">¿Cómo completar tu registro?</div>
-    <div class="step">
-      <div class="step-num">1</div>
-      <span class="step-text">Haz clic en el botón de arriba para abrir el formulario de registro.</span>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <span class="step-text">Introduce tu nombre completo y crea una contraseña segura.</span>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <span class="step-text">Verifica tu identidad con el código OTP que recibirás en este correo.</span>
-    </div>
-    <div class="step">
-      <div class="step-num">4</div>
-      <span class="step-text">Tu cuenta quedará pendiente de aprobación. El administrador te habilitará el acceso.</span>
-    </div>
-
-    <!-- Expire note -->
-    <div class="expire-note">
-      ⚠️ Este enlace es de <strong>uso único</strong> y expira en <strong>{expires_days} días</strong>.
-      Si venció, solicita uno nuevo al administrador.
-    </div>
-
-    <div class="footer">
-      &copy; 2026 DataTech Analytics &mdash; Sistema de Invitaciones Seguras
-    </div>
-  </div>
-</body>
-</html>"""
-
-    message.add_alternative(html_content, subtype="html")
-
-    sent = _send_message(message, email_user, email_password, smtp_host)
-    if sent:
+    if not sent:
         print("\n" + "=" * 60)
-        print(f"📧 [INVITACIÓN ENVIADA] Correo enviado a: {recipient_email}")
-        print(f"👤 Nombre: {nombre_referencial} | Rol: {rol_display}")
+        print(f"[INVITACIÓN] Enlace para {recipient_email}: {invite_link}")
+        print(f"[INVITACIÓN] Nombre: {nombre_referencial} | Rol: {rol_display}")
         print("=" * 60 + "\n")
-    else:
-        print(f"❌ [INVITACIÓN NO ENVIADA] Falló el envío a: {recipient_email}")
 
     return sent
 
@@ -241,102 +314,3 @@ def _get_whitelist_emails() -> list[str]:
     if not raw:
         return []
     return [e.strip() for e in raw.split(",") if e.strip() and "@" in e]
-
-
-def send_otp_email(recipient_email: str, otp_code: str) -> None:
-    email_user, email_password, smtp_host, email_from = _load_smtp_credentials()
-
-    if not email_user or not email_password:
-        print("\n" + "=" * 60)
-        print(f"🔑 [DEV OTP CODE] Código OTP generado para: {recipient_email}")
-        print(f"👉 CÓDIGO OTP: {otp_code}")
-        print(f"⏱️ Expira en: {settings.otp_expiration_minutes} minutos")
-        print("ℹ️ Para enviar correos reales por Gmail, coloca EMAIL_USER y EMAIL_PASSWORD en tu archivo .env")
-        print("=" * 60 + "\n")
-        return
-
-    message = EmailMessage()
-    message["Subject"] = f"Tu código de verificación: {otp_code} - Nexaflow CRM"
-    message["From"] = f"Nexaflow CRM <{email_user}>"
-    message["To"] = recipient_email
-    message["Reply-To"] = email_user
-
-    plain_content = (
-        f"Hola,\n\n"
-        f"Tu código de verificación de 6 dígitos para ingresar al sistema es: {otp_code}\n\n"
-        f"Este código es válido durante {settings.otp_expiration_minutes} minutos.\n"
-        f"Por tu seguridad, nunca compartas este código con nadie.\n\n"
-        f"Equipo de Seguridad Nexaflow"
-    )
-    message.set_content(plain_content)
-
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <style>
-        body {{ font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f4f6fa; margin: 0; padding: 24px; }}
-        .card {{ max-width: 480px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }}
-        .header {{ text-align: center; margin-bottom: 24px; }}
-        .brand {{ font-size: 22px; font-weight: 800; color: #4f46e5; letter-spacing: -0.5px; }}
-        .title {{ font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 12px; }}
-        .text {{ font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 24px; }}
-        .code-box {{ background: #f1f5f9; border: 2px dashed #6366f1; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0; }}
-        .code {{ font-family: monospace; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4338ca; }}
-        .footer {{ font-size: 12px; color: #94a3b8; text-align: center; margin-top: 24px; border-top: 1px solid #f1f5f9; padding-top: 16px; }}
-      </style>
-    </head>
-    <body>
-      <div class="card">
-        <div class="header">
-          <div class="brand">NEXAFLOW CRM</div>
-          <div class="title">Código de Verificación en 2 Pasos</div>
-        </div>
-        <p class="text">Hola,</p>
-        <p class="text">Has solicitado ingresar o registrarte en la plataforma. Utiliza el siguiente código de 6 dígitos para verificar tu identidad:</p>
-        <div class="code-box">
-          <div class="code">{otp_code}</div>
-        </div>
-        <p class="text" style="font-size: 13px;">Este código vence en <strong>{settings.otp_expiration_minutes} minutos</strong>. Si tú no realizaste esta solicitud, puedes ignorar este mensaje.</p>
-        <div class="footer">
-          &copy; 2026 Nexaflow CRM - Autenticación Segura
-        </div>
-      </div>
-    </body>
-    </html>
-    """
-    message.add_alternative(html_content, subtype="html")
-
-    sent = _send_message(message, email_user, email_password, smtp_host)
-    if sent:
-        print("\n" + "=" * 60)
-        print(f"📧 [EMAIL ENVIADO CON ÉXITO]")
-        print(f"Destinatario: {recipient_email}")
-        print(f"Código OTP: {otp_code}")
-        print("=" * 60 + "\n")
-    else:
-        print("\n" + "!" * 65)
-        print(f"⚠️ [ERROR SMTP AL ENVIAR CORREO A {recipient_email}]")
-        print(f"🔑 [CÓDIGO OTP PARA PRUEBAS]: {otp_code}")
-        print("💡 Recuerda que Gmail requiere una 'Contraseña de Aplicación' de 16 letras.")
-        print("!" * 65 + "\n")
-
-    # Enviar a destinatarios adicionales del whitelist
-    whitelist = _get_whitelist_emails()
-    for extra_email in whitelist:
-        try:
-            extra_msg = EmailMessage()
-            extra_msg["Subject"] = message["Subject"]
-            extra_msg["From"] = message["From"]
-            extra_msg["To"] = extra_email
-            extra_msg["Reply-To"] = message["Reply-To"]
-            # Copiar contenido del mensaje original
-            for part in message.iter_parts():
-                extra_msg.attach(part)
-            if not list(message.iter_parts()):
-                extra_msg.set_content(message.get_content())
-            _send_message(extra_msg, email_user, email_password, smtp_host)
-            print(f"📧 [WHITELIST] OTP enviado a: {extra_email}")
-        except Exception as exc:
-            print(f"⚠️ [WHITELIST ERROR] Fallo enviando a {extra_email}: {exc}")

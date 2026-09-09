@@ -33,7 +33,7 @@ export const PendingApprovalScreen: React.FC<PendingApprovalScreenProps> = () =>
 
     try {
       // Intentar consultar al backend
-      const res = await fetch('http://localhost:8000/api/v1/invitaciones/dashboard');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/invitaciones/dashboard`);
       if (res.ok) {
         const data = await res.json();
         const found = data.usuarios?.find(

@@ -10,65 +10,17 @@ import type {
 
 // ─── Colores asignados en orden a cada CSV subido ─────────────────────────
 const CARD_COLORS = [
-  '#2563eb', // azul
-  '#7c3aed', // violeta
-  '#059669', // verde
-  '#dc2626', // rojo
-  '#d97706', // ámbar
-  '#0284c7', // celeste
-  '#c026d3', // fucsia
-  '#475569', // slate
+  '#2563eb',
+  '#7c3aed',
+  '#059669',
+  '#dc2626',
+  '#d97706',
+  '#0284c7',
+  '#c026d3',
+  '#475569',
 ];
 
-const STORAGE_KEY = 'hardcrm_csv_datasets_v2';
-
-// ─── Datasets iniciales de muestra por defecto ──────────────────────────────
-const DEFAULT_INITIAL_DATASETS: CsvDataset[] = [
-  {
-    id: 'dataset-alfa-q3',
-    name: 'Empresa Alfa - Ventas Q3 2026',
-    uploadedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-    rowCount: 6,
-    columns: ['Producto', 'Categoria', 'Cantidad', 'Precio_Unitario', 'Total_Ventas', 'Margen'],
-    color: '#2563eb',
-    categoria: 'Hardware & Servidores',
-    rowsLoaded: true,
-    productCol: 'Producto',
-    qtyCol: 'Cantidad',
-    priceCol: 'Precio_Unitario',
-    totalCol: 'Total_Ventas',
-    rows: [
-      { Producto: 'Servidor Dell PowerEdge R740', Categoria: 'Servidores', Cantidad: '25', Precio_Unitario: '8450', Total_Ventas: '211250', Margen: '32%' },
-      { Producto: 'Lenovo ThinkPad P16 Workstation', Categoria: 'Laptops', Cantidad: '60', Precio_Unitario: '2890', Total_Ventas: '173400', Margen: '28%' },
-      { Producto: 'Dell UltraSharp 32 4K USB-C', Categoria: 'Monitores', Cantidad: '80', Precio_Unitario: '820', Total_Ventas: '65600', Margen: '35%' },
-      { Producto: 'Cisco Catalyst 9300 24-Port', Categoria: 'Redes', Cantidad: '18', Precio_Unitario: '4150', Total_Ventas: '74700', Margen: '25%' },
-      { Producto: 'Synology Enterprise NAS 96TB', Categoria: 'Storage', Cantidad: '8', Precio_Unitario: '6200', Total_Ventas: '49600', Margen: '30%' },
-      { Producto: 'Fortinet FortiGate 100F', Categoria: 'Seguridad', Cantidad: '12', Precio_Unitario: '3100', Total_Ventas: '37200', Margen: '27%' },
-    ],
-  },
-  {
-    id: 'dataset-beta-q3',
-    name: 'Empresa Beta - Ventas Q3 2026',
-    uploadedAt: new Date(Date.now() - 86400000).toISOString(),
-    rowCount: 6,
-    columns: ['Producto', 'Categoria', 'Cantidad', 'Precio_Unitario', 'Total_Ventas', 'Margen'],
-    color: '#7c3aed',
-    categoria: 'Hardware & Servidores',
-    rowsLoaded: true,
-    productCol: 'Producto',
-    qtyCol: 'Cantidad',
-    priceCol: 'Precio_Unitario',
-    totalCol: 'Total_Ventas',
-    rows: [
-      { Producto: 'Servidor Dell PowerEdge R740', Categoria: 'Servidores', Cantidad: '18', Precio_Unitario: '8600', Total_Ventas: '154800', Margen: '30%' },
-      { Producto: 'Lenovo ThinkPad P16 Workstation', Categoria: 'Laptops', Cantidad: '75', Precio_Unitario: '2750', Total_Ventas: '206250', Margen: '24%' },
-      { Producto: 'Dell UltraSharp 32 4K USB-C', Categoria: 'Monitores', Cantidad: '65', Precio_Unitario: '850', Total_Ventas: '55250', Margen: '32%' },
-      { Producto: 'Cisco Catalyst 9300 24-Port', Categoria: 'Redes', Cantidad: '30', Precio_Unitario: '3890', Total_Ventas: '116700', Margen: '22%' },
-      { Producto: 'Synology Enterprise NAS 96TB', Categoria: 'Storage', Cantidad: '5', Precio_Unitario: '6350', Total_Ventas: '31750', Margen: '28%' },
-      { Producto: 'Aruba Instant On Switch 48P', Categoria: 'Redes', Cantidad: '20', Precio_Unitario: '1950', Total_Ventas: '39000', Margen: '26%' },
-    ],
-  },
-];
+const API_DATASETS_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/datasets`;
 
 import Papa from 'papaparse';
 import { normalizeRow, detectMissingColumns } from '../utils/csvParser';
@@ -186,65 +138,52 @@ function computeStats(dataset: CsvDataset): ColumnStats[] {
     .filter((s): s is ColumnStats => s !== null);
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────
-
 const CsvContext = createContext<CsvContextType | undefined>(undefined);
 
 export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [datasets, setDatasets] = useState<CsvDataset[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed: CsvDataset[] = JSON.parse(saved);
-        if (parsed.length > 0) {
-          return parsed.map((d) => {
-            const semantic = detectSemanticColumns(d.columns || []);
-            return {
-              ...d,
-              rows: d.rows || [],
-              columns: d.columns || [],
-              rowsLoaded: true,
-              productCol: d.productCol || semantic.productCol,
-              qtyCol: d.qtyCol || semantic.qtyCol,
-              priceCol: d.priceCol || semantic.priceCol,
-              totalCol: d.totalCol || semantic.totalCol,
-              categoryCol: d.categoryCol || semantic.categoryCol,
-            };
-          });
-        }
-      }
-      return DEFAULT_INITIAL_DATASETS;
-    } catch {
-      return DEFAULT_INITIAL_DATASETS;
-    }
-  });
+  const [datasets, setDatasets] = useState<CsvDataset[]>([]);
 
-  const persist = (updated: CsvDataset[]) => {
-    setDatasets(updated);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch {
-      try {
-        const fallbackSlim = updated.map((d) => ({
-          ...d,
-          rows: (d.rows || []).slice(0, 150),
-        }));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(fallbackSlim));
-      } catch {
-        /* ignorar */
-      }
-    }
-  };
+  // Carga datasets desde el backend al montar
+  useEffect(() => {
+    fetch(`${API_DATASETS_URL}/`)
+      .then((r) => r.json())
+      .then((data: any[]) => {
+        if (!Array.isArray(data) || data.length === 0) return;
+        const mapped: CsvDataset[] = data.map((d, i) => {
+          const cols: string[] = Array.isArray(d.columnas_json) ? d.columnas_json : [];
+          const rows: CsvRow[] = Array.isArray(d.muestra_filas_json) ? d.muestra_filas_json : [];
+          const semantic = detectSemanticColumns(cols);
+          return {
+            id: d.id,
+            name: d.nombre,
+            uploadedAt: d.created_at || new Date().toISOString(),
+            rowCount: d.registros_totales || rows.length,
+            columns: cols,
+            rows,
+            color: CARD_COLORS[i % CARD_COLORS.length],
+            categoria: d.categoria || 'Empresarial',
+            rowsLoaded: true,
+            ...semantic,
+          };
+        });
+        setDatasets(mapped);
+      })
+      .catch(() => {
+        // Si el backend no responde, iniciar con array vacío
+        setDatasets([]);
+      });
+  }, []);
 
   const addDataset = useCallback(
     async (file: File): Promise<void> => {
       const text = await file.text();
       const { columns, rows, missingColumns } = parseCsv(text);
       const semantic = detectSemanticColumns(columns);
-
       const colorIndex = datasets.length % CARD_COLORS.length;
+      const datasetId = `csv-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
       const newDataset: CsvDataset = {
-        id: `csv-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        id: datasetId,
         name: file.name.replace(/\.[^/.]+$/, ''),
         uploadedAt: new Date().toISOString(),
         rowCount: rows.length,
@@ -257,23 +196,81 @@ export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         ...semantic,
       };
 
-      persist([...datasets, newDataset]);
+      // Guardar en backend
+      try {
+        await fetch(`${API_DATASETS_URL}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: datasetId,
+            nombre: newDataset.name,
+            categoria: newDataset.categoria,
+            registros_totales: rows.length,
+            features_count: columns.length,
+            columna_objetivo: semantic.totalCol || null,
+            tamanio_archivo: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+            descripcion: `Dataset cargado desde archivo: ${file.name}`,
+            columnas_json: columns,
+            muestra_filas_json: rows.slice(0, 50), // primeras 50 filas como muestra
+            creado_por: 'Analista',
+          }),
+        });
+      } catch {
+        // Si el backend falla, igual se agrega en memoria para esta sesión
+      }
+
+      setDatasets((prev) => [...prev, newDataset]);
     },
     [datasets]
   );
 
   const addDirectDataset = useCallback(
-    (dataset: CsvDataset) => {
-      persist([...datasets, dataset]);
+    async (dataset: CsvDataset) => {
+      // Guardar en backend
+      try {
+        await fetch(`${API_DATASETS_URL}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: dataset.id,
+            nombre: dataset.name,
+            categoria: dataset.categoria || 'Empresarial',
+            registros_totales: dataset.rowCount,
+            features_count: dataset.columns.length,
+            columna_objetivo: dataset.totalCol || null,
+            tamanio_archivo: '1.0 MB',
+            descripcion: `Dataset: ${dataset.name}`,
+            columnas_json: dataset.columns,
+            muestra_filas_json: (dataset.rows || []).slice(0, 50),
+            creado_por: 'Analista',
+          }),
+        });
+      } catch {
+        // Si el backend falla, igual se agrega en memoria
+      }
+      setDatasets((prev) => [...prev, dataset]);
     },
     [datasets]
   );
 
   const removeDataset = useCallback(
-    (id: string) => {
-      persist(datasets.filter((d) => d.id !== id));
+    async (id: string) => {
+      // Eliminar en backend primero
+      try {
+        const res = await fetch(`${API_DATASETS_URL}/${id}`, { method: 'DELETE' });
+        if (!res.ok) {
+          const err = await res.json();
+          console.error('Error al eliminar dataset:', err.detail);
+          return; // No remover del estado si el backend falló
+        }
+      } catch (e) {
+        console.error('No se pudo eliminar el dataset del servidor:', e);
+        return;
+      }
+      // Solo actualiza UI si el backend confirmó la eliminación
+      setDatasets((prev) => prev.filter((d) => d.id !== id));
     },
-    [datasets]
+    []
   );
 
   const loadDatasetRows = useCallback(
