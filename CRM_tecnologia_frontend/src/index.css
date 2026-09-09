@@ -2,28 +2,28 @@
 
 :root {
   --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --bg-app: #FDFBF7;
-  --bg-sidebar: #FDFBF7;
-  --bg-card: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --primary: #0052cc;
-  --primary-hover: #0047b3;
-  --primary-purple: #5850ec;
-  --primary-gradient: linear-gradient(135deg, #5850ec 0%, #6366f1 100%);
-  --insight-gradient: linear-gradient(135deg, #544fe2 0%, #5e5af5 60%, #6d4fe8 100%);
-  --border-light: #eef2f6;
-  --border-subtle: #e2e8f0;
-  --sidebar-active-bg: #eef0fc;
-  --sidebar-active-text: #5046e5;
-  --success-bg: #dcfce7;
-  --success-text: #16a34a;
-  --danger-bg: #fee2e2;
-  --danger-text: #dc2626;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-  --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  --bg-app: #0a0e27;
+  --bg-sidebar: #0d1117;
+  --bg-card: #1a1f3a;
+  --text-primary: #e0e6ff;
+  --text-secondary: #a8b2d1;
+  --text-muted: #6b7494;
+  --primary: #00d4ff;
+  --primary-hover: #00ffff;
+  --primary-purple: #bf00ff;
+  --primary-gradient: linear-gradient(135deg, #bf00ff 0%, #ff006e 50%, #00d4ff 100%);
+  --insight-gradient: linear-gradient(135deg, #00d4ff 0%, #bf00ff 50%, #ff006e 100%);
+  --border-light: #2a3155;
+  --border-subtle: #1f2542;
+  --sidebar-active-bg: #1f2d5e;
+  --sidebar-active-text: #00ffff;
+  --success-bg: #0d3d2c;
+  --success-text: #00ff88;
+  --danger-bg: #3d0d0d;
+  --danger-text: #ff0055;
+  --shadow-sm: 0 1px 8px rgba(0, 212, 255, 0.1), 0 1px 3px rgba(191, 0, 255, 0.05);
+  --shadow-md: 0 4px 20px rgba(0, 212, 255, 0.15), 0 2px 8px rgba(191, 0, 255, 0.1);
+  --shadow-lg: 0 10px 40px rgba(0, 212, 255, 0.2), 0 8px 16px rgba(191, 0, 255, 0.15);
 }
 
 * {
@@ -65,7 +65,33 @@ textarea {
   display: flex;
   min-height: 100vh;
   width: 100vw;
-  background-color: #ffffff;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a0d3f 50%, #0d1a2d 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.auth-container::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -5%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(191, 0, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 /* Left Form Pane */
@@ -75,8 +101,12 @@ textarea {
   flex-direction: column;
   padding: 36px 48px;
   max-width: 600px;
-  background-color: #ffffff;
+  background-color: rgba(13, 17, 23, 0.8);
+  backdrop-filter: blur(10px);
   overflow-y: auto;
+  border-right: 1px solid rgba(0, 212, 255, 0.1);
+  position: relative;
+  z-index: 2;
 }
 
 .auth-header-brand {
@@ -89,19 +119,24 @@ textarea {
 .auth-brand-logo {
   width: 34px;
   height: 34px;
-  background: #0052cc;
+  background: linear-gradient(135deg, #00d4ff 0%, #bf00ff 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 82, 204, 0.3);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5), 0 0 40px rgba(191, 0, 255, 0.3);
+  font-weight: 700;
+  font-size: 16px;
 }
 
 .auth-brand-name {
   font-size: 19px;
   font-weight: 800;
-  color: #0f172a;
+  background: linear-gradient(135deg, #00d4ff 0%, #bf00ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   letter-spacing: -0.02em;
 }
 
@@ -128,7 +163,7 @@ textarea {
 .auth-main-title {
   font-size: 28px;
   font-weight: 800;
-  color: #111827;
+  color: #e0e6ff;
   letter-spacing: -0.03em;
   line-height: 1.15;
 }
@@ -138,6 +173,7 @@ textarea {
   color: var(--text-secondary);
   margin-top: 6px;
   font-weight: 400;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
 }
 
 /* Stepper Bar */
@@ -157,13 +193,14 @@ textarea {
   position: absolute;
   top: 14px;
   height: 2px;
-  background-color: #e2e8f0;
+  background: linear-gradient(90deg, rgba(0, 212, 255, 0.3) 0%, transparent 100%);
   z-index: 1;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .stepper-line.completed {
-  background-color: #0052cc;
+  background: linear-gradient(90deg, #00d4ff 0%, #bf00ff 100%);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
 .stepper-item {
@@ -188,20 +225,21 @@ textarea {
 }
 
 .stepper-circle.active {
-  background-color: #0052cc;
+  background: linear-gradient(135deg, #00d4ff 0%, #bf00ff 100%);
   color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.15);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6), 0 0 40px rgba(191, 0, 255, 0.3);
 }
 
 .stepper-circle.completed {
-  background-color: #0052cc;
+  background: linear-gradient(135deg, #00d4ff 0%, #bf00ff 100%);
   color: #ffffff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
 }
 
 .stepper-circle.pending {
-  background-color: #f1f5f9;
-  color: #94a3b8;
-  border: 1px solid #e2e8f0;
+  background-color: rgba(26, 31, 58, 0.8);
+  color: #6b7494;
+  border: 1px solid rgba(0, 212, 255, 0.2);
 }
 
 .stepper-label {
@@ -211,15 +249,17 @@ textarea {
 }
 
 .stepper-label.active {
-  color: #0052cc;
+  color: #00d4ff;
+  text-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
 }
 
 .stepper-label.completed {
-  color: #0052cc;
+  color: #00d4ff;
+  text-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
 }
 
 .stepper-label.pending {
-  color: #94a3b8;
+  color: #6b7494;
 }
 
 /* Auth Forms */
@@ -232,12 +272,13 @@ textarea {
 
 .auth-error-banner {
   padding: 10px 14px;
-  background-color: #fee2e2;
-  border: 1px solid #fca5a5;
+  background-color: rgba(255, 0, 85, 0.1);
+  border: 1px solid rgba(255, 0, 110, 0.3);
   border-radius: 8px;
-  color: #b91c1c;
+  color: #ff0055;
   font-size: 12.5px;
   font-weight: 500;
+  box-shadow: 0 0 15px rgba(255, 0, 110, 0.2);
 }
 
 .form-group {
@@ -261,40 +302,45 @@ textarea {
 .input-icon {
   position: absolute;
   left: 14px;
-  color: #94a3b8;
+  color: #00d4ff;
   pointer-events: none;
+  text-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
 }
 
 .form-input {
   width: 100%;
   padding: 11px 14px 11px 40px;
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1;
+  background-color: rgba(26, 31, 58, 0.6);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: 6px;
   font-size: 13.5px;
-  color: #0f172a;
+  color: #e0e6ff;
   transition: all 0.2s ease;
 }
 
 .form-input:focus {
-  border-color: #0052cc;
-  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.12);
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2), 0 0 20px rgba(0, 212, 255, 0.3);
+  background-color: rgba(26, 31, 58, 0.8);
 }
 
 .form-input::placeholder {
-  color: #94a3b8;
+  color: #6b7494;
 }
 
 .password-toggle-btn {
   position: absolute;
   right: 12px;
-  color: #94a3b8;
+  color: #00d4ff;
   padding: 4px;
   border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
 .password-toggle-btn:hover {
-  color: #475569;
+  color: #ff006e;
+  text-shadow: 0 0 10px rgba(255, 0, 110, 0.5);
 }
 
 .form-helper-text {
@@ -306,7 +352,7 @@ textarea {
 /* Primary Action Buttons */
 .auth-primary-btn {
   width: 100%;
-  background-color: #0052cc;
+  background: linear-gradient(135deg, #00d4ff 0%, #bf00ff 50%, #ff006e 100%);
   color: #ffffff;
   padding: 12px 20px;
   border-radius: 6px;
@@ -316,26 +362,26 @@ textarea {
   gap: 8px;
   font-size: 14.5px;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 82, 204, 0.25);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4), 0 0 40px rgba(191, 0, 255, 0.2);
   margin-top: 4px;
   transition: all 0.2s ease;
+  border: 1px solid rgba(0, 212, 255, 0.3);
 }
 
 .auth-primary-btn:hover:not(:disabled) {
-  background-color: #0047b3;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 82, 204, 0.32);
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.6), 0 0 60px rgba(191, 0, 255, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 .auth-primary-btn:disabled {
-  opacity: 0.7;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .auth-secondary-btn {
   width: 100%;
-  background-color: #f1f5f9;
-  color: #475569;
+  background-color: rgba(26, 31, 58, 0.6);
+  color: #00d4ff;
   padding: 10px 16px;
   border-radius: 6px;
   display: flex;
@@ -345,11 +391,14 @@ textarea {
   font-size: 13px;
   font-weight: 600;
   transition: all 0.15s ease;
+  border: 1px solid rgba(0, 212, 255, 0.2);
 }
 
 .auth-secondary-btn:hover:not(:disabled) {
-  background-color: #e2e8f0;
-  color: #1e293b;
+  background-color: rgba(0, 212, 255, 0.1);
+  color: #00ffff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+  border-color: rgba(0, 212, 255, 0.5);
 }
 
 .auth-switch-footer {
