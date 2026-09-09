@@ -838,7 +838,7 @@ textarea {
 /* Right Visual Pane */
 .auth-visual-side {
   flex: 1.1;
-  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(145deg, #0d1117 0%, #0a0e27 100%);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -851,12 +851,11 @@ textarea {
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.25) 0%, transparent 50%),
-    radial-gradient(circle at 20% 80%, rgba(0, 82, 204, 0.3) 0%, transparent 60%),
-    linear-gradient(to right, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.8)),
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23334155' fill-opacity='0.18' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: cover, cover, cover, auto;
-  opacity: 0.95;
+    radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(191, 0, 255, 0.15) 0%, transparent 60%),
+    linear-gradient(to right, rgba(10, 14, 39, 0.95), rgba(10, 14, 39, 0.85));
+  background-size: cover, cover, cover;
+  opacity: 0.9;
 }
 
 .auth-tech-graphic {
@@ -866,9 +865,9 @@ textarea {
   width: 460px;
   height: 300px;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(191, 0, 255, 0.05) 100%);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.2), 0 0 80px rgba(191, 0, 255, 0.1);
   backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
@@ -879,25 +878,26 @@ textarea {
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(circle at 10% 20%, #22c55e 3px, transparent 4px),
-    radial-gradient(circle at 18% 20%, #3b82f6 3px, transparent 4px),
-    radial-gradient(circle at 26% 20%, #eab308 3px, transparent 4px),
-    repeating-linear-gradient(0deg, transparent, transparent 18px, rgba(255, 255, 255, 0.03) 19px, rgba(255, 255, 255, 0.03) 20px);
+    radial-gradient(circle at 10% 20%, #00ff88 3px, transparent 4px),
+    radial-gradient(circle at 18% 20%, #00d4ff 3px, transparent 4px),
+    radial-gradient(circle at 26% 20%, #bf00ff 3px, transparent 4px),
+    repeating-linear-gradient(0deg, transparent, transparent 18px, rgba(0, 212, 255, 0.05) 19px, rgba(0, 212, 255, 0.05) 20px);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
 }
 
 /* Floating Enterprise Security Card */
 .enterprise-security-card {
   position: relative;
   z-index: 10;
-  background: #ffffff;
+  background: var(--bg-card);
   border-radius: 12px;
   padding: 20px 24px;
   display: flex;
   align-items: flex-start;
   gap: 16px;
   max-width: 440px;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.2), 0 0 60px rgba(191, 0, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   animation: floatUp 0.6s ease-out;
 }
 
@@ -917,12 +917,13 @@ textarea {
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background-color: #eff6ff;
-  color: #0052cc;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(191, 0, 255, 0.15) 100%);
+  color: #00d4ff;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
 }
 
 .security-card-content {
@@ -933,14 +934,14 @@ textarea {
 .security-card-title {
   font-size: 15px;
   font-weight: 800;
-  color: #0f172a;
+  color: #e0e6ff;
   margin-bottom: 4px;
 }
 
 .security-card-desc {
   font-size: 12px;
   line-height: 1.5;
-  color: #475569;
+  color: #a8b2d1;
 }
 
 /* ==========================================================================
