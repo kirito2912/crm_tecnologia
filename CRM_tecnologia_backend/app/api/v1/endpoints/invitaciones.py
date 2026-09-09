@@ -27,10 +27,11 @@ from app.schemas.invitacion import (
     PermisosRequest,
 )
 from app.services.email_service import send_invitation_email
+from app.core.config import settings
 
 router = APIRouter(prefix="/invitaciones", tags=["Gestión de Invitaciones y Personal"])
 
-FRONTEND_URL = "http://localhost:5173"
+FRONTEND_URL = settings.frontend_url
 
 
 @router.get("/", response_model=List[InvitacionResponse])

@@ -17,10 +17,10 @@ async def lifespan(app: FastAPI):
     # 1. Crear tablas si no existen
     Base.metadata.create_all(bind=engine)
 
-    # 2. Migración segura de columnas (solo aplica a SQLite)
-    if engine.dialect.name == "sqlite":
-        try:
-            with engine.connect() as conn:
+    # 2. Migración segura de columnas
+    try:
+        with engine.connect() as conn:
+            if engine.dialect.name == "sqlite":
                 res_u = conn.execute(text("PRAGMA table_info(users);")).fetchall()
                 cols_u = [row[1] for row in res_u]
                 if "password_hash" not in cols_u:
@@ -36,9 +36,23 @@ async def lifespan(app: FastAPI):
                     conn.execute(text("ALTER TABLE usuarios ADD COLUMN estado VARCHAR(50) DEFAULT 'activo';"))
                 if "invitado_por" not in cols_usr:
                     conn.execute(text("ALTER TABLE usuarios ADD COLUMN invitado_por VARCHAR(150);"))
+                if "permisos_proyectos" not in cols_usr:
+                    conn.execute(text("ALTER TABLE usuarios ADD COLUMN permisos_proyectos VARCHAR(500);"))
                 conn.commit()
-        except Exception as mig_err:
-            print(f"[Aviso Migración SQLite] {mig_err}")
+            else:
+                # PostgreSQL / Supabase
+                exists = conn.execute(
+                    text(
+                        "SELECT 1 FROM information_schema.columns "
+                        "WHERE table_name = 'usuarios' AND column_name = 'permisos_proyectos'"
+                    )
+                ).fetchone()
+                if not exists:
+                    conn.execute(text("ALTER TABLE usuarios ADD COLUMN permisos_proyectos VARCHAR(500)"))
+                    conn.commit()
+                    print("[Migracion] Columna permisos_proyectos agregada a usuarios")
+    except Exception as mig_err:
+        print(f"[Aviso Migracion] {mig_err}")
 
 
     # 3. Sembrar datos iniciales si la base está vacía o actualizar roles
@@ -50,7 +64,7 @@ async def lifespan(app: FastAPI):
 
     # 4. Informar sobre destinatarios adicionales de OTP configurados
     whitelist = _get_whitelist_emails()
-    print(f"📧 [EMAIL_WHITELIST] Destinatarios adicionales de OTP configurados: {len(whitelist)}")
+    print(f"[EMAIL_WHITELIST] Destinatarios adicionales de OTP configurados: {len(whitelist)}")
 
     yield
 

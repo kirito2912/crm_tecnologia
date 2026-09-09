@@ -56,15 +56,13 @@ export async function getInvitacionesDashboard(): Promise<InvitacionDashboardDat
       const invitaciones: any[] = rawInvs ? JSON.parse(rawInvs) : [];
       const habilitados = users.filter((u) => u.habilitado).length;
       return {
-        kpis: {
-          totalUsuarios: users.length,
-          usuariosHabilitados: habilitados,
-          usuariosPendientes: pendientes.length,
-          invitacionesActivas: invitaciones.filter((i) => i.estado === 'pendiente').length,
-        },
+        total_usuarios: users.length,
+        usuarios_habilitados: habilitados,
+        usuarios_pendientes: pendientes.length,
+        invitaciones_activas: invitaciones.filter((i) => i.estado === 'pendiente').length,
+        usuarios: users,
+        invitaciones: invitaciones,
         solicitudes_pendientes: pendientes,
-        invitaciones_recientes: invitaciones.slice(-5),
-        usuarios_directorio: users,
       } as InvitacionDashboardData;
     }
   );

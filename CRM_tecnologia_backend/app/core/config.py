@@ -28,6 +28,7 @@ class Settings:
     email_from: str = os.getenv("EMAIL_FROM", os.getenv("EMAIL_USER", "")).strip()
     resend_api_key: str = os.getenv("RESEND_API_KEY", "").strip()
     email_from_name: str = os.getenv("EMAIL_FROM_NAME", "DataTech Analytics").strip()
+    frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
 
 
 settings = Settings()
