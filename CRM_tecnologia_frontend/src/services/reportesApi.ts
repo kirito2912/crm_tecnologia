@@ -4,8 +4,8 @@ import type {
   ReporteUpdateEstadoPayload,
 } from '../types/reportes';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = `${BACKEND_BASE_URL}/api/v1`;
 
 export async function fetchReportesApi(): Promise<ReporteComparativo[]> {
   try {
