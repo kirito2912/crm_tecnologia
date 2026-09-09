@@ -99,7 +99,8 @@ export async function crearInvitacion(
       const rawInvs = localStorage.getItem(LOCAL_STORAGE_INVITACIONES_KEY);
       const invitaciones: any[] = rawInvs ? JSON.parse(rawInvs) : [];
       const token = `inv_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      const frontendUrl = (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173');
+      const FRONTEND_FALLBACK = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
+      const frontendUrl = import.meta.env.VITE_FRONTEND_URL || FRONTEND_FALLBACK;
       const newInv: Invitacion = {
         id: `INV-${Date.now()}`,
         email: data.email,
