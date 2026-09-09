@@ -960,7 +960,7 @@ textarea {
 .sidebar {
   width: 240px;
   background-color: var(--bg-sidebar);
-  border-right: 1px solid rgba(0, 0, 0, 0.07);
+  border-right: 1px solid rgba(0, 212, 255, 0.15);
   display: flex;
   flex-direction: column;
   padding: 24px 16px;
@@ -972,7 +972,6 @@ textarea {
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 20;
-  /* Scrollbar oculta pero funcional */
   scrollbar-width: none;
 }
 
@@ -985,21 +984,23 @@ textarea {
   align-items: center;
   gap: 12px;
   padding: 0 8px 28px 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.15);
   margin-bottom: 24px;
 }
 
 .brand-logo-icon {
   width: 38px;
   height: 38px;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #bf00ff 100%);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5), 0 0 40px rgba(191, 0, 255, 0.3);
   flex-shrink: 0;
+  font-weight: 700;
+  font-size: 16px;
 }
 
 .brand-info {
@@ -1010,7 +1011,10 @@ textarea {
 .brand-title {
   font-size: 17px;
   font-weight: 800;
-  color: #1e1b4b;
+  background: linear-gradient(135deg, #00d4ff 0%, #bf00ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -1035,7 +1039,7 @@ textarea {
   gap: 12px;
   padding: 11px 14px;
   border-radius: 10px;
-  color: #475569;
+  color: #a8b2d1;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
@@ -1044,14 +1048,18 @@ textarea {
 }
 
 .sidebar-link:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-  color: #1e293b;
+  background-color: rgba(0, 212, 255, 0.1);
+  color: #00ffff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
 }
 
 .sidebar-link.active {
-  background-color: var(--sidebar-active-bg);
-  color: var(--sidebar-active-text);
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(191, 0, 255, 0.15) 100%);
+  color: #00ffff;
   font-weight: 600;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), inset 0 0 10px rgba(0, 212, 255, 0.1);
+  border-left: 2px solid #00d4ff;
+  padding-left: 12px;
 }
 
 .sidebar-link-icon {
@@ -1085,14 +1093,15 @@ textarea {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #e0e7ff;
-  color: #4338ca;
+  background: linear-gradient(135deg, #00d4ff 0%, #bf00ff 100%);
+  color: #ffffff;
   font-size: 12px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
 }
 
 .user-name {
@@ -1526,8 +1535,8 @@ textarea {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 10, 30, 0.7);
+  backdrop-filter: blur(8px);
   z-index: 50;
   display: flex;
   align-items: center;
@@ -1537,18 +1546,19 @@ textarea {
 }
 
 .modal-dialog {
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   border-radius: 18px;
   width: 100%;
   max-width: 680px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.25);
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.2), 0 0 80px rgba(191, 0, 255, 0.15);
   padding: 28px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   animation: scaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(0, 212, 255, 0.2);
 }
 
 .modal-header {
@@ -1560,7 +1570,7 @@ textarea {
 .modal-title {
   font-size: 19px;
   font-weight: 800;
-  color: #0f172a;
+  color: #e0e6ff;
 }
 
 .modal-subtitle {
@@ -1576,22 +1586,24 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #64748b;
-  background-color: #f1f5f9;
+  color: #00d4ff;
+  background-color: rgba(0, 212, 255, 0.1);
+  transition: all 0.2s ease;
 }
 
 .modal-close-btn:hover {
-  background-color: #e2e8f0;
-  color: #0f172a;
+  background-color: rgba(0, 212, 255, 0.2);
+  color: #00ffff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
 }
 
 /* CSV Upload Area */
 .csv-dropzone {
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed rgba(0, 212, 255, 0.3);
   border-radius: 14px;
   padding: 32px 20px;
   text-align: center;
-  background-color: #f8fafc;
+  background: rgba(0, 212, 255, 0.05);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -1628,17 +1640,18 @@ textarea {
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #5850ec, #818cf8);
+  background: linear-gradient(90deg, #00d4ff 0%, #bf00ff 50%, #ff006e 100%);
   transition: width 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
 }
 
 /* Table Styles for secondary views */
 .table-container {
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   border-radius: 16px;
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
 }
 
 .data-table {
@@ -1648,25 +1661,26 @@ textarea {
 }
 
 .data-table th {
-  background-color: #f8fafc;
+  background-color: rgba(0, 212, 255, 0.05);
   padding: 13px 18px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-secondary);
-  border-bottom: 1px solid #eef2f6;
+  color: #00d4ff;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  text-shadow: 0 0 8px rgba(0, 212, 255, 0.2);
 }
 
 .data-table td {
   padding: 14px 18px;
   font-size: 13.5px;
-  color: #1e293b;
-  border-bottom: 1px solid #f1f5f9;
+  color: #e0e6ff;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
 }
 
 .data-table tr:hover td {
-  background-color: #fcfdfe;
+  background-color: rgba(0, 212, 255, 0.05);
 }
 
 /* Action buttons in data table */
@@ -1681,23 +1695,25 @@ textarea {
 }
 
 .table-action-btn.edit {
-  background-color: #eff6ff;
-  color: #0052cc;
+  background-color: rgba(0, 212, 255, 0.15);
+  color: #00d4ff;
 }
 
 .table-action-btn.edit:hover {
-  background-color: #dbeafe;
-  color: #003d99;
+  background-color: rgba(0, 212, 255, 0.3);
+  color: #00ffff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
 }
 
 .table-action-btn.delete {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: rgba(255, 0, 85, 0.15);
+  color: #ff0055;
 }
 
 .table-action-btn.delete:hover {
-  background-color: #fecaca;
-  color: #991b1b;
+  background-color: rgba(255, 0, 85, 0.3);
+  color: #ff006e;
+  box-shadow: 0 0 15px rgba(255, 0, 110, 0.4);
 }
 
 .status-pill {
@@ -1710,23 +1726,23 @@ textarea {
 }
 
 .status-pill.success {
-  background-color: #dcfce7;
-  color: #16a34a;
+  background-color: rgba(0, 255, 136, 0.15);
+  color: #00ff88;
 }
 
 .status-pill.warning {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: rgba(255, 165, 0, 0.15);
+  color: #ffaa00;
 }
 
 .status-pill.danger {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: rgba(255, 0, 110, 0.15);
+  color: #ff006e;
 }
 
 .status-pill.info {
-  background-color: #e0e7ff;
-  color: #4338ca;
+  background-color: rgba(0, 212, 255, 0.15);
+  color: #00d4ff;
 }
 
 /* Animations */
@@ -14552,18 +14568,18 @@ textarea {
   gap: 14px;
   padding: 32px 24px;
   background: var(--bg-card);
-  border: 1.5px solid var(--border-subtle);
+  border: 1.5px solid rgba(0, 212, 255, 0.2);
   border-radius: 16px;
   cursor: pointer;
   text-align: center;
-  transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
-  box-shadow: var(--shadow-sm);
+  transition: all 0.18s;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);
 }
 
 .project-card:hover {
-  border-color: var(--primary-purple);
-  box-shadow: 0 8px 24px -4px rgba(88, 80, 236, 0.18);
-  transform: translateY(-2px);
+  border-color: #00d4ff;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.4), 0 0 60px rgba(191, 0, 255, 0.2);
+  transform: translateY(-4px);
 }
 
 .project-card-icon {
@@ -14573,8 +14589,10 @@ textarea {
   align-items: center;
   justify-content: center;
   border-radius: 16px;
-  background: var(--sidebar-active-bg);
-  color: var(--primary-purple);
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(191, 0, 255, 0.1) 100%);
+  color: #00d4ff;
+  font-size: 32px;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
 }
 
 .project-card-name {
