@@ -1,4 +1,5 @@
 import uuid
+import json
 import secrets
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -23,6 +24,7 @@ from app.schemas.invitacion import (
     ToggleUserStatusRequest,
     NotificacionSolicitud,
     InvitacionDashboardResponse,
+    PermisosRequest,
 )
 from app.services.email_service import send_invitation_email
 
@@ -304,3 +306,23 @@ def revocar_invitacion(invitacion_id: str, db: Session = Depends(get_db)):
     inv.estado = "cancelado"
     db.commit()
     return {"message": f"Invitación para '{inv.email}' cancelada exitosamente"}
+
+
+@router.patch("/usuarios/{usuario_id}/permisos", response_model=UsuarioResponse)
+def actualizar_permisos_usuario(
+    usuario_id: str,
+    body: PermisosRequest,
+    db: Session = Depends(get_db),
+):
+    """Actualiza los proyectos permitidos para un usuario."""
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Usuario con ID '{usuario_id}' no encontrado",
+        )
+
+    usuario.permisos_proyectos = json.dumps(body.proyectos_permitidos)
+    db.commit()
+    db.refresh(usuario)
+    return usuario

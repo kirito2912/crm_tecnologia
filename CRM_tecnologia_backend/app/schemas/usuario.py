@@ -37,6 +37,7 @@ class UsuarioUpdate(BaseModel):
 class UsuarioResponse(UsuarioBase):
     id: str
     created_at: Optional[datetime] = None
+    permisos_proyectos: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

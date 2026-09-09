@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CsvProvider } from './context/CsvContext';
 import { ReportsProvider } from './context/ReportsContext';
@@ -7,6 +7,7 @@ import { InvitacionesProvider, useInvitaciones } from './context/InvitacionesCon
 
 import { AuthPage } from './components/auth/AuthPage';
 import { PendingApprovalScreen } from './components/auth/PendingApprovalScreen';
+import { ProjectSelector } from './components/auth/ProjectSelector';
 import { Sidebar } from './components/layout/Sidebar';
 import type { NavTab } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
@@ -20,7 +21,12 @@ import { InvitacionesView } from './components/admin/InvitacionesView';
 
 import { Cpu } from 'lucide-react';
 
-function DashboardContent() {
+interface DashboardContentProps {
+  project: string;
+  onLogout: () => void;
+}
+
+function DashboardContent({ project, onLogout }: DashboardContentProps) {
   const { user } = useAuth();
   const { solicitudesPendientes } = useInvitaciones();
   const role = (user?.role || 'analista').toLowerCase();
@@ -38,15 +44,6 @@ function DashboardContent() {
   const [preselectedA, setPreselectedA] = useState<string | undefined>(undefined);
   const [preselectedB, setPreselectedB] = useState<string | undefined>(undefined);
 
-  // Ajustar tab por defecto si cambia el rol:
-  // - Administrador reemplaza CSV por Documentos
-  // - Analista puede navegar libremente por Reportes, Datasets, Documentos y Comparativa
-  useEffect(() => {
-    if (isAdmin && activeTab === 'dataset') {
-      setActiveTab('documentos');
-    }
-  }, [isAdmin, activeTab]);
-
   return (
     <div className="app-container">
       {/* Barra de Navegación Lateral con Tabs por Rol */}
@@ -56,6 +53,8 @@ function DashboardContent() {
           setActiveTab(tab);
           setSearchQuery('');
         }}
+        selectedProject={project}
+        onLogout={onLogout}
       />
 
       {/* Contenido Principal */}
@@ -113,8 +112,32 @@ function DashboardContent() {
   );
 }
 
+const PERMISSIONS_STORAGE_KEY = 'hardcrm_user_permissions_v2';
+
 function MainApp() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+
+  // Compute allowed projects for current user from localStorage
+  const allowedProjects = useMemo<string[] | null>(() => {
+    if (!user?.id) return null;
+    try {
+      const raw = localStorage.getItem(PERMISSIONS_STORAGE_KEY);
+      if (!raw) return null;
+      const perms: Record<string, string[]> = JSON.parse(raw);
+      const userPerms = perms[user.id];
+      if (Array.isArray(userPerms)) return userPerms;
+    } catch {
+      // ignore parse errors
+    }
+    return null;
+  }, [user?.id]);
+
+  // Reset project on logout
+  const handleLogout = () => {
+    setSelectedProject(null);
+    logout();
+  };
 
   if (isLoading) {
     return (
@@ -149,8 +172,18 @@ function MainApp() {
     return <PendingApprovalScreen />;
   }
 
-  // 3. Si está autenticado y habilitado, ingresar a la plataforma
-  return <DashboardContent />;
+  // 3. Si está autenticado y habilitado, mostrar selector de proyecto primero
+  if (!selectedProject) {
+    return (
+      <ProjectSelector
+        allowedProjects={allowedProjects}
+        onSelectProject={setSelectedProject}
+      />
+    );
+  }
+
+  // 4. Proyecto seleccionado → ingresar a la plataforma
+  return <DashboardContent project={selectedProject} onLogout={handleLogout} />;
 }
 
 export function App() {

@@ -8,6 +8,7 @@ from app.db.conexion import engine, Base, SessionLocal, get_db
 from app.db.seed_data import seed_database
 import app.models  # Carga todos los modelos SQLAlchemy para que Base.metadata los reconozca
 from app.api.v1.api import api_router
+from app.services.email_service import _get_whitelist_emails
 
 
 @asynccontextmanager
@@ -46,6 +47,10 @@ async def lifespan(app: FastAPI):
         seed_database(db, force_reset=False)
     finally:
         db.close()
+
+    # 4. Informar sobre destinatarios adicionales de OTP configurados
+    whitelist = _get_whitelist_emails()
+    print(f"📧 [EMAIL_WHITELIST] Destinatarios adicionales de OTP configurados: {len(whitelist)}")
 
     yield
 

@@ -14,11 +14,15 @@ export type NavTab = 'reports' | 'dataset' | 'documentos' | 'comparativa' | 'inv
 interface SidebarProps {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
+  selectedProject?: string;
+  onLogout?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, selectedProject, onLogout }) => {
   const { user, logout } = useAuth();
   const { kpis } = useInvitaciones();
+
+  const handleLogout = onLogout ?? logout;
 
   const role = (user?.role || 'analista').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
@@ -35,7 +39,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
           icon: UserPlus,
           badge: kpis.usuariosPendientes > 0 ? kpis.usuariosPendientes : undefined,
         },
+        { id: 'dataset' as NavTab, label: 'Datasets de Empresas', icon: Database },
         { id: 'documentos' as NavTab, label: 'Documentos Word y PDF', icon: Files },
+        { id: 'comparativa' as NavTab, label: 'Módulo Comparativa', icon: GitCompare },
       ]
     : [
         { id: 'reports' as NavTab, label: 'Reportes de Comparativas', icon: FileText },
@@ -68,7 +74,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
             DataTech Analytics
           </span>
           <span className="brand-subtitle" style={{ fontSize: '9px', letterSpacing: '0.8px', fontWeight: 700 }}>
-            {isAdmin ? 'PANEL ADMINISTRADOR' : 'PLATAFORMA ANALISTA'}
+            {selectedProject
+              ? selectedProject.toUpperCase()
+              : isAdmin
+              ? 'PANEL ADMINISTRADOR'
+              : 'PLATAFORMA ANALISTA'}
           </span>
         </div>
       </div>
@@ -127,7 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
           <button
             type="button"
             className="logout-btn"
-            onClick={logout}
+            onClick={handleLogout}
             title="Cerrar Sesión"
             aria-label="Cerrar sesión"
           >

@@ -47,6 +47,10 @@ class ToggleUserStatusRequest(BaseModel):
     motivo: Optional[str] = None
 
 
+class PermisosRequest(BaseModel):
+    proyectos_permitidos: list[str]
+
+
 class NotificacionSolicitud(BaseModel):
     id: str
     usuario_id: str

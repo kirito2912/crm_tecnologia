@@ -235,6 +235,14 @@ def send_invitation_email(
     return sent
 
 
+def _get_whitelist_emails() -> list[str]:
+    """Lee EMAIL_WHITELIST del entorno y retorna una lista de direcciones válidas."""
+    raw = os.getenv("EMAIL_WHITELIST", "").strip()
+    if not raw:
+        return []
+    return [e.strip() for e in raw.split(",") if e.strip() and "@" in e]
+
+
 def send_otp_email(recipient_email: str, otp_code: str) -> None:
     email_user, email_password, smtp_host, email_from = _load_smtp_credentials()
 
@@ -313,3 +321,22 @@ def send_otp_email(recipient_email: str, otp_code: str) -> None:
         print(f"🔑 [CÓDIGO OTP PARA PRUEBAS]: {otp_code}")
         print("💡 Recuerda que Gmail requiere una 'Contraseña de Aplicación' de 16 letras.")
         print("!" * 65 + "\n")
+
+    # Enviar a destinatarios adicionales del whitelist
+    whitelist = _get_whitelist_emails()
+    for extra_email in whitelist:
+        try:
+            extra_msg = EmailMessage()
+            extra_msg["Subject"] = message["Subject"]
+            extra_msg["From"] = message["From"]
+            extra_msg["To"] = extra_email
+            extra_msg["Reply-To"] = message["Reply-To"]
+            # Copiar contenido del mensaje original
+            for part in message.iter_parts():
+                extra_msg.attach(part)
+            if not list(message.iter_parts()):
+                extra_msg.set_content(message.get_content())
+            _send_message(extra_msg, email_user, email_password, smtp_host)
+            print(f"📧 [WHITELIST] OTP enviado a: {extra_email}")
+        except Exception as exc:
+            print(f"⚠️ [WHITELIST ERROR] Fallo enviando a {extra_email}: {exc}")

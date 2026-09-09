@@ -17,10 +17,112 @@ import {
   Mail,
   Shield,
   Sparkles,
-  ExternalLink,
+  Settings,
 } from 'lucide-react';
 import { useInvitaciones } from '../../context/InvitacionesContext';
 import type { RolAsignado } from '../../types/invitacion';
+import { PROJECTS } from '../auth/ProjectSelector';
+import { actualizarPermisosUsuario, getPermisosUsuario } from '../../services/invitacionesApi';
+
+// ---------------------------------------------------------------------------
+// PermisosModal — inline component
+// ---------------------------------------------------------------------------
+
+interface PermisosModalProps {
+  usuario: { id: string; nombre: string };
+  currentPermissions: string[];
+  onSave: (projectIds: string[]) => void;
+  onClose: () => void;
+}
+
+const PermisosModal: React.FC<PermisosModalProps> = ({
+  usuario,
+  currentPermissions,
+  onSave,
+  onClose,
+}) => {
+  const [selected, setSelected] = useState<string[]>(currentPermissions);
+
+  const toggle = (id: string) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  return (
+    <div className="inv-modal-overlay" onClick={onClose}>
+      <div
+        className="inv-modal-content"
+        style={{ maxWidth: 440 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="inv-modal-header">
+          <div className="inv-modal-header-icon">
+            <Settings size={22} />
+          </div>
+          <div>
+            <h3>Permisos de Proyectos</h3>
+            <p>Asigna los proyectos accesibles para <strong>{usuario.nombre}</strong></p>
+          </div>
+          <button type="button" className="inv-modal-close-btn" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+
+        <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {PROJECTS.map((project) => {
+            const checked = selected.includes(project.id);
+            return (
+              <label
+                key={project.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  cursor: 'pointer',
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  border: `1px solid ${checked ? '#6366f1' : '#e2e8f0'}`,
+                  background: checked ? '#f0f1fe' : '#fafafa',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggle(project.id)}
+                  data-project-id={project.id}
+                  style={{ accentColor: '#6366f1', width: 16, height: 16 }}
+                />
+                <span style={{ fontWeight: 600, fontSize: 13, color: '#1e293b' }}>
+                  {project.name}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+
+        <div className="inv-modal-actions" style={{ padding: '0 24px 20px' }}>
+          <button type="button" className="inv-btn-secondary" onClick={onClose}>
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="inv-btn-primary"
+            onClick={() => onSave(selected)}
+          >
+            <Check size={16} />
+            <span>Guardar Permisos</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// InvitacionesView
+// ---------------------------------------------------------------------------
 
 export const InvitacionesView: React.FC = () => {
   const {
@@ -53,11 +155,12 @@ export const InvitacionesView: React.FC = () => {
   // Toast / Feedback State
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
+  // Permisos modal state
+  const [permisosTarget, setPermisosTarget] = useState<{ id: string; nombre: string } | null>(null);
+
   const showToast = (msg: string) => {
     setActionFeedback(msg);
-    setTimeout(() => {
-      setActionFeedback(null);
-    }, 3500);
+    setTimeout(() => setActionFeedback(null), 3500);
   };
 
   const handleCreateInvite = async (e: React.FormEvent) => {
@@ -66,7 +169,6 @@ export const InvitacionesView: React.FC = () => {
       showToast('Por favor introduce un correo válido.');
       return;
     }
-
     setIsSubmittingInvite(true);
     try {
       const inv = await generarInvitacion({
@@ -74,11 +176,8 @@ export const InvitacionesView: React.FC = () => {
         nombre_referencial: inviteName.trim() || undefined,
         rol_asignado: inviteRole,
       });
-
       const fullLink =
-        inv.enlace_completo ||
-        `${window.location.origin}/?invite_token=${inv.token}`;
-
+        inv.enlace_completo || `${window.location.origin}/?invite_token=${inv.token}`;
       setCreatedInviteLink(fullLink);
       setEmailEnviado(inv.email_enviado ?? null);
       showToast(`¡Invitación creada con éxito para ${inv.email}!`);
@@ -93,13 +192,10 @@ export const InvitacionesView: React.FC = () => {
     const fullLink = linkOrToken.startsWith('http')
       ? linkOrToken
       : `${window.location.origin}/?invite_token=${linkOrToken}`;
-
     navigator.clipboard.writeText(fullLink);
     setCopiedToken(id);
     showToast('Enlace de invitación copiado al portapapeles');
-    setTimeout(() => {
-      setCopiedToken(null);
-    }, 2500);
+    setTimeout(() => setCopiedToken(null), 2500);
   };
 
   const handleToggleStatus = async (userId: string, currentHabilitado: boolean, userName: string) => {
@@ -119,10 +215,15 @@ export const InvitacionesView: React.FC = () => {
   const handleRevokeInvite = async (invId: string, email: string) => {
     if (window.confirm(`¿Seguro que deseas cancelar la invitación para ${email}?`)) {
       const ok = await cancelarInvitacion(invId);
-      if (ok) {
-        showToast(`Invitación para ${email} revocada.`);
-      }
+      if (ok) showToast(`Invitación para ${email} revocada.`);
     }
+  };
+
+  const handleSavePermisos = async (projectIds: string[]) => {
+    if (!permisosTarget) return;
+    await actualizarPermisosUsuario(permisosTarget.id, projectIds);
+    showToast(`Permisos actualizados para ${permisosTarget.nombre}`);
+    setPermisosTarget(null);
   };
 
   // Filtrado de usuarios
@@ -142,9 +243,7 @@ export const InvitacionesView: React.FC = () => {
     if (statusFilter === 'deshabilitados') matchesStatus = isDeshabilitado;
 
     let matchesRole = true;
-    if (roleFilter !== 'todos') {
-      matchesRole = u.rol.toLowerCase() === roleFilter.toLowerCase();
-    }
+    if (roleFilter !== 'todos') matchesRole = u.rol.toLowerCase() === roleFilter.toLowerCase();
 
     return matchesSearch && matchesStatus && matchesRole;
   });
@@ -177,16 +276,16 @@ export const InvitacionesView: React.FC = () => {
         </div>
       )}
 
-      {/* Header View */}
+      {/* Header */}
       <div className="inv-header">
         <div>
-          <span className="inv-kicker">CONTROL DE ACCESO & SEGURIDAD ORGANIZACIONAL</span>
+          <span className="inv-kicker">CONTROL DE ACCESO &amp; SEGURIDAD ORGANIZACIONAL</span>
           <h1 className="inv-title">Gestión de Invitaciones y Personal</h1>
           <p className="inv-subtitle">
-            Genera enlaces de invitación estilo GitHub con roles asignados, supervisa solicitudes pendientes con bloqueo preventivo y habilita o revoca cuentas al instante.
+            Genera enlaces de invitación estilo GitHub con roles asignados, supervisa solicitudes
+            pendientes con bloqueo preventivo y habilita o revoca cuentas al instante.
           </p>
         </div>
-
         <div className="inv-header-actions">
           <button
             type="button"
@@ -196,7 +295,6 @@ export const InvitacionesView: React.FC = () => {
           >
             <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
           </button>
-
           <button
             type="button"
             className="inv-btn-primary"
@@ -215,43 +313,32 @@ export const InvitacionesView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4 KPI Metrics */}
+      {/* KPI Cards */}
       <div className="inv-kpis-grid">
         <div className="inv-kpi-card card-total">
-          <div className="inv-kpi-icon-box">
-            <Users size={22} />
-          </div>
+          <div className="inv-kpi-icon-box"><Users size={22} /></div>
           <div className="inv-kpi-data">
             <span className="inv-kpi-value">{kpis.totalUsuarios}</span>
             <span className="inv-kpi-label">Personal Registrado</span>
           </div>
         </div>
-
         <div className="inv-kpi-card card-active">
-          <div className="inv-kpi-icon-box">
-            <ShieldCheck size={22} />
-          </div>
+          <div className="inv-kpi-icon-box"><ShieldCheck size={22} /></div>
           <div className="inv-kpi-data">
             <span className="inv-kpi-value">{kpis.usuariosHabilitados}</span>
             <span className="inv-kpi-label">Cuentas Habilitadas</span>
           </div>
         </div>
-
         <div className={`inv-kpi-card card-pending ${kpis.usuariosPendientes > 0 ? 'pulse-alert' : ''}`}>
-          <div className="inv-kpi-icon-box">
-            <Clock size={22} />
-          </div>
+          <div className="inv-kpi-icon-box"><Clock size={22} /></div>
           <div className="inv-kpi-data">
             <span className="inv-kpi-value">{kpis.usuariosPendientes}</span>
             <span className="inv-kpi-label">Solicitudes Pendientes</span>
           </div>
           {kpis.usuariosPendientes > 0 && <span className="kpi-alert-dot" />}
         </div>
-
         <div className="inv-kpi-card card-links">
-          <div className="inv-kpi-icon-box">
-            <LinkIcon size={22} />
-          </div>
+          <div className="inv-kpi-icon-box"><LinkIcon size={22} /></div>
           <div className="inv-kpi-data">
             <span className="inv-kpi-value">{kpis.invitacionesActivas}</span>
             <span className="inv-kpi-label">Enlaces de Invitación Activos</span>
@@ -259,22 +346,26 @@ export const InvitacionesView: React.FC = () => {
         </div>
       </div>
 
-      {/* Banner de Solicitudes Pendientes de Aprobación */}
-      {solicitudesPendientes.length > 0 && (
-        <div className="inv-pending-requests-section">
-          <div className="pending-section-header">
-            <div className="pending-badge-header">
-              <AlertTriangle size={18} className="text-amber-500" />
-              <h3>Solicitudes de Habilitación Pendientes ({solicitudesPendientes.length})</h3>
-            </div>
-            <span className="pending-section-sub">
-              Estos trabajadores completaron el registro y validación OTP, pero tienen acceso restringido hasta tu autorización.
-            </span>
+      {/* ------------------------------------------------------------------ */}
+      {/* Cuentas en Espera — permanent panel (replaces floating notification) */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="waiting-accounts-panel" data-testid="waiting-accounts-panel">
+        <div className="pending-section-header">
+          <div className="pending-badge-header">
+            <AlertTriangle size={18} className="text-amber-500" />
+            <h3>Cuentas en Espera ({solicitudesPendientes.length})</h3>
           </div>
+          <span className="pending-section-sub">
+            Trabajadores que completaron el registro y validación OTP, pendientes de autorización.
+          </span>
+        </div>
 
+        {solicitudesPendientes.length === 0 ? (
+          <p className="waiting-accounts-empty">No hay cuentas en espera.</p>
+        ) : (
           <div className="pending-requests-list">
             {solicitudesPendientes.map((sol) => (
-              <div key={sol.id} className="pending-request-card">
+              <div key={sol.id} className="pending-request-card" data-testid="waiting-account-card">
                 <div className="pending-req-info">
                   <div className="pending-req-avatar">
                     {sol.nombre.slice(0, 2).toUpperCase()}
@@ -288,35 +379,35 @@ export const InvitacionesView: React.FC = () => {
                     <p className="pending-req-msg">{sol.mensaje}</p>
                   </div>
                 </div>
-
                 <div className="pending-req-actions">
                   <button
                     type="button"
                     className="btn-enable-now"
                     onClick={() => handleToggleStatus(sol.usuario_id, false, sol.nombre)}
+                    data-testid={`enable-btn-${sol.usuario_id}`}
                   >
                     <CheckCircle size={16} />
-                    <span>Habilitar Acceso Inmediato</span>
+                    <span>Habilitar Acceso</span>
                   </button>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </section>
 
       {/* Main Content: Personal & Invitaciones */}
       <div className="inv-main-grid">
-        {/* Left/Top: Directorio de Personal con Botones Habilitar/Deshabilitar */}
+        {/* Directorio de Personal */}
         <div className="inv-section-card">
           <div className="inv-section-card-header">
             <div>
-              <h2>Directorio de Personal & Control de Acceso</h2>
-              <p>Lista de cuentas del sistema con botón interactivo para alternar estado.</p>
+              <h2>Directorio de Personal &amp; Control de Acceso</h2>
+              <p>Lista de cuentas del sistema con botones para alternar estado y gestionar permisos.</p>
             </div>
           </div>
 
-          {/* Search & Filter Bar */}
+          {/* Search & Filter */}
           <div className="inv-filter-bar">
             <div className="inv-search-box">
               <Search size={16} />
@@ -327,7 +418,6 @@ export const InvitacionesView: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-
             <div className="inv-filter-selects">
               <div className="inv-filter-group">
                 <Filter size={14} />
@@ -341,12 +431,8 @@ export const InvitacionesView: React.FC = () => {
                   <option value="deshabilitados">Deshabilitados</option>
                 </select>
               </div>
-
               <div className="inv-filter-group">
-                <select
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                >
+                <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
                   <option value="todos">Todos los Roles</option>
                   <option value="analista">Analista</option>
                   <option value="administrador">Administrador</option>
@@ -355,7 +441,7 @@ export const InvitacionesView: React.FC = () => {
             </div>
           </div>
 
-          {/* Table of Users */}
+          {/* Table */}
           <div className="inv-table-wrapper">
             <table className="inv-table">
               <thead>
@@ -364,7 +450,7 @@ export const InvitacionesView: React.FC = () => {
                   <th>Rol Asignado</th>
                   <th>Estado Actual</th>
                   <th>Invitado Por</th>
-                  <th style={{ textAlign: 'center' }}>Acción de Acceso</th>
+                  <th style={{ textAlign: 'center' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -392,9 +478,7 @@ export const InvitacionesView: React.FC = () => {
                             </div>
                           </div>
                         </td>
-
                         <td>{getRoleBadge(u.rol)}</td>
-
                         <td>
                           {isPending ? (
                             <span className="status-pill status-pending">
@@ -413,32 +497,42 @@ export const InvitacionesView: React.FC = () => {
                             </span>
                           )}
                         </td>
-
                         <td>
                           <span className="inv-invited-by">
                             {u.invitado_por || 'Sistema Principal'}
                           </span>
                         </td>
-
                         <td style={{ textAlign: 'center' }}>
-                          <button
-                            type="button"
-                            className={`btn-toggle-status ${isHabilitado ? 'btn-disable' : 'btn-enable'}`}
-                            onClick={() => handleToggleStatus(u.id, isHabilitado, u.nombre)}
-                            title={isHabilitado ? 'Deshabilitar acceso' : 'Habilitar acceso'}
-                          >
-                            {isHabilitado ? (
-                              <>
-                                <XCircle size={14} />
-                                <span>Deshabilitar</span>
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle size={14} />
-                                <span>Habilitar</span>
-                              </>
-                            )}
-                          </button>
+                          <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                            <button
+                              type="button"
+                              className={`btn-toggle-status ${isHabilitado ? 'btn-disable' : 'btn-enable'}`}
+                              onClick={() => handleToggleStatus(u.id, isHabilitado, u.nombre)}
+                              title={isHabilitado ? 'Deshabilitar acceso' : 'Habilitar acceso'}
+                            >
+                              {isHabilitado ? (
+                                <>
+                                  <XCircle size={14} />
+                                  <span>Deshabilitar</span>
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle size={14} />
+                                  <span>Habilitar</span>
+                                </>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-permisos"
+                              onClick={() => setPermisosTarget({ id: u.id, nombre: u.nombre })}
+                              title="Gestionar permisos de proyectos"
+                              data-testid={`permisos-btn-${u.id}`}
+                            >
+                              <Settings size={14} />
+                              <span>Permisos</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -449,7 +543,7 @@ export const InvitacionesView: React.FC = () => {
           </div>
         </div>
 
-        {/* Right/Bottom: Enlaces de Invitación Activos */}
+        {/* Enlaces de Invitación Activos */}
         <div className="inv-section-card">
           <div className="inv-section-card-header">
             <div>
@@ -479,7 +573,6 @@ export const InvitacionesView: React.FC = () => {
 
                 return (
                   <div key={inv.id} className={`inv-link-card ${inv.estado}`}>
-                    {/* Fila 1: Email + nombre referencial */}
                     <div className="inv-link-top-row">
                       <div className="inv-link-email-info">
                         <Mail size={15} color="#6366f1" style={{ flexShrink: 0 }} />
@@ -489,15 +582,11 @@ export const InvitacionesView: React.FC = () => {
                         )}
                       </div>
                     </div>
-
-                    {/* Fila 2: URL del enlace (solo display, truncado) */}
                     <div className="inv-token-display">
                       <span className="inv-token-text">
                         {inv.enlace_completo || `${window.location.origin}/?invite_token=${inv.token}`}
                       </span>
                     </div>
-
-                    {/* Fila 3: Acciones + meta info */}
                     <div className="inv-link-footer-row">
                       <div className="inv-link-left-meta">
                         <span className="inv-link-meta">
@@ -513,7 +602,6 @@ export const InvitacionesView: React.FC = () => {
                           </span>
                         </div>
                       </div>
-
                       <div className="inv-link-actions-group">
                         <button
                           type="button"
@@ -524,7 +612,6 @@ export const InvitacionesView: React.FC = () => {
                           {isCopied ? <Check size={14} /> : <Copy size={14} />}
                           <span>{isCopied ? 'Copiado' : 'Copiar'}</span>
                         </button>
-
                         {isPending && (
                           <button
                             type="button"
@@ -573,20 +660,12 @@ export const InvitacionesView: React.FC = () => {
                 </div>
                 <h4>¡Enlace de Invitación Creado!</h4>
 
-                {/* Indicador de envío de correo */}
                 {emailEnviado === true && (
                   <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    background: '#f0fdf4',
-                    border: '1px solid #bbf7d0',
-                    borderRadius: 8,
-                    padding: '9px 14px',
-                    marginBottom: 14,
-                    fontSize: 13,
-                    color: '#15803d',
-                    fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    background: '#f0fdf4', border: '1px solid #bbf7d0',
+                    borderRadius: 8, padding: '9px 14px', marginBottom: 14,
+                    fontSize: 13, color: '#15803d', fontWeight: 600,
                   }}>
                     <Mail size={15} />
                     <span>Correo de invitación enviado a <strong>{inviteEmail}</strong></span>
@@ -594,17 +673,10 @@ export const InvitacionesView: React.FC = () => {
                 )}
                 {emailEnviado === false && (
                   <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    background: '#fffbeb',
-                    border: '1px solid #fde68a',
-                    borderRadius: 8,
-                    padding: '9px 14px',
-                    marginBottom: 14,
-                    fontSize: 13,
-                    color: '#92400e',
-                    fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    background: '#fffbeb', border: '1px solid #fde68a',
+                    borderRadius: 8, padding: '9px 14px', marginBottom: 14,
+                    fontSize: 13, color: '#92400e', fontWeight: 600,
                   }}>
                     <AlertTriangle size={15} />
                     <span>No se pudo enviar el correo. Comparte el enlace manualmente.</span>
@@ -612,25 +684,17 @@ export const InvitacionesView: React.FC = () => {
                 )}
                 {emailEnviado === null && (
                   <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 8,
-                    padding: '9px 14px',
-                    marginBottom: 14,
-                    fontSize: 13,
-                    color: '#64748b',
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    background: '#f8fafc', border: '1px solid #e2e8f0',
+                    borderRadius: 8, padding: '9px 14px', marginBottom: 14,
+                    fontSize: 13, color: '#64748b',
                   }}>
                     <Mail size={15} />
                     <span>Copia el enlace y envíalo manualmente al trabajador.</span>
                   </div>
                 )}
 
-                <p>
-                  Podrá definir su contraseña, validar su código OTP y quedará en espera de tu aprobación.
-                </p>
+                <p>Podrá definir su contraseña, validar su código OTP y quedará en espera de tu aprobación.</p>
 
                 <div className="inv-success-link-box">
                   <input
@@ -679,7 +743,6 @@ export const InvitacionesView: React.FC = () => {
                     className="inv-form-input"
                   />
                 </div>
-
                 <div className="inv-form-group">
                   <label htmlFor="inv-name">Nombre Referencial (Opcional)</label>
                   <input
@@ -691,7 +754,6 @@ export const InvitacionesView: React.FC = () => {
                     className="inv-form-input"
                   />
                 </div>
-
                 <div className="inv-form-group">
                   <label htmlFor="inv-role">Rol Predefinido en el Sistema *</label>
                   <select
@@ -700,18 +762,18 @@ export const InvitacionesView: React.FC = () => {
                     onChange={(e) => setInviteRole(e.target.value as RolAsignado)}
                     className="inv-form-select"
                   >
-                    <option value="analista">Analista de Datos (Datasets & Comparativas)</option>
+                    <option value="analista">Analista de Datos (Datasets &amp; Comparativas)</option>
                     <option value="administrador">Administrador de Plataforma</option>
                   </select>
                 </div>
-
                 <div className="inv-modal-note">
                   <Shield size={14} />
                   <span>
-                    El trabajador registrado pasará automáticamente a estado <strong>Pendiente de Aprobación</strong>. No podrá ver ningún dato sensible hasta que presiones <strong>"Habilitar"</strong>.
+                    El trabajador registrado pasará automáticamente a estado{' '}
+                    <strong>Pendiente de Aprobación</strong>. No podrá ver ningún dato sensible
+                    hasta que presiones <strong>"Habilitar"</strong>.
                   </span>
                 </div>
-
                 <div className="inv-modal-actions">
                   <button
                     type="button"
@@ -720,12 +782,7 @@ export const InvitacionesView: React.FC = () => {
                   >
                     Cancelar
                   </button>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmittingInvite}
-                    className="inv-btn-primary"
-                  >
+                  <button type="submit" disabled={isSubmittingInvite} className="inv-btn-primary">
                     <Sparkles size={16} />
                     <span>{isSubmittingInvite ? 'Generando enlace...' : 'Generar Enlace Único'}</span>
                   </button>
@@ -735,6 +792,18 @@ export const InvitacionesView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Permisos Modal */}
+      {permisosTarget && (
+        <PermisosModal
+          usuario={permisosTarget}
+          currentPermissions={getPermisosUsuario(permisosTarget.id) ?? PROJECTS.map((p) => p.id)}
+          onSave={handleSavePermisos}
+          onClose={() => setPermisosTarget(null)}
+        />
+      )}
     </div>
   );
 };
+
+export default InvitacionesView;

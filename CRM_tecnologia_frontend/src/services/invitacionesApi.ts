@@ -9,7 +9,8 @@ import type {
   EstadoUsuario,
 } from '../types/invitacion';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1/invitaciones';
+const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = `${BACKEND_BASE_URL}/api/v1/invitaciones`;
 const LOCAL_STORAGE_INVITACIONES_KEY = 'hardcrm_invitaciones_list_v2';
 const LOCAL_STORAGE_USERS_KEY = 'hardcrm_users_directory_v2';
 
@@ -359,4 +360,45 @@ export async function revocarInvitacion(invitacionId: string): Promise<{ message
   const filtered = invs.filter((i) => i.id !== invitacionId);
   saveStoredInvitaciones(filtered);
   return { message: 'Invitación eliminada correctamente.' };
+}
+
+const LOCAL_STORAGE_PERMISSIONS_KEY = 'hardcrm_user_permissions_v2';
+
+export async function actualizarPermisosUsuario(
+  userId: string,
+  proyectosPermitidos: string[]
+): Promise<void> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/usuarios/${userId}/permisos`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ proyectos_permitidos: proyectosPermitidos }),
+    });
+    if (res.ok) {
+      // Also sync localStorage for ProjectSelector to pick up immediately
+      const raw = localStorage.getItem(LOCAL_STORAGE_PERMISSIONS_KEY);
+      const all: Record<string, string[]> = raw ? JSON.parse(raw) : {};
+      all[userId] = proyectosPermitidos;
+      localStorage.setItem(LOCAL_STORAGE_PERMISSIONS_KEY, JSON.stringify(all));
+      return;
+    }
+  } catch (err) {
+    console.warn('[InvitacionesApi] Permisos PATCH fallback:', err);
+  }
+  // Fallback: persist only in localStorage
+  const raw = localStorage.getItem(LOCAL_STORAGE_PERMISSIONS_KEY);
+  const all: Record<string, string[]> = raw ? JSON.parse(raw) : {};
+  all[userId] = proyectosPermitidos;
+  localStorage.setItem(LOCAL_STORAGE_PERMISSIONS_KEY, JSON.stringify(all));
+}
+
+export function getPermisosUsuario(userId: string): string[] | null {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_PERMISSIONS_KEY);
+    if (!raw) return null;
+    const all: Record<string, string[]> = JSON.parse(raw);
+    return all[userId] ?? null;
+  } catch {
+    return null;
+  }
 }
