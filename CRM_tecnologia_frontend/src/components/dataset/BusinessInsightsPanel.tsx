@@ -24,27 +24,27 @@ const severityConfig: Record<
 > = {
   positive: {
     icon: <TrendingUp size={18} />,
-    border: '#86efac',
-    bg: '#f0fdf4',
-    color: '#059669',
+    border: '#0d3d2c',
+    bg: '#0a2e22',
+    color: '#00ff88',
   },
   negative: {
     icon: <TrendingDown size={18} />,
-    border: '#fca5a5',
-    bg: '#fef2f2',
-    color: '#dc2626',
+    border: '#5a1515',
+    bg: '#3d0d0d',
+    color: '#ff0055',
   },
   warning: {
     icon: <AlertTriangle size={18} />,
-    border: '#fde68a',
-    bg: '#fffbeb',
-    color: '#d97706',
+    border: '#5a4510',
+    bg: '#2a2208',
+    color: '#ffaa00',
   },
   info: {
     icon: <Info size={18} />,
     border: '#bfdbfe',
-    bg: '#eff6ff',
-    color: '#2563eb',
+    bg: '#0d2840',
+    color: '#00d4ff',
   },
 };
 

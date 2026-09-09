@@ -111,7 +111,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
       <div className="document-card__metadata">
         <div className="doc-meta-row">
           <div className="doc-meta-item">
-            <User size={13} color="#64748b" />
+            <User size={13} color="#6b7494" />
             <span className="doc-uploader-name">{documento.subido_por}</span>
           </div>
 
@@ -127,7 +127,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
 
         <div className="doc-meta-row doc-meta-row--secondary">
           <div className="doc-meta-item">
-            <Calendar size={13} color="#94a3b8" />
+            <Calendar size={13} color="#6b7494" />
             <span>
               {new Date(documento.created_at).toLocaleDateString('es-PE', {
                 day: '2-digit',

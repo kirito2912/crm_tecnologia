@@ -56,7 +56,7 @@ export const ReportHistoryModal: React.FC<ReportHistoryModalProps> = ({ onClose 
       >
         <div className="report-modal-header">
           <div className="report-modal-title-box">
-            <div className="report-modal-icon-badge" style={{ background: '#e0e7ff', color: '#4338ca' }}>
+            <div className="report-modal-icon-badge" style={{ background: '#0f2a48', color: '#0099cc' }}>
               <FileText size={18} />
             </div>
             <div>
@@ -72,7 +72,7 @@ export const ReportHistoryModal: React.FC<ReportHistoryModalProps> = ({ onClose 
         <div className="report-history-body">
           {reportes.length === 0 ? (
             <div className="report-empty-state">
-              <FileText size={42} color="#cbd5e1" />
+              <FileText size={42} color="#3a4165" />
               <p>Aún no has enviado reportes comparativos.</p>
               <span>Genera una comparativa entre dos datasets y haz clic en "Enviar Reporte al Administrador".</span>
             </div>
@@ -96,12 +96,12 @@ export const ReportHistoryModal: React.FC<ReportHistoryModalProps> = ({ onClose 
 
                   <div className="report-history-companies">
                     <div className="rep-comp-item">
-                      <Building2 size={13} color="#2563eb" />
+                      <Building2 size={13} color="#00d4ff" />
                       <span>{rep.dataset_a_nombre}</span>
                     </div>
                     <span className="rep-vs">vs</span>
                     <div className="rep-comp-item">
-                      <Building2 size={13} color="#7c3aed" />
+                      <Building2 size={13} color="#bf00ff" />
                       <span>{rep.dataset_b_nombre}</span>
                     </div>
                   </div>
@@ -113,7 +113,7 @@ export const ReportHistoryModal: React.FC<ReportHistoryModalProps> = ({ onClose 
                   {rep.feedback_admin && (
                     <div className="report-history-feedback">
                       <div className="rep-feedback-header">
-                        <MessageSquare size={14} color="#059669" />
+                        <MessageSquare size={14} color="#00ff88" />
                         <span>Comentario / Feedback del Administrador:</span>
                         {rep.admin_responsable && (
                           <span className="rep-admin-name">({rep.admin_responsable})</span>

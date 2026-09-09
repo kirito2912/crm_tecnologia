@@ -54,8 +54,8 @@ const MONTH_FACTORS = [
 const DeltaBadge: React.FC<{ dir: 'up'|'down'|'eq'; label: string; invert?: boolean; size?: 'sm'|'md' }> = ({ dir, label, invert, size = 'sm' }) => {
   const good = invert ? dir === 'down' : dir === 'up';
   const bad  = invert ? dir === 'up'   : dir === 'down';
-  const color = good ? '#059669' : bad ? '#dc2626' : '#94a3b8';
-  const bg    = good ? '#dcfce7' : bad ? '#fee2e2' : '#f1f5f9';
+  const color = good ? '#00ff88' : bad ? '#ff0055' : '#6b7494';
+  const bg    = good ? '#0d3d2c' : bad ? '#4a1010' : '#12172e';
   const Icon  = dir === 'up' ? ArrowUpRight : dir === 'down' ? ArrowDownRight : Minus;
   return (
     <span className={`cmp2-delta${size === 'md' ? ' cmp2-delta--md' : ''}`} style={{ background: bg, color }}>
@@ -219,8 +219,8 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
     return Math.round(monthlyQuantityData.reduce((s, m) => s + m.qtyB, 0) / monthlyQuantityData.length);
   }, [monthlyQuantityData]);
 
-  const colorA = cmp?.datasetA.color ?? '#2563eb';
-  const colorB = cmp?.datasetB.color ?? '#7c3aed';
+  const colorA = cmp?.datasetA.color ?? '#00d4ff';
+  const colorB = cmp?.datasetB.color ?? '#bf00ff';
   const canCompare = idA && idB && idA !== idB;
 
   // Score competitividad (mayor ingreso = ganador)
@@ -247,7 +247,7 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
       <div className="cmp2__control-row">
         <SelectorBox label="Dataset A" sub="Tu empresa / periodo actual" color={colorA} datasets={datasets} value={idA} onChange={setIdA} exclude={idB} />
         <div className="cmp2__control-mid">
-          <div className="cmp2__vs-ring"><GitCompare size={18} color="#94a3b8" /></div>
+          <div className="cmp2__vs-ring"><GitCompare size={18} color="#6b7494" /></div>
           <button className="cmp2__analyze-btn" onClick={handleCompare} disabled={!canCompare || loading}>
             {loading ? <><RefreshCw size={15} className="spin" />Analizando...</> : <><Sparkles size={15} />Analizar</>}
           </button>
@@ -258,8 +258,8 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
       {!cmp && !loading && (
         <div className="cmp2__empty">
           {datasets.length < 2
-            ? <><Info size={40} color="#a5b4fc" /><p>Necesitas al menos 2 datasets</p><span>Ve a <b>Dataset</b>, sube dos archivos CSV y vuelve aquí</span></>
-            : <><GitCompare size={40} color="#c7d2fe" /><p>Selecciona A y B · presiona Analizar</p><span>KPIs · Gráfico de línea por cantidad vendida · Competitividad · Insights ejecutivos</span></>
+            ? <><Info size={40} color="#66e8ff" /><p>Necesitas al menos 2 datasets</p><span>Ve a <b>Dataset</b>, sube dos archivos CSV y vuelve aquí</span></>
+            : <><GitCompare size={40} color="#1a3a55" /><p>Selecciona A y B · presiona Analizar</p><span>KPIs · Gráfico de línea por cantidad vendida · Competitividad · Insights ejecutivos</span></>
           }
         </div>
       )}
@@ -301,18 +301,18 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
 
           {reportSuccessToast && (
             <div className="cmp2__toast-success">
-              <CheckCircle2 size={16} color="#10b981" />
+              <CheckCircle2 size={16} color="#00ff88" />
               <span>¡Reporte enviado exitosamente al Administrador!</span>
             </div>
           )}
 
           {/* Banda de nombres */}
           <div className="cmp2__names-bar">
-            <span className="cmp2__name-pill" style={{ background: `color-mix(in srgb, ${colorA} 12%, #fff)`, borderColor: colorA, color: colorA }}>
+            <span className="cmp2__name-pill" style={{ background: `color-mix(in srgb, ${colorA} 12%, #1a1f3a)`, borderColor: colorA, color: colorA }}>
               <span className="cmp2__name-dot" style={{ background: colorA }} />A · {cmp.datasetA.name}
             </span>
             <span className="cmp2__name-sep">vs</span>
-            <span className="cmp2__name-pill" style={{ background: `color-mix(in srgb, ${colorB} 12%, #fff)`, borderColor: colorB, color: colorB }}>
+            <span className="cmp2__name-pill" style={{ background: `color-mix(in srgb, ${colorB} 12%, #1a1f3a)`, borderColor: colorB, color: colorB }}>
               <span className="cmp2__name-dot" style={{ background: colorB }} />B · {cmp.datasetB.name}
             </span>
           </div>
@@ -419,18 +419,18 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
                 data={monthlyQuantityData}
                 margin={{ top: 25, right: 30, left: 10, bottom: 25 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={true} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2a3155" vertical={true} />
                 <XAxis
                   dataKey="mes"
-                  tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
-                  axisLine={{ stroke: '#cbd5e1' }}
+                  tick={{ fontSize: 11, fill: '#8b93b0', fontWeight: 500 }}
+                  axisLine={{ stroke: '#3a4165' }}
                   tickLine={false}
                   dy={8}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
+                  tick={{ fontSize: 11, fill: '#8b93b0', fontWeight: 500 }}
                   tickFormatter={(v) => `${v} un.`}
-                  axisLine={{ stroke: '#cbd5e1' }}
+                  axisLine={{ stroke: '#3a4165' }}
                   tickLine={false}
                   width={65}
                 />
@@ -459,7 +459,7 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
                         )}
                         <div
                           className="cmp2-tt__diff"
-                          style={{ color: diff >= 0 ? '#059669' : '#dc2626', marginTop: 4, paddingTop: 4, borderTop: '1px solid #f1f5f9' }}
+                          style={{ color: diff >= 0 ? '#00ff88' : '#ff0055', marginTop: 4, paddingTop: 4, borderTop: '1px solid #12172e' }}
                         >
                           Diferencia: {diff >= 0 ? '+' : ''}{diff} unidades ({diff >= 0 ? 'Lidera A' : 'Lidera B'})
                         </div>
@@ -470,7 +470,7 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
                 <Legend
                   wrapperStyle={{ paddingTop: 14 }}
                   formatter={(value) => (
-                    <span style={{ fontSize: 12, fontWeight: 600, color: '#334155' }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#a8b2d1' }}>
                       {value === 'qtyA' ? `${cmp.datasetA.name} (Unidades vendidas)` : `${cmp.datasetB.name} (Unidades vendidas)`}
                     </span>
                   )}
@@ -481,8 +481,8 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
                   name="qtyA"
                   stroke={colorA}
                   strokeWidth={3}
-                  dot={{ r: 5, fill: colorA, stroke: '#ffffff', strokeWidth: 2 }}
-                  activeDot={{ r: 8, fill: colorA, stroke: '#ffffff', strokeWidth: 2 }}
+                  dot={{ r: 5, fill: colorA, stroke: '#1a1f3a', strokeWidth: 2 }}
+                  activeDot={{ r: 8, fill: colorA, stroke: '#1a1f3a', strokeWidth: 2 }}
                 />
                 <Line
                   type="monotone"
@@ -490,8 +490,8 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
                   name="qtyB"
                   stroke={colorB}
                   strokeWidth={3}
-                  dot={{ r: 5, fill: colorB, stroke: '#ffffff', strokeWidth: 2 }}
-                  activeDot={{ r: 8, fill: colorB, stroke: '#ffffff', strokeWidth: 2 }}
+                  dot={{ r: 5, fill: colorB, stroke: '#1a1f3a', strokeWidth: 2 }}
+                  activeDot={{ r: 8, fill: colorB, stroke: '#1a1f3a', strokeWidth: 2 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -505,17 +505,17 @@ export const ComparacionView: React.FC<{ preselectedA?: string; preselectedB?: s
               : (
                 <div className="cmp2__insights-grid">
                   {insights.map(i=>{
-                    const cfg={ negative:{bg:'#fef2f2',border:'#fca5a5',color:'#dc2626',Icon:TrendingDown}, warning:{bg:'#fffbeb',border:'#fde68a',color:'#d97706',Icon:AlertTriangle}, positive:{bg:'#f0fdf4',border:'#86efac',color:'#059669',Icon:TrendingUp}, info:{bg:'#eff6ff',border:'#bfdbfe',color:'#2563eb',Icon:Info} }[i.severity];
+                    const cfg={ negative:{bg:'#3d0d0d',border:'#5a1515',color:'#ff0055',Icon:TrendingDown}, warning:{bg:'#2a2208',border:'#5a4510',color:'#ffaa00',Icon:AlertTriangle}, positive:{bg:'#0a2e22',border:'#0d3d2c',color:'#00ff88',Icon:TrendingUp}, info:{bg:'#0d2840',border:'#bfdbfe',color:'#00d4ff',Icon:Info} }[i.severity];
                     return (
                       <div key={i.id} className="cmp2__insight" style={{ background:cfg.bg, borderColor:cfg.border }}>
-                        <div className="cmp2__insight-icon" style={{ color:cfg.color, background:`color-mix(in srgb, ${cfg.border} 50%, #fff)` }}><cfg.Icon size={18}/></div>
+                        <div className="cmp2__insight-icon" style={{ color:cfg.color, background:`color-mix(in srgb, ${cfg.border} 50%, #1a1f3a)` }}><cfg.Icon size={18}/></div>
                         <div className="cmp2__insight-body">
                           <div className="cmp2__insight-header">
                             <h4 style={{ color:cfg.color }}>{i.title}</h4>
                             {i.metric&&<span className="cmp2__insight-metric" style={{ background:cfg.border, color:cfg.color }}>{i.metric}</span>}
                           </div>
                           <p>{i.description}</p>
-                          {i.recommendation&&<div className="cmp2__insight-rec"><Lightbulb size={12} color="#d97706"/>{i.recommendation}</div>}
+                          {i.recommendation&&<div className="cmp2__insight-rec"><Lightbulb size={12} color="#ffaa00"/>{i.recommendation}</div>}
                         </div>
                       </div>
                     );

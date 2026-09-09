@@ -21,8 +21,8 @@ interface CsvDetailModalProps {
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 const PALETTE = [
-  '#6366f1', '#f59e0b', '#10b981', '#ef4444', '#3b82f6',
-  '#8b5cf6', '#06b6d4', '#f97316', '#14b8a6', '#ec4899',
+  '#00d4ff', '#ffaa00', '#00ff88', '#ff0055', '#00d4ff',
+  '#bf00ff', '#06b6d4', '#f97316', '#14b8a6', '#ec4899',
 ];
 
 function isNumericCol(col: string, rows: CsvDataset['rows']): boolean {
@@ -148,7 +148,7 @@ export const CsvDetailModal: React.FC<CsvDetailModalProps> = ({ dataset, onClose
     { id: 'linea',  label: 'Línea',  icon: <TrendingUp size={14} /> },
   ];
 
-  const accentColor = dataset.color ?? '#6366f1';
+  const accentColor = dataset.color ?? '#00d4ff';
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -322,15 +322,15 @@ export const CsvDetailModal: React.FC<CsvDetailModalProps> = ({ dataset, onClose
                   </p>
                   <ResponsiveContainer width="100%" height={340}>
                     <BarChart data={barData} margin={{ top: 10, right: 20, left: 10, bottom: 60 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#12172e" />
                       <XAxis
                         dataKey="name"
-                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        tick={{ fontSize: 11, fill: '#6b7494' }}
                         angle={-35}
                         textAnchor="end"
                         interval={0}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={fmtNum} />
+                      <YAxis tick={{ fontSize: 11, fill: '#6b7494' }} tickFormatter={fmtNum} />
                       <RTooltip
                         formatter={(v, _name, item) =>
                           [fmtNum(Number(v ?? 0)), (item as { payload?: { fullName?: string } })?.payload?.fullName ?? String(_name)]}
@@ -357,7 +357,7 @@ export const CsvDetailModal: React.FC<CsvDetailModalProps> = ({ dataset, onClose
                 <>
                   <p className="csv-dm__chart-caption">
                     Evolución de <b>{selectedNumCol}</b> a lo largo de los registros
-                    <span style={{ color: '#94a3b8', marginLeft: 8, fontSize: 11 }}>
+                    <span style={{ color: '#6b7494', marginLeft: 8, fontSize: 11 }}>
                       (promedio por bloque · línea punteada = promedio acumulado)
                     </span>
                   </p>
@@ -369,9 +369,9 @@ export const CsvDetailModal: React.FC<CsvDetailModalProps> = ({ dataset, onClose
                           <stop offset="95%" stopColor={accentColor} stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                      <XAxis dataKey="idx" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                      <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={fmtNum} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#12172e" />
+                      <XAxis dataKey="idx" tick={{ fontSize: 10, fill: '#6b7494' }} />
+                      <YAxis tick={{ fontSize: 11, fill: '#6b7494' }} tickFormatter={fmtNum} />
                       <RTooltip
                         formatter={(v, key) => [fmtNum(Number(v ?? 0)), key === 'value' ? selectedNumCol : 'Promedio acum.']}
                         contentStyle={{ borderRadius: 10, fontSize: 12 }}
@@ -389,7 +389,7 @@ export const CsvDetailModal: React.FC<CsvDetailModalProps> = ({ dataset, onClose
                       <Line
                         type="monotone"
                         dataKey="avg"
-                        stroke="#94a3b8"
+                        stroke="#6b7494"
                         strokeWidth={1.5}
                         strokeDasharray="5 4"
                         dot={false}

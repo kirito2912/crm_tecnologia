@@ -27,10 +27,10 @@ export const RegisterStepThree: React.FC<RegisterStepThreeProps> = ({
     <div className="auth-form">
       <div className="summary-card">
         <div className="summary-header">
-          <CheckCircle2 size={24} color="#16a34a" />
+          <CheckCircle2 size={24} color="#00ff88" />
           <div>
-            <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>Perfil Listo para Activación</h4>
-            <p style={{ fontSize: '12px', color: '#64748b' }}>Tu entorno CRM B2B y firma biométrica han sido configurados</p>
+            <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#e0e6ff' }}>Perfil Listo para Activación</h4>
+            <p style={{ fontSize: '12px', color: '#6b7494' }}>Tu entorno CRM B2B y firma biométrica han sido configurados</p>
           </div>
         </div>
 
@@ -51,7 +51,7 @@ export const RegisterStepThree: React.FC<RegisterStepThreeProps> = ({
           </div>
           <div className="summary-row">
             <span className="summary-label">Autenticación Óptica:</span>
-            <span className="summary-value" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#0052cc', fontWeight: 700 }}>
+            <span className="summary-value" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#00d4ff', fontWeight: 700 }}>
               <ScanFace size={14} /> Reconocimiento Facial Activo
             </span>
           </div>

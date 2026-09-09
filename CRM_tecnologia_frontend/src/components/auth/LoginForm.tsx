@@ -197,7 +197,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
               />
             </div>
             <span className="form-helper-text">
-              Presiona <strong style={{ color: '#0052cc' }}>Enter ↵</strong> para activar la cámara y autenticar tu rostro.
+              Presiona <strong style={{ color: '#00d4ff' }}>Enter ↵</strong> para activar la cámara y autenticar tu rostro.
             </span>
           </div>
 
@@ -207,9 +207,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              style={{ width: '16px', height: '16px', accentColor: '#0052cc', cursor: 'pointer' }}
+              style={{ width: '16px', height: '16px', accentColor: '#00d4ff', cursor: 'pointer' }}
             />
-            <label htmlFor="rememberMe" style={{ fontSize: '12.5px', color: '#475569', cursor: 'pointer' }}>
+            <label htmlFor="rememberMe" style={{ fontSize: '12.5px', color: '#8b93b0', cursor: 'pointer' }}>
               Recordar sesión en este dispositivo
             </label>
           </div>
@@ -224,7 +224,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           {/* Demo Accounts Section in Spanish */}
           <div className="demo-accounts-box">
             <div className="demo-accounts-header">
-              <Sparkles size={14} color="#0052cc" />
+              <Sparkles size={14} color="#00d4ff" />
               <span>Acceso Rápido Demo (1-Clic)</span>
             </div>
             <div className="demo-chips-grid">
@@ -251,7 +251,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
                   quickDemoLogin('sales');
                 }}
               >
-                <div className="demo-chip-avatar" style={{ backgroundColor: '#dcfce7', color: '#15803d' }}>CM</div>
+                <div className="demo-chip-avatar" style={{ backgroundColor: '#0d3d2c', color: '#00cc6a' }}>CM</div>
                 <div className="demo-chip-text">
                   <strong>Carlos Mendoza</strong>
                   <span>Ejecutivo de Ventas B2B · carlos.m@hardcrm.tech</span>
@@ -304,7 +304,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
               {/* Placeholder */}
               {!isCameraActive && !isVerified && (
                 <div className="face-camera-placeholder">
-                  <ScanFace size={50} color="#0052cc" className="pulse-icon" />
+                  <ScanFace size={50} color="#00d4ff" className="pulse-icon" />
                   <p className="face-placeholder-title">Conectando Cámara Facial...</p>
                   <span className="face-placeholder-sub">
                     Comparación de vector para: <strong>{email}</strong>
@@ -315,7 +315,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
               {/* Verified Badge */}
               {isVerified && (
                 <div className="face-verified-overlay">
-                  <CheckCircle2 size={52} color="#16a34a" />
+                  <CheckCircle2 size={52} color="#00ff88" />
                   <span className="face-verified-title">¡Rostro Reconocido y Validado!</span>
                   <span className="face-verified-metric">
                     Distancia Euclidiana: <strong>0.312</strong> (Umbral: &lt; 0.50)
@@ -338,25 +338,25 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
                   </div>
 
                   <svg className="face-landmarks-svg" viewBox="0 0 100 100">
-                    <line x1={landmarks[0].x} y1={landmarks[0].y} x2={landmarks[1].x} y2={landmarks[1].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
-                    <line x1={landmarks[0].x} y1={landmarks[0].y} x2={landmarks[4].x} y2={landmarks[4].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
-                    <line x1={landmarks[1].x} y1={landmarks[1].y} x2={landmarks[4].x} y2={landmarks[4].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
-                    <line x1={landmarks[4].x} y1={landmarks[4].y} x2={landmarks[7].x} y2={landmarks[7].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
-                    <line x1={landmarks[5].x} y1={landmarks[5].y} x2={landmarks[6].x} y2={landmarks[6].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
-                    <line x1={landmarks[7].x} y1={landmarks[7].y} x2={landmarks[8].x} y2={landmarks[8].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                    <line x1={landmarks[0].x} y1={landmarks[0].y} x2={landmarks[1].x} y2={landmarks[1].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                    <line x1={landmarks[0].x} y1={landmarks[0].y} x2={landmarks[4].x} y2={landmarks[4].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                    <line x1={landmarks[1].x} y1={landmarks[1].y} x2={landmarks[4].x} y2={landmarks[4].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                    <line x1={landmarks[4].x} y1={landmarks[4].y} x2={landmarks[7].x} y2={landmarks[7].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                    <line x1={landmarks[5].x} y1={landmarks[5].y} x2={landmarks[6].x} y2={landmarks[6].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                    <line x1={landmarks[7].x} y1={landmarks[7].y} x2={landmarks[8].x} y2={landmarks[8].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
 
                     {landmarks.map((pt) => (
                       <g key={pt.id}>
-                        <circle cx={pt.x} cy={pt.y} r="1.6" fill="#38bdf8" />
-                        <circle cx={pt.x} cy={pt.y} r="2.8" fill="none" stroke="#0052cc" strokeWidth="0.6" />
+                        <circle cx={pt.x} cy={pt.y} r="1.6" fill="#00d4ff" />
+                        <circle cx={pt.x} cy={pt.y} r="2.8" fill="none" stroke="#00d4ff" strokeWidth="0.6" />
                       </g>
                     ))}
                   </svg>
 
                   <div className="face-hud-badge">
-                    <Activity size={12} color="#38bdf8" />
+                    <Activity size={12} color="#00d4ff" />
                     <span>d(P, Q): <strong>{liveDistance}</strong></span>
-                    <span style={{ color: '#38bdf8' }}>• Match: {confidence}%</span>
+                    <span style={{ color: '#00d4ff' }}>• Match: {confidence}%</span>
                   </div>
                 </div>
               )}
@@ -366,14 +366,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
             <div className="euclidean-telemetry-box">
               <div className="telemetry-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Binary size={14} color="#0052cc" />
+                  <Binary size={14} color="#00d4ff" />
                   <span className="telemetry-title">Comparación Euclidiana (Embedding 128-D)</span>
                 </div>
                 <span className="math-formula-tag">d = √∑(x_i - y_i)²</span>
               </div>
 
               <div className="telemetry-log">
-                <Zap size={13} color={isVerified ? '#16a34a' : '#0052cc'} />
+                <Zap size={13} color={isVerified ? '#00ff88' : '#00d4ff'} />
                 <span>{telemetryLog}</span>
               </div>
 

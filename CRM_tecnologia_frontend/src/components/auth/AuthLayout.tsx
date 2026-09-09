@@ -34,7 +34,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onGoToLanding 
                 alignItems: 'center',
                 gap: '5px',
                 fontSize: '12px',
-                color: '#64748b',
+                color: '#6b7494',
                 fontWeight: 600,
                 cursor: 'pointer',
               }}

@@ -82,8 +82,8 @@ const PermisosModal: React.FC<PermisosModalProps> = ({
                   cursor: 'pointer',
                   padding: '10px 14px',
                   borderRadius: 8,
-                  border: `1px solid ${checked ? '#6366f1' : '#e2e8f0'}`,
-                  background: checked ? '#f0f1fe' : '#fafafa',
+                  border: `1px solid ${checked ? '#00d4ff' : '#2a3155'}`,
+                  background: checked ? '#f0f1fe' : '#0f1428',
                   transition: 'all 0.15s',
                 }}
               >
@@ -92,9 +92,9 @@ const PermisosModal: React.FC<PermisosModalProps> = ({
                   checked={checked}
                   onChange={() => toggle(project.id)}
                   data-project-id={project.id}
-                  style={{ accentColor: '#6366f1', width: 16, height: 16 }}
+                  style={{ accentColor: '#00d4ff', width: 16, height: 16 }}
                 />
-                <span style={{ fontWeight: 600, fontSize: 13, color: '#1e293b' }}>
+                <span style={{ fontWeight: 600, fontSize: 13, color: '#d0d6f0' }}>
                   {project.name}
                 </span>
               </label>
@@ -575,7 +575,7 @@ export const InvitacionesView: React.FC = () => {
                   <div key={inv.id} className={`inv-link-card ${inv.estado}`}>
                     <div className="inv-link-top-row">
                       <div className="inv-link-email-info">
-                        <Mail size={15} color="#6366f1" style={{ flexShrink: 0 }} />
+                        <Mail size={15} color="#00d4ff" style={{ flexShrink: 0 }} />
                         <strong>{inv.email}</strong>
                         {inv.nombre_referencial && (
                           <span className="inv-link-ref-name">({inv.nombre_referencial})</span>
@@ -663,9 +663,9 @@ export const InvitacionesView: React.FC = () => {
                 {emailEnviado === true && (
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    background: '#f0fdf4', border: '1px solid #bbf7d0',
+                    background: '#0a2e22', border: '1px solid #bbf7d0',
                     borderRadius: 8, padding: '9px 14px', marginBottom: 14,
-                    fontSize: 13, color: '#15803d', fontWeight: 600,
+                    fontSize: 13, color: '#00cc6a', fontWeight: 600,
                   }}>
                     <Mail size={15} />
                     <span>Correo de invitación enviado a <strong>{inviteEmail}</strong></span>
@@ -674,9 +674,9 @@ export const InvitacionesView: React.FC = () => {
                 {emailEnviado === false && (
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    background: '#fffbeb', border: '1px solid #fde68a',
+                    background: '#2a2208', border: '1px solid #5a4510',
                     borderRadius: 8, padding: '9px 14px', marginBottom: 14,
-                    fontSize: 13, color: '#92400e', fontWeight: 600,
+                    fontSize: 13, color: '#996600', fontWeight: 600,
                   }}>
                     <AlertTriangle size={15} />
                     <span>No se pudo enviar el correo. Comparte el enlace manualmente.</span>
@@ -685,9 +685,9 @@ export const InvitacionesView: React.FC = () => {
                 {emailEnviado === null && (
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    background: '#f8fafc', border: '1px solid #e2e8f0',
+                    background: '#0f1428', border: '1px solid #2a3155',
                     borderRadius: 8, padding: '9px 14px', marginBottom: 14,
-                    fontSize: 13, color: '#64748b',
+                    fontSize: 13, color: '#6b7494',
                   }}>
                     <Mail size={15} />
                     <span>Copia el enlace y envíalo manualmente al trabajador.</span>

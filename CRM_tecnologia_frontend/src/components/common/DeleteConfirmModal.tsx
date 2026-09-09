@@ -25,7 +25,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div className="security-icon-badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
+            <div className="security-icon-badge" style={{ backgroundColor: '#4a1010', color: '#ff0055' }}>
               <AlertTriangle size={20} />
             </div>
             <div>
@@ -38,7 +38,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           </button>
         </div>
 
-        <div style={{ backgroundColor: '#fff1f2', border: '1px solid #ffe4e6', borderRadius: '10px', padding: '14px', fontSize: '13px', color: '#9f1239' }}>
+        <div style={{ backgroundColor: '#3d0d0d', border: '1px solid #5a1515', borderRadius: '10px', padding: '14px', fontSize: '13px', color: '#ff0055' }}>
           ¿Estás seguro de que deseas eliminar permanentemente el {itemType.toLowerCase()}{' '}
           <strong style={{ color: '#881337' }}>"{itemName}"</strong>?
         </div>
@@ -50,7 +50,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           <button
             type="button"
             className="auth-primary-btn"
-            style={{ width: 'auto', backgroundColor: '#dc2626', padding: '10px 18px' }}
+            style={{ width: 'auto', backgroundColor: '#ff0055', padding: '10px 18px' }}
             onClick={() => {
               onConfirm();
               onClose();

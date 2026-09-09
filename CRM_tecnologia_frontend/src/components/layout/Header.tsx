@@ -70,8 +70,8 @@ export const Header: React.FC<HeaderProps> = ({
           <span
             className="header-role-badge"
             style={{
-              background: isAdmin ? '#e0e7ff' : '#dcfce7',
-              color: isAdmin ? '#4338ca' : '#15803d',
+              background: isAdmin ? '#0f2a48' : '#0d3d2c',
+              color: isAdmin ? '#0099cc' : '#00cc6a',
               padding: '3px 9px',
               borderRadius: '999px',
               fontSize: '11px',

@@ -17,8 +17,8 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
       time: 'Hace 15 min',
       desc: 'Quedan 4 unidades en almacén. Se estima quiebre en 9 días hábiles.',
       icon: AlertTriangle,
-      color: '#dc2626',
-      bg: '#fee2e2',
+      color: '#ff0055',
+      bg: '#4a1010',
     },
     {
       id: 2,
@@ -27,8 +27,8 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
       time: 'Hace 2 horas',
       desc: '42 clientes han completado ciclo de compra de laptops para ofertar monitores 4K.',
       icon: Sparkles,
-      color: '#4f46e5',
-      bg: '#e0e7ff',
+      color: '#00b8e6',
+      bg: '#0f2a48',
     },
     {
       id: 3,
@@ -37,8 +37,8 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
       time: 'Hace 5 horas',
       desc: 'Ingresos mensuales registraron $342K superando la meta de $340K.',
       icon: TrendingUp,
-      color: '#16a34a',
-      bg: '#dcfce7',
+      color: '#00ff88',
+      bg: '#0d3d2c',
     },
   ];
 
@@ -47,7 +47,7 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
       <div className="modal-dialog" style={{ maxWidth: '480px' }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Bell size={20} color="#5850ec" />
+            <Bell size={20} color="#00d4ff" />
             <h3 className="modal-title">Notificaciones del Sistema</h3>
           </div>
           <button className="modal-close-btn" onClick={onClose}>
@@ -65,9 +65,9 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
                   display: 'flex',
                   gap: '12px',
                   padding: '12px 14px',
-                  backgroundColor: '#f8fafc',
+                  backgroundColor: '#0f1428',
                   borderRadius: '12px',
-                  border: '1px solid #f1f5f9',
+                  border: '1px solid #12172e',
                 }}
               >
                 <div
@@ -87,10 +87,10 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{n.title}</span>
-                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>{n.time}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#e0e6ff' }}>{n.title}</span>
+                    <span style={{ fontSize: '11px', color: '#6b7494' }}>{n.time}</span>
                   </div>
-                  <p style={{ fontSize: '12.5px', color: '#64748b', marginTop: '3px' }}>{n.desc}</p>
+                  <p style={{ fontSize: '12.5px', color: '#6b7494', marginTop: '3px' }}>{n.desc}</p>
                 </div>
               </div>
             );
@@ -101,7 +101,7 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
           <button
             style={{
               fontSize: '12.5px',
-              color: '#5850ec',
+              color: '#00d4ff',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',

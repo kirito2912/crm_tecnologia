@@ -153,8 +153,8 @@ function MainApp() {
           gap: '12px',
         }}
       >
-        <Cpu className="animate-spin" size={36} color="#0052cc" />
-        <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 600 }}>
+        <Cpu className="animate-spin" size={36} color="#00d4ff" />
+        <span style={{ fontSize: '14px', color: '#6b7494', fontWeight: 600 }}>
           Cargando entorno seguro...
         </span>
       </div>

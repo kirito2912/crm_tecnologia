@@ -10,14 +10,14 @@ import type {
 
 // ─── Colores asignados en orden a cada CSV subido ─────────────────────────
 const CARD_COLORS = [
-  '#2563eb',
-  '#7c3aed',
-  '#059669',
-  '#dc2626',
-  '#d97706',
-  '#0284c7',
+  '#00d4ff',
+  '#bf00ff',
+  '#00ff88',
+  '#ff0055',
+  '#ffaa00',
+  '#00b8e6',
   '#c026d3',
-  '#475569',
+  '#8b93b0',
 ];
 
 const API_DATASETS_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/datasets`;

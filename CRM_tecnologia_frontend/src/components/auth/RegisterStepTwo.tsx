@@ -187,7 +187,7 @@ export const RegisterStepTwo: React.FC<RegisterStepTwoProps> = ({
           {/* Placeholder when camera is not turned on */}
           {!isCameraActive && !isVerified && (
             <div className="face-camera-placeholder">
-              <ScanFace size={54} color="#0052cc" className="pulse-icon" />
+              <ScanFace size={54} color="#00d4ff" className="pulse-icon" />
               <p className="face-placeholder-title">Reconocimiento Facial Biométrico</p>
               <span className="face-placeholder-sub">
                 Cálculo de Distancia Euclidiana sobre vectores de 128 dimensiones
@@ -198,7 +198,7 @@ export const RegisterStepTwo: React.FC<RegisterStepTwoProps> = ({
           {/* Verified overlay */}
           {isVerified && (
             <div className="face-verified-overlay">
-              <CheckCircle2 size={52} color="#16a34a" />
+              <CheckCircle2 size={52} color="#00ff88" />
               <span className="face-verified-title">Rostro Reconocido y Validado</span>
               <span className="face-verified-metric">
                 Distancia Euclidiana: <strong>{euclideanResult?.distance}</strong> (Umbral: &lt; 0.50)
@@ -226,26 +226,26 @@ export const RegisterStepTwo: React.FC<RegisterStepTwoProps> = ({
               {/* Facial Landmark Points */}
               <svg className="face-landmarks-svg" viewBox="0 0 100 100">
                 {/* Constellation lines between key landmarks */}
-                <line x1={landmarks[0].x} y1={landmarks[0].y} x2={landmarks[1].x} y2={landmarks[1].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
-                <line x1={landmarks[0].x} y1={landmarks[0].y} x2={landmarks[4].x} y2={landmarks[4].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
-                <line x1={landmarks[1].x} y1={landmarks[1].y} x2={landmarks[4].x} y2={landmarks[4].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
-                <line x1={landmarks[4].x} y1={landmarks[4].y} x2={landmarks[7].x} y2={landmarks[7].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
-                <line x1={landmarks[5].x} y1={landmarks[5].y} x2={landmarks[6].x} y2={landmarks[6].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
-                <line x1={landmarks[7].x} y1={landmarks[7].y} x2={landmarks[8].x} y2={landmarks[8].y} stroke="#0052cc" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                <line x1={landmarks[0].x} y1={landmarks[0].y} x2={landmarks[1].x} y2={landmarks[1].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                <line x1={landmarks[0].x} y1={landmarks[0].y} x2={landmarks[4].x} y2={landmarks[4].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                <line x1={landmarks[1].x} y1={landmarks[1].y} x2={landmarks[4].x} y2={landmarks[4].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                <line x1={landmarks[4].x} y1={landmarks[4].y} x2={landmarks[7].x} y2={landmarks[7].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                <line x1={landmarks[5].x} y1={landmarks[5].y} x2={landmarks[6].x} y2={landmarks[6].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
+                <line x1={landmarks[7].x} y1={landmarks[7].y} x2={landmarks[8].x} y2={landmarks[8].y} stroke="#00d4ff" strokeWidth="0.8" strokeDasharray="1,1" opacity="0.7" />
 
                 {landmarks.map((pt) => (
                   <g key={pt.id}>
-                    <circle cx={pt.x} cy={pt.y} r="1.6" fill="#38bdf8" />
-                    <circle cx={pt.x} cy={pt.y} r="2.8" fill="none" stroke="#0052cc" strokeWidth="0.6" />
+                    <circle cx={pt.x} cy={pt.y} r="1.6" fill="#00d4ff" />
+                    <circle cx={pt.x} cy={pt.y} r="2.8" fill="none" stroke="#00d4ff" strokeWidth="0.6" />
                   </g>
                 ))}
               </svg>
 
               {/* Real-time Math HUD Badge */}
               <div className="face-hud-badge">
-                <Activity size={12} color="#38bdf8" />
+                <Activity size={12} color="#00d4ff" />
                 <span>d(P, Q) Euclidiana: <strong>{liveDistance}</strong></span>
-                <span style={{ color: '#38bdf8' }}>• Match: {confidence}%</span>
+                <span style={{ color: '#00d4ff' }}>• Match: {confidence}%</span>
               </div>
             </div>
           )}
@@ -255,14 +255,14 @@ export const RegisterStepTwo: React.FC<RegisterStepTwoProps> = ({
         <div className="euclidean-telemetry-box">
           <div className="telemetry-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Binary size={14} color="#0052cc" />
+              <Binary size={14} color="#00d4ff" />
               <span className="telemetry-title">Algoritmo de Distancia Euclidiana (L2 Norm)</span>
             </div>
             <span className="math-formula-tag">d = √∑(x_i - y_i)²</span>
           </div>
 
           <div className="telemetry-log">
-            <Zap size={13} color={isVerified ? '#16a34a' : '#0052cc'} />
+            <Zap size={13} color={isVerified ? '#00ff88' : '#00d4ff'} />
             <span>{telemetryLog}</span>
           </div>
 
@@ -280,7 +280,7 @@ export const RegisterStepTwo: React.FC<RegisterStepTwoProps> = ({
               </div>
               <div className="vector-row">
                 <span className="vector-label">Distancia Euclidiana Calculada:</span>
-                <span className="vector-val" style={{ color: '#16a34a', fontWeight: 800 }}>
+                <span className="vector-val" style={{ color: '#00ff88', fontWeight: 800 }}>
                   d = {euclideanResult.distance} (Aprobado &lt; 0.50)
                 </span>
               </div>

@@ -121,7 +121,7 @@ export const SendReportModal: React.FC<SendReportModalProps> = ({
         <div className="report-modal-header">
           <div className="report-modal-title-box">
             <div className="report-modal-icon-badge">
-              <Send size={18} color="#4f46e5" />
+              <Send size={18} color="#00b8e6" />
             </div>
             <div>
               <h3>Enviar Reporte al Administrador</h3>
@@ -137,7 +137,7 @@ export const SendReportModal: React.FC<SendReportModalProps> = ({
 
         {sentSuccess ? (
           <div className="report-modal-success">
-            <CheckCircle2 size={54} color="#10b981" />
+            <CheckCircle2 size={54} color="#00ff88" />
             <h4>¡Reporte enviado exitosamente!</h4>
             <p>
               El Administrador ya tiene este informe disponible en su bandeja ejecutiva para revisión.
@@ -147,13 +147,13 @@ export const SendReportModal: React.FC<SendReportModalProps> = ({
           <form onSubmit={handleSubmit} className="report-modal-form">
             {/* Metadatos de la comparativa */}
             <div className="report-companies-summary">
-              <div className="report-company-chip" style={{ borderColor: '#2563eb' }}>
-                <Building2 size={14} color="#2563eb" />
+              <div className="report-company-chip" style={{ borderColor: '#00d4ff' }}>
+                <Building2 size={14} color="#00d4ff" />
                 <span>Empresa A: <strong>{datasetA.name}</strong></span>
               </div>
               <span className="report-vs-tag">VS</span>
-              <div className="report-company-chip" style={{ borderColor: '#7c3aed' }}>
-                <Building2 size={14} color="#7c3aed" />
+              <div className="report-company-chip" style={{ borderColor: '#bf00ff' }}>
+                <Building2 size={14} color="#bf00ff" />
                 <span>Empresa B: <strong>{datasetB.name}</strong></span>
               </div>
             </div>
@@ -162,13 +162,13 @@ export const SendReportModal: React.FC<SendReportModalProps> = ({
             <div className="report-metrics-strip">
               <div className="report-metric-item">
                 <span className="report-metric-label">Total Empresa A</span>
-                <span className="report-metric-val" style={{ color: '#2563eb' }}>
+                <span className="report-metric-val" style={{ color: '#00d4ff' }}>
                   S/ {grandTotalA.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="report-metric-item">
                 <span className="report-metric-label">Total Empresa B</span>
-                <span className="report-metric-val" style={{ color: '#7c3aed' }}>
+                <span className="report-metric-val" style={{ color: '#bf00ff' }}>
                   S/ {grandTotalB.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
                 </span>
               </div>
@@ -176,7 +176,7 @@ export const SendReportModal: React.FC<SendReportModalProps> = ({
                 <span className="report-metric-label">Diferencia Relativa</span>
                 <span
                   className="report-metric-val"
-                  style={{ color: deltaVal >= 0 ? '#16a34a' : '#dc2626' }}
+                  style={{ color: deltaVal >= 0 ? '#00ff88' : '#ff0055' }}
                 >
                   {deltaVal >= 0 ? '+' : ''}{deltaVal.toFixed(1)}%
                 </span>

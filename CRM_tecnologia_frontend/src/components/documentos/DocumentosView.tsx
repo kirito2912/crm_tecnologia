@@ -265,7 +265,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
       {/* ── Tarjetas de Métricas y KPIs ── */}
       <div className="doc-kpis-grid">
         <div className="doc-kpi-card">
-          <div className="doc-kpi-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
+          <div className="doc-kpi-icon-box" style={{ background: '#0d2840', color: '#00d4ff' }}>
             <Layers size={22} />
           </div>
           <div className="doc-kpi-details">
@@ -276,12 +276,12 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
         </div>
 
         <div className="doc-kpi-card">
-          <div className="doc-kpi-icon-box" style={{ background: '#fef2f2', color: '#dc2626' }}>
+          <div className="doc-kpi-icon-box" style={{ background: '#3d0d0d', color: '#ff0055' }}>
             <FileText size={22} />
           </div>
           <div className="doc-kpi-details">
             <span className="doc-kpi-label">Documentos PDF</span>
-            <span className="doc-kpi-value" style={{ color: '#dc2626' }}>
+            <span className="doc-kpi-value" style={{ color: '#ff0055' }}>
               {kpiPdf}
             </span>
             <span className="doc-kpi-sub">Informes y contratos .pdf</span>
@@ -289,12 +289,12 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
         </div>
 
         <div className="doc-kpi-card">
-          <div className="doc-kpi-icon-box" style={{ background: '#eef2ff', color: '#4f46e5' }}>
+          <div className="doc-kpi-icon-box" style={{ background: '#0d2840', color: '#00b8e6' }}>
             <FileCode size={22} />
           </div>
           <div className="doc-kpi-details">
             <span className="doc-kpi-label">Documentos Word</span>
-            <span className="doc-kpi-value" style={{ color: '#4f46e5' }}>
+            <span className="doc-kpi-value" style={{ color: '#00b8e6' }}>
               {kpiWord}
             </span>
             <span className="doc-kpi-sub">Archivos .docx y .doc</span>
@@ -302,7 +302,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
         </div>
 
         <div className="doc-kpi-card">
-          <div className="doc-kpi-icon-box" style={{ background: '#f0fdf4', color: '#16a34a' }}>
+          <div className="doc-kpi-icon-box" style={{ background: '#0a2e22', color: '#00ff88' }}>
             <HardDrive size={22} />
           </div>
           <div className="doc-kpi-details">
@@ -387,7 +387,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
             className={`doc-filter-btn ${typeFilter === 'pdf' ? 'active' : ''}`}
             onClick={() => setTypeFilter('pdf')}
           >
-            <FileText size={13} color="#ef4444" />
+            <FileText size={13} color="#ff0055" />
             PDFs ({kpiPdf})
           </button>
           <button
@@ -395,7 +395,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
             className={`doc-filter-btn ${typeFilter === 'word' ? 'active' : ''}`}
             onClick={() => setTypeFilter('word')}
           >
-            <FileCode size={13} color="#2563eb" />
+            <FileCode size={13} color="#00d4ff" />
             Word ({kpiWord})
           </button>
         </div>
@@ -404,7 +404,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
 
         {/* Rol del autor */}
         <div className="doc-select-wrapper">
-          <User size={14} color="#94a3b8" />
+          <User size={14} color="#6b7494" />
           <select
             className="doc-filter-select"
             value={roleFilter}
@@ -418,7 +418,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
 
         {/* Buscador Local */}
         <div className="doc-search-box">
-          <Search size={15} color="#94a3b8" />
+          <Search size={15} color="#6b7494" />
           <input
             type="text"
             className="doc-search-input"
@@ -452,7 +452,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
       {/* ── Contenedor de Documentos ── */}
       {filteredDocs.length === 0 ? (
         <div className="doc-empty-state">
-          <FolderPlus size={52} color="#cbd5e1" />
+          <FolderPlus size={52} color="#3a4165" />
           <h3>No se encontraron documentos</h3>
           <p>
             No hay archivos que coincidan con los filtros seleccionados o el repositorio está vacío.
@@ -612,7 +612,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div
                   className="doc-modal-icon-badge"
-                  style={{ background: '#eff6ff', color: '#2563eb' }}
+                  style={{ background: '#0d2840', color: '#00d4ff' }}
                 >
                   <UploadCloud size={20} />
                 </div>
@@ -655,9 +655,9 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
                   {selectedFile ? (
                     <div className="doc-form-file-chosen">
                       {selectedFile.name.endsWith('.pdf') ? (
-                        <FileText size={24} color="#ef4444" />
+                        <FileText size={24} color="#ff0055" />
                       ) : (
-                        <FileCode size={24} color="#2563eb" />
+                        <FileCode size={24} color="#00d4ff" />
                       )}
                       <div>
                         <strong>{selectedFile.name}</strong>
@@ -668,7 +668,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
                     </div>
                   ) : (
                     <div className="doc-form-file-placeholder">
-                      <UploadCloud size={28} color="#6366f1" />
+                      <UploadCloud size={28} color="#00d4ff" />
                       <span>Haz clic aquí para seleccionar un archivo PDF o Word</span>
                     </div>
                   )}
@@ -693,14 +693,14 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
               <div className="doc-form-group">
                 <label className="doc-form-label">
                   Enviar a roles específicos
-                  <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '11px', marginLeft: 6 }}>
+                  <span style={{ fontWeight: 400, color: '#6b7494', fontSize: '11px', marginLeft: 6 }}>
                     (opcional — sin selección = todos los roles)
                   </span>
                 </label>
                 <div className="doc-roles-picker">
                   {[
-                    { id: 'analista',      label: 'Analista de Datos', color: '#15803d', bg: '#dcfce7', border: '#bbf7d0' },
-                    { id: 'administrador', label: 'Administrador',      color: '#4338ca', bg: '#e0e7ff', border: '#c7d2fe' },
+                    { id: 'analista',      label: 'Analista de Datos', color: '#00cc6a', bg: '#0d3d2c', border: '#bbf7d0' },
+                    { id: 'administrador', label: 'Administrador',      color: '#0099cc', bg: '#0f2a48', border: '#1a3a55' },
                   ].map((rol) => {
                     const selected = formDestinatarios.includes(rol.id);
                     return (
@@ -732,12 +732,12 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
                   })}
                 </div>
                 {formDestinatarios.length === 0 && (
-                  <span style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: 4 }}>
+                  <span style={{ fontSize: '11.5px', color: '#6b7494', marginTop: 4 }}>
                     Visible para todos los roles del sistema.
                   </span>
                 )}
                 {formDestinatarios.length > 0 && (
-                  <span style={{ fontSize: '11.5px', color: '#4f46e5', marginTop: 4, fontWeight: 600 }}>
+                  <span style={{ fontSize: '11.5px', color: '#00b8e6', marginTop: 4, fontWeight: 600 }}>
                     Solo visible para: {formDestinatarios.map((r) => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')}.
                   </span>
                 )}
@@ -745,7 +745,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
 
               {/* Metadata del Autor */}
               <div className="doc-form-author-note">
-                <Shield size={14} color="#4f46e5" />
+                <Shield size={14} color="#00b8e6" />
                 <span>
                   Se registrará a nombre de <strong>{user?.name || (isAdmin ? 'Jane Doe (Admin)' : 'Carlos Mendoza (Analista)')}</strong> con rol <strong>{isAdmin ? 'Administrador' : 'Analista'}</strong>.
                 </span>
@@ -796,7 +796,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
             role="alertdialog"
           >
             <div className="doc-delete-icon-box">
-              <Trash2 size={26} color="#dc2626" />
+              <Trash2 size={26} color="#ff0055" />
             </div>
             <h3>¿Eliminar documento?</h3>
             <p>
@@ -851,7 +851,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
 
             {/* Nombre del documento */}
             <div className="doc-send-doc-name">
-              <FileText size={15} color="#6366f1" />
+              <FileText size={15} color="#00d4ff" />
               <span>{docToSend.nombre}</span>
             </div>
 
@@ -860,8 +860,8 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
               <p className="doc-send-roles-label">Enviar a:</p>
               <div className="doc-roles-picker">
                 {[
-                  { id: 'analista',      label: 'Analista de Datos', color: '#15803d', bg: '#dcfce7', border: '#bbf7d0' },
-                  { id: 'administrador', label: 'Administrador',      color: '#4338ca', bg: '#e0e7ff', border: '#c7d2fe' },
+                  { id: 'analista',      label: 'Analista de Datos', color: '#00cc6a', bg: '#0d3d2c', border: '#bbf7d0' },
+                  { id: 'administrador', label: 'Administrador',      color: '#0099cc', bg: '#0f2a48', border: '#1a3a55' },
                 ].map((rol) => {
                   const selected = sendRol === rol.id;
                   return (
@@ -886,7 +886,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
 
             {/* Feedback de éxito */}
             {sendSuccess && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 8, padding: '9px 14px', fontSize: 13, color: '#065f46', fontWeight: 600 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0a2e22', border: '1px solid #0d3d2c', borderRadius: 8, padding: '9px 14px', fontSize: 13, color: '#00aa55', fontWeight: 600 }}>
                 <CheckCircle2 size={15} />
                 {sendSuccess}
               </div>

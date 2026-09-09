@@ -221,14 +221,14 @@ export const AuthPage: React.FC = () => {
         <div className="auth-left-content">
           {/* Logo */}
           <div className="auth-left-logo">
-            <div className="brand-logo-icon" style={{ background: '#ffffff', border: '1px solid #e2e8f0' }}>
+            <div className="brand-logo-icon" style={{ background: 'linear-gradient(135deg, #00d4ff 0%, #bf00ff 100%)', boxShadow: '0 0 20px rgba(0, 212, 255, 0.45)', border: 'none' }}>
               <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="14" width="5.5" height="14" rx="2.75" fill="#4f5bc9" opacity="0.85" />
-                <rect x="13.25" y="6" width="5.5" height="22" rx="2.75" fill="#4f5bc9" />
-                <rect x="22.5" y="10" width="5.5" height="18" rx="2.75" fill="#7e87e8" />
+                <rect x="4" y="14" width="5.5" height="14" rx="2.75" fill="#00d4ff" opacity="0.85" />
+                <rect x="13.25" y="6" width="5.5" height="22" rx="2.75" fill="#00d4ff" />
+                <rect x="22.5" y="10" width="5.5" height="18" rx="2.75" fill="#33e0ff" />
               </svg>
             </div>
-            <span style={{ fontSize: '20px', fontWeight: 800, color: '#ffffff' }}>DataTech Analytics</span>
+            <span style={{ fontSize: '20px', fontWeight: 800, color: '#e0e6ff' }}>DataTech Analytics</span>
           </div>
 
           {/* Headline */}
@@ -237,7 +237,7 @@ export const AuthPage: React.FC = () => {
               <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '10px' }}>
                 Plataforma Empresarial B2B
               </p>
-              <h2 className="auth-hero-title" style={{ marginBottom: '14px', color: '#ffffff' }}>
+              <h2 className="auth-hero-title" style={{ marginBottom: '14px', color: '#e0e6ff' }}>
                 Inteligencia Comparativa & Control de Accesos
               </h2>
               <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.75)', lineHeight: '1.65', maxWidth: '380px' }}>
@@ -253,12 +253,12 @@ export const AuthPage: React.FC = () => {
                     width: '40px', height: '40px', borderRadius: '10px', flexShrink: 0,
                     background: 'rgba(255,255,255,0.15)',
                     border: '1px solid rgba(255,255,255,0.2)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff'
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e0e6ff'
                   }}>
                     {f.icon}
                   </div>
                   <div>
-                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff', margin: '0 0 3px' }}>{f.title}</p>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#e0e6ff', margin: '0 0 3px' }}>{f.title}</p>
                     <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: '1.5' }}>{f.desc}</p>
                   </div>
                 </div>
@@ -269,20 +269,20 @@ export const AuthPage: React.FC = () => {
           {/* Bottom roles card */}
           <div className="auth-roles-preview-card" style={{ marginTop: 'auto', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
             <div className="auth-role-item-preview">
-              <div className="auth-role-icon-box" style={{ background: 'rgba(255,255,255,0.2)', color: '#ffffff' }}>
+              <div className="auth-role-icon-box" style={{ background: 'rgba(255,255,255,0.2)', color: '#e0e6ff' }}>
                 <User size={18} />
               </div>
               <div>
-                <strong style={{ color: '#ffffff' }}>Perfil Analista & Programador</strong>
+                <strong style={{ color: '#e0e6ff' }}>Perfil Analista & Programador</strong>
                 <p style={{ color: 'rgba(255,255,255,0.65)' }}>Carga de Datasets, comparativa de métricas y gestión de documentos corporativos.</p>
               </div>
             </div>
             <div className="auth-role-item-preview">
-              <div className="auth-role-icon-box" style={{ background: 'rgba(255,255,255,0.2)', color: '#ffffff' }}>
+              <div className="auth-role-icon-box" style={{ background: 'rgba(255,255,255,0.2)', color: '#e0e6ff' }}>
                 <Shield size={18} />
               </div>
               <div>
-                <strong style={{ color: '#ffffff' }}>Perfil Administrador</strong>
+                <strong style={{ color: '#e0e6ff' }}>Perfil Administrador</strong>
                 <p style={{ color: 'rgba(255,255,255,0.65)' }}>Generación de invitaciones, habilitación de cuentas y supervisión de reportes ejecutivos.</p>
               </div>
             </div>
@@ -306,11 +306,11 @@ export const AuthPage: React.FC = () => {
               <div style={{ marginBottom: '32px' }}>
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
-                  background: '#eef2ff', borderRadius: '20px', padding: '4px 12px',
+                  background: '#0d2840', borderRadius: '20px', padding: '4px 12px',
                   marginBottom: '16px'
                 }}>
-                  <Shield size={13} color="#4f46e5" />
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#4f46e5', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  <Shield size={13} color="#00b8e6" />
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#00b8e6', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Autenticación 2FA & OTP
                   </span>
                 </div>
@@ -318,7 +318,7 @@ export const AuthPage: React.FC = () => {
                 <h2 className="auth-title" style={{ marginBottom: '8px' }}>
                   Inicia sesión con seguridad
                 </h2>
-                <p style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.55', margin: 0 }}>
+                <p style={{ fontSize: '14px', color: '#6b7494', lineHeight: '1.55', margin: 0 }}>
                   Introduce tus credenciales corporativas. Recibirás un código de verificación OTP en tu correo.
                 </p>
               </div>
@@ -326,11 +326,11 @@ export const AuthPage: React.FC = () => {
               {/* Security badge */}
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '10px',
-                background: '#f0fdf4', border: '1px solid #bbf7d0',
+                background: '#0a2e22', border: '1px solid #bbf7d0',
                 borderRadius: '10px', padding: '10px 14px', marginBottom: '24px'
               }}>
-                <CheckCircle2 size={16} color="#16a34a" />
-                <span style={{ fontSize: '13px', color: '#15803d', fontWeight: 500 }}>
+                <CheckCircle2 size={16} color="#00ff88" />
+                <span style={{ fontSize: '13px', color: '#00cc6a', fontWeight: 500 }}>
                   Conexión cifrada · Código OTP de un solo uso · Sesión protegida
                 </span>
               </div>
@@ -349,7 +349,7 @@ export const AuthPage: React.FC = () => {
                     Correo corporativo
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <Mail size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+                    <Mail size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#6b7494', pointerEvents: 'none' }} />
                     <input
                       id="auth-email"
                       type="email"
@@ -368,7 +368,7 @@ export const AuthPage: React.FC = () => {
                     Contraseña
                   </label>
                   <div className="auth-password-input-wrapper">
-                    <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none', zIndex: 1 }} />
+                    <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#6b7494', pointerEvents: 'none', zIndex: 1 }} />
                     <input
                       id="auth-password"
                       type={showPassword ? 'text' : 'password'}
@@ -393,7 +393,7 @@ export const AuthPage: React.FC = () => {
               </form>
 
               {/* Footer info */}
-              <p style={{ fontSize: '12px', color: '#94a3b8', textAlign: 'center', marginTop: '20px', lineHeight: '1.6' }}>
+              <p style={{ fontSize: '12px', color: '#6b7494', textAlign: 'center', marginTop: '20px', lineHeight: '1.6' }}>
                 Al ingresar aceptas los términos de uso corporativo.
                 <br />¿Fuiste invitado? Usa el enlace que recibiste por correo.
               </p>
@@ -419,13 +419,13 @@ export const AuthPage: React.FC = () => {
 
             {isValidatingInvite ? (
               <div style={{ textAlign: 'center', padding: '32px 0' }}>
-                <Clock className="animate-spin" size={28} color="#4f46e5" style={{ margin: '0 auto 10px' }} />
-                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#1e293b', margin: 0 }}>Validando enlace de invitación...</h3>
+                <Clock className="animate-spin" size={28} color="#00b8e6" style={{ margin: '0 auto 10px' }} />
+                <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#d0d6f0', margin: 0 }}>Validando enlace de invitación...</h3>
               </div>
             ) : inviteValidation && !inviteValidation.valido ? (
               <div className="inv-modal-form" style={{ gap: 14 }}>
                 <div className="auth-invite-invalid-card" style={{ margin: 0 }}>
-                  <div className="auth-invite-invalid-icon"><AlertCircle size={36} color="#ef4444" /></div>
+                  <div className="auth-invite-invalid-icon"><AlertCircle size={36} color="#ff0055" /></div>
                   <h3>Invitación no válida</h3>
                   <p>{inviteValidation.mensaje}</p>
                   <button type="button" className="auth-btn-back" onClick={closeInviteFlow}>

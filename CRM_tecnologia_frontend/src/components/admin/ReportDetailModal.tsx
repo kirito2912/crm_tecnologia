@@ -76,7 +76,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
         {/* Header */}
         <div className="report-modal-header">
           <div className="report-modal-title-box">
-            <div className="report-modal-icon-badge" style={{ background: '#dbeafe', color: '#1d4ed8' }}>
+            <div className="report-modal-icon-badge" style={{ background: '#0f2a48', color: '#00b8e6' }}>
               <Building2 size={18} />
             </div>
             <div>
@@ -100,7 +100,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
             <div className="rep-detail-meta-card">
               <span className="rep-meta-label">Analista Emisor</span>
               <div className="rep-meta-user">
-                <User size={15} color="#4f46e5" />
+                <User size={15} color="#00b8e6" />
                 <strong>{reporte.analista_nombre}</strong>
               </div>
             </div>
@@ -108,7 +108,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
             <div className="rep-detail-meta-card">
               <span className="rep-meta-label">Fecha de Envío</span>
               <div className="rep-meta-date">
-                <Calendar size={15} color="#64748b" />
+                <Calendar size={15} color="#6b7494" />
                 <span>{new Date(reporte.created_at).toLocaleString('es-PE', { dateStyle: 'medium', timeStyle: 'short' })}</span>
               </div>
             </div>
@@ -116,11 +116,11 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
             <div className="rep-detail-meta-card rep-detail-meta-card--full">
               <span className="rep-meta-label">Empresas / Datasets Evaluados</span>
               <div className="rep-meta-companies">
-                <span className="rep-comp-badge" style={{ color: '#2563eb', background: '#eff6ff' }}>
+                <span className="rep-comp-badge" style={{ color: '#00d4ff', background: '#0d2840' }}>
                   {reporte.dataset_a_nombre}
                 </span>
                 <span className="rep-vs-circle">VS</span>
-                <span className="rep-comp-badge" style={{ color: '#7c3aed', background: '#f5f3ff' }}>
+                <span className="rep-comp-badge" style={{ color: '#bf00ff', background: '#1a1535' }}>
                   {reporte.dataset_b_nombre}
                 </span>
               </div>
@@ -133,7 +133,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
               {reporte.metricas_json.totalA !== undefined && (
                 <div className="report-metric-item">
                   <span className="report-metric-label">Total {reporte.dataset_a_nombre}</span>
-                  <span className="report-metric-val" style={{ color: '#2563eb' }}>
+                  <span className="report-metric-val" style={{ color: '#00d4ff' }}>
                     S/ {reporte.metricas_json.totalA.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
                   </span>
                 </div>
@@ -141,7 +141,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
               {reporte.metricas_json.totalB !== undefined && (
                 <div className="report-metric-item">
                   <span className="report-metric-label">Total {reporte.dataset_b_nombre}</span>
-                  <span className="report-metric-val" style={{ color: '#7c3aed' }}>
+                  <span className="report-metric-val" style={{ color: '#bf00ff' }}>
                     S/ {reporte.metricas_json.totalB.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
                   </span>
                 </div>
@@ -151,7 +151,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
                   <span className="report-metric-label">Brecha Relativa</span>
                   <span
                     className="report-metric-val"
-                    style={{ color: delta >= 0 ? '#16a34a' : '#dc2626' }}
+                    style={{ color: delta >= 0 ? '#00ff88' : '#ff0055' }}
                   >
                     {delta >= 0 ? '+' : ''}{delta.toFixed(1)}%
                   </span>
@@ -171,7 +171,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
           {/* Resumen Ejecutivo del Analista */}
           <div className="rep-section-block">
             <h4 className="rep-section-title">
-              <Sparkles size={16} color="#4f46e5" />
+              <Sparkles size={16} color="#00b8e6" />
               1. Resumen Ejecutivo del Analista
             </h4>
             <div className="rep-section-content">
@@ -183,7 +183,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
           {reporte.hallazgos_clave && (
             <div className="rep-section-block">
               <h4 className="rep-section-title">
-                <CheckCircle2 size={16} color="#059669" />
+                <CheckCircle2 size={16} color="#00ff88" />
                 2. Hallazgos Clave y Brechas de Mercado
               </h4>
               <div className="rep-section-content rep-section-content--pre">
@@ -196,7 +196,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
           {reporte.recomendaciones && (
             <div className="rep-section-block">
               <h4 className="rep-section-title">
-                <AlertCircle size={16} color="#d97706" />
+                <AlertCircle size={16} color="#ffaa00" />
                 3. Recomendaciones Estratégicas para la Administración
               </h4>
               <div className="rep-section-content rep-section-content--pre">
@@ -210,7 +210,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
             <form onSubmit={handleSaveFeedback} className="rep-admin-feedback-form">
               <div className="rep-admin-form-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <MessageSquare size={17} color="#4338ca" />
+                  <MessageSquare size={17} color="#0099cc" />
                   <h4>Decisión Ejecutiva y Feedback del Administrador</h4>
                 </div>
                 {saveSuccess && (
@@ -286,7 +286,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
             <div className="rep-admin-feedback-form">
               <div className="rep-admin-form-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <MessageSquare size={17} color="#4338ca" />
+                  <MessageSquare size={17} color="#0099cc" />
                   <h4>Retroalimentación de la Administración</h4>
                 </div>
                 <span className={`rep-status-badge rep-status-${estado}`}>
@@ -295,18 +295,18 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
               </div>
 
               {reporte.feedback_admin ? (
-                <div style={{ background: '#f8fafc', padding: 14, borderRadius: 8, border: '1px solid #e2e8f0', marginTop: 10 }}>
-                  <p style={{ margin: 0, fontSize: 13, color: '#1e293b', lineHeight: 1.5 }}>
+                <div style={{ background: '#0f1428', padding: 14, borderRadius: 8, border: '1px solid #2a3155', marginTop: 10 }}>
+                  <p style={{ margin: 0, fontSize: 13, color: '#d0d6f0', lineHeight: 1.5 }}>
                     {reporte.feedback_admin}
                   </p>
                   {reporte.admin_responsable && (
-                    <span style={{ display: 'block', marginTop: 8, fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                    <span style={{ display: 'block', marginTop: 8, fontSize: 11, color: '#6b7494', fontWeight: 600 }}>
                       — Revisado por: {reporte.admin_responsable}
                     </span>
                   )}
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, background: '#fffbeb', borderRadius: 8, border: '1px solid #fde68a', marginTop: 10, color: '#92400e', fontSize: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, background: '#2a2208', borderRadius: 8, border: '1px solid #5a4510', marginTop: 10, color: '#996600', fontSize: 12 }}>
                   <Clock size={16} />
                   <span>Este reporte aún está pendiente de revisión por el administrador.</span>
                 </div>

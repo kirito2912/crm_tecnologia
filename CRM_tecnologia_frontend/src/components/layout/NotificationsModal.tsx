@@ -20,8 +20,8 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
       desc: 'El stock de Servidores Dell PowerEdge R750 cayó bajo el mínimo (4 uds.).',
       time: 'Hace 10 min',
       icon: AlertCircle,
-      color: '#dc2626',
-      bg: '#fee2e2',
+      color: '#ff0055',
+      bg: '#4a1010',
     },
     {
       id: 'base-2',
@@ -30,8 +30,8 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
       desc: 'Fintech Hub completó compra de laptops; enviar propuesta de monitores 4K.',
       time: 'Hace 35 min',
       icon: TrendingUp,
-      color: '#0052cc',
-      bg: '#eff6ff',
+      color: '#00d4ff',
+      bg: '#0d2840',
     },
     {
       id: 'base-3',
@@ -40,8 +40,8 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
       desc: 'Ingreso confirmado con distancia euclidiana d = 0.312.',
       time: 'Hace 1 hora',
       icon: ShieldCheck,
-      color: '#16a34a',
-      bg: '#dcfce7',
+      color: '#00ff88',
+      bg: '#0d3d2c',
     },
   ];
 
@@ -57,11 +57,11 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
       month: 'short',
     }),
     icon: UserCheck,
-    color: '#d97706',
-    bg: '#fffbeb',
+    color: '#ffaa00',
+    bg: '#2a2208',
     badge: 'Pendiente',
-    badgeColor: '#f59e0b',
-    badgeBg: '#fef3c7',
+    badgeColor: '#ffaa00',
+    badgeBg: '#3d2e0a',
   }));
 
   const notifications = [...pendingApprovalNotifications, ...baseNotifications];
@@ -71,7 +71,7 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
       <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div className="security-icon-badge" style={{ backgroundColor: '#eef2ff', color: '#0052cc' }}>
+            <div className="security-icon-badge" style={{ backgroundColor: '#0d2840', color: '#00d4ff' }}>
               <Bell size={20} />
             </div>
             <div>
@@ -90,8 +90,8 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '60vh', overflowY: 'auto' }}>
           {notifications.length === 0 ? (
-            <div style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
-              <CheckCircle2 size={32} style={{ marginBottom: '8px', color: '#10b981' }} />
+            <div style={{ padding: '24px', textAlign: 'center', color: '#6b7494' }}>
+              <CheckCircle2 size={32} style={{ marginBottom: '8px', color: '#00ff88' }} />
               <p style={{ margin: 0 }}>No hay notificaciones en este momento.</p>
             </div>
           ) : (
@@ -106,8 +106,8 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
                     gap: '12px',
                     padding: '12px 14px',
                     borderRadius: '10px',
-                    backgroundColor: (n as any).bg || '#f8fafc',
-                    border: '1px solid #e2e8f0',
+                    backgroundColor: (n as any).bg || '#0f1428',
+                    border: '1px solid #2a3155',
                   }}
                 >
                   <div
@@ -115,8 +115,8 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
                       width: '32px',
                       height: '32px',
                       borderRadius: '8px',
-                      backgroundColor: (n as any).bg || '#f1f5f9',
-                      color: (n as any).color || '#64748b',
+                      backgroundColor: (n as any).bg || '#12172e',
+                      color: (n as any).color || '#6b7494',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -127,13 +127,13 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '4px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <strong style={{ fontSize: '13px', color: '#0f172a' }}>{n.title}</strong>
-                      <span style={{ fontSize: '11px', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                      <strong style={{ fontSize: '13px', color: '#e0e6ff' }}>{n.title}</strong>
+                      <span style={{ fontSize: '11px', color: '#6b7494', whiteSpace: 'nowrap' }}>
                         <Clock size={10} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '3px' }} />
                         {n.time}
                       </span>
                     </div>
-                    <span style={{ fontSize: '12px', color: '#475569', marginTop: '2px', lineHeight: 1.35 }}>
+                    <span style={{ fontSize: '12px', color: '#8b93b0', marginTop: '2px', lineHeight: 1.35 }}>
                       {n.desc}
                     </span>
                     {(n as any).badge && (
@@ -145,8 +145,8 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, 
                           borderRadius: '999px',
                           fontSize: '10px',
                           fontWeight: 700,
-                          backgroundColor: (n as any).badgeBg || '#fef3c7',
-                          color: (n as any).badgeColor || '#d97706',
+                          backgroundColor: (n as any).badgeBg || '#3d2e0a',
+                          color: (n as any).badgeColor || '#ffaa00',
                         }}
                       >
                         {(n as any).badge}

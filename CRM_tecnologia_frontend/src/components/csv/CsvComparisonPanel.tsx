@@ -42,8 +42,8 @@ const DiffCell: React.FC<{ a?: number; b?: number; money?: boolean }> = ({ a, b,
   const { label, dir } = fmtPct(a, b);
   const diff = a !== undefined && b !== undefined ? a - b : undefined;
 
-  const colors = { up: '#059669', down: '#dc2626', eq: '#94a3b8', none: '#94a3b8' };
-  const bg = { up: '#f0fdf4', down: '#fef2f2', eq: '#f8fafc', none: 'transparent' };
+  const colors = { up: '#00ff88', down: '#ff0055', eq: '#6b7494', none: '#6b7494' };
+  const bg = { up: '#0a2e22', down: '#3d0d0d', eq: '#0f1428', none: 'transparent' };
   const Icon = dir === 'up' ? TrendingUp : dir === 'down' ? TrendingDown : Minus;
 
   return (
@@ -58,7 +58,7 @@ const DiffCell: React.FC<{ a?: number; b?: number; money?: boolean }> = ({ a, b,
         {label}
       </span>
       {diff !== undefined && Math.abs(diff) > 0 && (
-        <span style={{ fontSize: 10, color: '#94a3b8' }}>
+        <span style={{ fontSize: 10, color: '#6b7494' }}>
           {diff > 0 ? '+' : ''}{money ? fmtMoney(Math.abs(diff)) : fmtQty(Math.abs(diff))}
         </span>
       )}
@@ -72,7 +72,7 @@ const RowBadge: React.FC<{ hasA: boolean; hasB: boolean; colorA: string; colorB:
   hasA, hasB, colorA, colorB,
 }) => {
   if (hasA && hasB) return (
-    <span style={{ fontSize: 10, color: '#059669', fontWeight: 700 }}>
+    <span style={{ fontSize: 10, color: '#00ff88', fontWeight: 700 }}>
       <CheckCircle size={10} style={{ verticalAlign: 'middle', marginRight: 2 }} />
       Ambos
     </span>
@@ -97,10 +97,10 @@ const ChartTooltip = ({ active, payload, label, colorA, colorB, nameA, nameB }: 
   const { label: pct, dir } = fmtPct(vA, vB);
   return (
     <div style={{
-      background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10,
+      background: '#1a1f3a', border: '1px solid #2a3155', borderRadius: 10,
       padding: '10px 14px', boxShadow: '0 4px 20px rgba(0,0,0,.1)', fontSize: 12, minWidth: 200,
     }}>
-      <p style={{ fontWeight: 700, color: '#1e293b', marginBottom: 8, fontSize: 13 }}>{label}</p>
+      <p style={{ fontWeight: 700, color: '#d0d6f0', marginBottom: 8, fontSize: 13 }}>{label}</p>
       {vA !== undefined && (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
           <span style={{ color: colorA, fontWeight: 600 }}>{nameA}</span>
@@ -115,13 +115,13 @@ const ChartTooltip = ({ active, payload, label, colorA, colorB, nameA, nameB }: 
       )}
       {pct !== '—' && (
         <div style={{
-          borderTop: '1px solid #f1f5f9', marginTop: 6, paddingTop: 6,
+          borderTop: '1px solid #12172e', marginTop: 6, paddingTop: 6,
           display: 'flex', justifyContent: 'space-between',
         }}>
-          <span style={{ color: '#64748b' }}>Diferencia A vs B</span>
+          <span style={{ color: '#6b7494' }}>Diferencia A vs B</span>
           <span style={{
             fontWeight: 700,
-            color: dir === 'up' ? '#059669' : dir === 'down' ? '#dc2626' : '#94a3b8',
+            color: dir === 'up' ? '#00ff88' : dir === 'down' ? '#ff0055' : '#6b7494',
           }}>{pct}</span>
         </div>
       )}
@@ -191,16 +191,16 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
+            background: 'linear-gradient(135deg, #0d2840, #0f2a48)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <BarChart2 size={18} color="#2563eb" />
+            <BarChart2 size={18} color="#00d4ff" />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0f172a' }}>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#e0e6ff' }}>
               Comparativa de Datasets
             </h3>
-            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>
+            <p style={{ margin: 0, fontSize: 12, color: '#6b7494' }}>
               <span style={{ color: colorA, fontWeight: 700 }}>A: {datasetA.name}</span>
               {' '}<ArrowRight size={11} style={{ verticalAlign: 'middle' }} />{' '}
               <span style={{ color: colorB, fontWeight: 700 }}>B: {datasetB.name}</span>
@@ -209,7 +209,7 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 6, background: '#f1f5f9', padding: 4, borderRadius: 10 }}>
+        <div style={{ display: 'flex', gap: 6, background: '#12172e', padding: 4, borderRadius: 10 }}>
           {(['resumen', 'productos', 'grafico'] as Tab[]).map(t => (
             <button
               key={t}
@@ -217,8 +217,8 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
               style={{
                 padding: '6px 14px', borderRadius: 7, border: 'none', cursor: 'pointer',
                 fontSize: 12, fontWeight: 700, transition: 'all .15s',
-                background: tab === t ? '#ffffff' : 'transparent',
-                color: tab === t ? '#1e293b' : '#64748b',
+                background: tab === t ? '#1a1f3a' : 'transparent',
+                color: tab === t ? '#d0d6f0' : '#6b7494',
                 boxShadow: tab === t ? '0 1px 4px rgba(0,0,0,.08)' : 'none',
               }}
             >
@@ -238,13 +238,13 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
             {/* Card A */}
             <div style={{
               border: `2px solid ${colorA}`, borderRadius: 14, padding: '18px 20px',
-              background: `color-mix(in srgb, ${colorA} 5%, #ffffff)`,
+              background: `color-mix(in srgb, ${colorA} 5%, #1a1f3a)`,
             }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: colorA, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>
                 Dataset A
               </div>
               <div style={{
-                fontSize: 12, color: '#475569', marginBottom: 10, fontWeight: 600,
+                fontSize: 12, color: '#8b93b0', marginBottom: 10, fontWeight: 600,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
               }}>
                 {datasetA.name}
@@ -253,12 +253,12 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
                 <div style={{ fontSize: 22, fontWeight: 900, color: colorA }}>{fmtMoney(grandTotalA)}</div>
               )}
               {grandQtyA > 0 && (
-                <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
+                <div style={{ fontSize: 13, color: '#6b7494', marginTop: 4 }}>
                   <ShoppingCart size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} />
                   {fmtQty(grandQtyA)} unidades
                 </div>
               )}
-              <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>
+              <div style={{ fontSize: 12, color: '#6b7494', marginTop: 8 }}>
                 {datasetA.rowCount.toLocaleString('es-PE')} filas · {datasetA.columns.length} columnas
               </div>
             </div>
@@ -266,25 +266,25 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
             {/* Card diferencia central */}
             <div style={{
               borderRadius: 14, padding: '18px 20px', textAlign: 'center',
-              background: dirTotal === 'up' ? '#f0fdf4' : dirTotal === 'down' ? '#fef2f2' : '#f8fafc',
-              border: `2px solid ${dirTotal === 'up' ? '#86efac' : dirTotal === 'down' ? '#fca5a5' : '#e2e8f0'}`,
+              background: dirTotal === 'up' ? '#0a2e22' : dirTotal === 'down' ? '#3d0d0d' : '#0f1428',
+              border: `2px solid ${dirTotal === 'up' ? '#0d3d2c' : dirTotal === 'down' ? '#5a1515' : '#2a3155'}`,
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
             }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.06em' }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: '#6b7494', textTransform: 'uppercase', letterSpacing: '.06em' }}>
                 Diferencia A vs B
               </div>
               <div style={{
                 fontSize: 28, fontWeight: 900,
-                color: dirTotal === 'up' ? '#059669' : dirTotal === 'down' ? '#dc2626' : '#94a3b8',
+                color: dirTotal === 'up' ? '#00ff88' : dirTotal === 'down' ? '#ff0055' : '#6b7494',
               }}>
                 {pctTotal}
               </div>
               {grandTotalA > 0 && grandTotalB > 0 && (
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#475569' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#8b93b0' }}>
                   {moneyDiff >= 0 ? '+' : ''}{fmtMoney(Math.abs(moneyDiff))}
                 </div>
               )}
-              <div style={{ fontSize: 11, color: '#94a3b8' }}>
+              <div style={{ fontSize: 11, color: '#6b7494' }}>
                 {dirTotal === 'up' ? 'A facturó más que B' : dirTotal === 'down' ? 'B facturó más que A' : 'Montos iguales'}
               </div>
             </div>
@@ -292,13 +292,13 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
             {/* Card B */}
             <div style={{
               border: `2px solid ${colorB}`, borderRadius: 14, padding: '18px 20px',
-              background: `color-mix(in srgb, ${colorB} 5%, #ffffff)`,
+              background: `color-mix(in srgb, ${colorB} 5%, #1a1f3a)`,
             }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: colorB, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>
                 Dataset B
               </div>
               <div style={{
-                fontSize: 12, color: '#475569', marginBottom: 10, fontWeight: 600,
+                fontSize: 12, color: '#8b93b0', marginBottom: 10, fontWeight: 600,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
               }}>
                 {datasetB.name}
@@ -307,12 +307,12 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
                 <div style={{ fontSize: 22, fontWeight: 900, color: colorB }}>{fmtMoney(grandTotalB)}</div>
               )}
               {grandQtyB > 0 && (
-                <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
+                <div style={{ fontSize: 13, color: '#6b7494', marginTop: 4 }}>
                   <ShoppingCart size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} />
                   {fmtQty(grandQtyB)} unidades
                 </div>
               )}
-              <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>
+              <div style={{ fontSize: 12, color: '#6b7494', marginTop: 8 }}>
                 {datasetB.rowCount.toLocaleString('es-PE')} filas · {datasetB.columns.length} columnas
               </div>
             </div>
@@ -321,15 +321,15 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
           {/* Resumen de productos */}
           {hasProducts && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-              <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: '12px 16px' }}>
-                <div style={{ fontSize: 20, fontWeight: 900, color: '#059669' }}>{inBoth.length}</div>
+              <div style={{ background: '#0a2e22', border: '1px solid #0d3d2c', borderRadius: 10, padding: '12px 16px' }}>
+                <div style={{ fontSize: 20, fontWeight: 900, color: '#00ff88' }}>{inBoth.length}</div>
                 <div style={{ fontSize: 12, color: '#166534', fontWeight: 600 }}>Productos en ambos CSVs</div>
               </div>
-              <div style={{ background: `color-mix(in srgb, ${colorA} 8%, #ffffff)`, border: `1px solid ${colorA}`, borderRadius: 10, padding: '12px 16px' }}>
+              <div style={{ background: `color-mix(in srgb, ${colorA} 8%, #1a1f3a)`, border: `1px solid ${colorA}`, borderRadius: 10, padding: '12px 16px' }}>
                 <div style={{ fontSize: 20, fontWeight: 900, color: colorA }}>{onlyInA.length}</div>
                 <div style={{ fontSize: 12, color: colorA, fontWeight: 600 }}>Solo en CSV A</div>
               </div>
-              <div style={{ background: `color-mix(in srgb, ${colorB} 8%, #ffffff)`, border: `1px solid ${colorB}`, borderRadius: 10, padding: '12px 16px' }}>
+              <div style={{ background: `color-mix(in srgb, ${colorB} 8%, #1a1f3a)`, border: `1px solid ${colorB}`, borderRadius: 10, padding: '12px 16px' }}>
                 <div style={{ fontSize: 20, fontWeight: 900, color: colorB }}>{onlyInB.length}</div>
                 <div style={{ fontSize: 12, color: colorB, fontWeight: 600 }}>Solo en CSV B</div>
               </div>
@@ -339,26 +339,26 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
           {/* Columnas detectadas */}
           {(productCol || qtyCol || priceCol || totalCol) && (
             <div style={{
-              background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 14px',
+              background: '#2a2208', border: '1px solid #5a4510', borderRadius: 10, padding: '10px 14px',
               display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center'
             }}>
-              <Info size={14} color="#d97706" />
-              <span style={{ fontSize: 12, color: '#92400e', fontWeight: 600 }}>Columnas detectadas:</span>
-              {productCol && <span style={{ fontSize: 11, background: '#fef3c7', padding: '2px 8px', borderRadius: 6, color: '#92400e' }}> Producto: <b>{productCol}</b></span>}
-              {qtyCol && <span style={{ fontSize: 11, background: '#fef3c7', padding: '2px 8px', borderRadius: 6, color: '#92400e' }}> Cantidad: <b>{qtyCol}</b></span>}
-              {priceCol && <span style={{ fontSize: 11, background: '#fef3c7', padding: '2px 8px', borderRadius: 6, color: '#92400e' }}> Precio: <b>{priceCol}</b></span>}
-              {totalCol && <span style={{ fontSize: 11, background: '#fef3c7', padding: '2px 8px', borderRadius: 6, color: '#92400e' }}> Total: <b>{totalCol}</b></span>}
+              <Info size={14} color="#ffaa00" />
+              <span style={{ fontSize: 12, color: '#996600', fontWeight: 600 }}>Columnas detectadas:</span>
+              {productCol && <span style={{ fontSize: 11, background: '#3d2e0a', padding: '2px 8px', borderRadius: 6, color: '#996600' }}> Producto: <b>{productCol}</b></span>}
+              {qtyCol && <span style={{ fontSize: 11, background: '#3d2e0a', padding: '2px 8px', borderRadius: 6, color: '#996600' }}> Cantidad: <b>{qtyCol}</b></span>}
+              {priceCol && <span style={{ fontSize: 11, background: '#3d2e0a', padding: '2px 8px', borderRadius: 6, color: '#996600' }}> Precio: <b>{priceCol}</b></span>}
+              {totalCol && <span style={{ fontSize: 11, background: '#3d2e0a', padding: '2px 8px', borderRadius: 6, color: '#996600' }}> Total: <b>{totalCol}</b></span>}
             </div>
           )}
 
           {/* Columnas compartidas */}
           {sharedColumns.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>Columnas compartidas:</span>
+              <span style={{ fontSize: 11, color: '#6b7494', fontWeight: 600 }}>Columnas compartidas:</span>
               {sharedColumns.map(c => (
                 <span key={c} style={{
-                  fontSize: 11, background: '#f0fdf4', color: '#059669',
-                  border: '1px solid #86efac', padding: '2px 8px', borderRadius: 5, fontWeight: 600,
+                  fontSize: 11, background: '#0a2e22', color: '#00ff88',
+                  border: '1px solid #0d3d2c', padding: '2px 8px', borderRadius: 5, fontWeight: 600,
                 }}>{c}</span>
               ))}
             </div>
@@ -372,15 +372,15 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
 
           {!hasProducts && (
             <div style={{
-              background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12,
+              background: '#2a2208', border: '1px solid #5a4510', borderRadius: 12,
               padding: '20px 24px', display: 'flex', gap: 10, alignItems: 'flex-start',
             }}>
-              <AlertCircle size={18} color="#d97706" style={{ flexShrink: 0, marginTop: 1 }} />
+              <AlertCircle size={18} color="#ffaa00" style={{ flexShrink: 0, marginTop: 1 }} />
               <div>
-                <p style={{ margin: '0 0 4px', fontWeight: 700, color: '#92400e', fontSize: 14 }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 700, color: '#996600', fontSize: 14 }}>
                   No se detectó una columna de productos
                 </p>
-                <p style={{ margin: 0, fontSize: 12, color: '#b45309' }}>
+                <p style={{ margin: 0, fontSize: 12, color: '#cc8800' }}>
                   Para ver la comparativa por producto, tu CSV debe tener una columna con nombre
                   como <b>Producto</b>, <b>Descripcion</b>, <b>Item</b>, <b>Articulo</b> o <b>Nombre</b>.
                   Ve a la pestaña <b>Resumen</b> para ver las estadísticas numéricas globales.
@@ -401,31 +401,31 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
                   <span style={{ width: 12, height: 12, borderRadius: 3, background: colorB, display: 'inline-block' }} />
                   <b style={{ color: colorB }}>B</b> = {datasetB.name}
                 </span>
-                <span style={{ color: '#94a3b8' }}>
+                <span style={{ color: '#6b7494' }}>
                   La columna <b>Δ Monto</b> muestra qué tanto más (+) o menos (-) facturó A respecto a B
                 </span>
               </div>
 
               {/* Tabla */}
-              <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 12 }}>
+              <div style={{ overflowX: 'auto', border: '1px solid #2a3155', borderRadius: 12 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 520 }}>
                   <thead>
-                    <tr style={{ background: '#f8fafc' }}>
-                      <th style={{ padding: '11px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.04em', borderBottom: '1px solid #e2e8f0' }}>
+                    <tr style={{ background: '#0f1428' }}>
+                      <th style={{ padding: '11px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#6b7494', textTransform: 'uppercase', letterSpacing: '.04em', borderBottom: '1px solid #2a3155' }}>
                         Producto
                       </th>
                       {qtyCol && <>
-                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorA, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>Cant. A</th>
-                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorB, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>Cant. B</th>
+                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorA, borderBottom: '1px solid #2a3155', whiteSpace: 'nowrap' }}>Cant. A</th>
+                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorB, borderBottom: '1px solid #2a3155', whiteSpace: 'nowrap' }}>Cant. B</th>
                       </>}
                       {priceCol && <>
-                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorA, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>Precio A</th>
-                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorB, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>Precio B</th>
+                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorA, borderBottom: '1px solid #2a3155', whiteSpace: 'nowrap' }}>Precio A</th>
+                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorB, borderBottom: '1px solid #2a3155', whiteSpace: 'nowrap' }}>Precio B</th>
                       </>}
                       {totalCol && <>
-                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorA, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>Total A</th>
-                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorB, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>Total B</th>
-                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#1e293b', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>Δ Monto</th>
+                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorA, borderBottom: '1px solid #2a3155', whiteSpace: 'nowrap' }}>Total A</th>
+                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorB, borderBottom: '1px solid #2a3155', whiteSpace: 'nowrap' }}>Total B</th>
+                        <th style={{ padding: '11px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#d0d6f0', borderBottom: '1px solid #2a3155', whiteSpace: 'nowrap' }}>Δ Monto</th>
                       </>}
                     </tr>
                   </thead>
@@ -435,12 +435,12 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
                       const hasB = r.totalB !== undefined || r.qtyB !== undefined || r.priceB !== undefined;
                       return (
                         <tr key={i} style={{
-                          background: i % 2 === 0 ? '#ffffff' : '#fafbfc',
-                          borderBottom: '1px solid #f1f5f9'
+                          background: i % 2 === 0 ? '#1a1f3a' : '#0f1428',
+                          borderBottom: '1px solid #12172e'
                         }}>
                           <td style={{ padding: '10px 14px', maxWidth: 220 }}>
                             <div style={{
-                              fontWeight: 700, color: '#1e293b', fontSize: 13,
+                              fontWeight: 700, color: '#d0d6f0', fontSize: 13,
                               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
                             }}
                               title={r.product}>
@@ -449,20 +449,20 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
                             <RowBadge hasA={hasA} hasB={hasB} colorA={colorA} colorB={colorB} />
                           </td>
                           {qtyCol && <>
-                            <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: hasA ? colorA : '#e2e8f0' }}>{fmtQty(r.qtyA)}</td>
-                            <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: hasB ? colorB : '#e2e8f0' }}>{fmtQty(r.qtyB)}</td>
+                            <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: hasA ? colorA : '#2a3155' }}>{fmtQty(r.qtyA)}</td>
+                            <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: hasB ? colorB : '#2a3155' }}>{fmtQty(r.qtyB)}</td>
                           </>}
                           {priceCol && <>
-                            <td style={{ padding: '10px 12px', textAlign: 'right', color: hasA ? colorA : '#e2e8f0' }}>{fmtMoney(r.priceA)}</td>
-                            <td style={{ padding: '10px 12px', textAlign: 'right', color: hasB ? colorB : '#e2e8f0' }}>{fmtMoney(r.priceB)}</td>
+                            <td style={{ padding: '10px 12px', textAlign: 'right', color: hasA ? colorA : '#2a3155' }}>{fmtMoney(r.priceA)}</td>
+                            <td style={{ padding: '10px 12px', textAlign: 'right', color: hasB ? colorB : '#2a3155' }}>{fmtMoney(r.priceB)}</td>
                           </>}
                           {totalCol && <>
-                            <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: hasA ? colorA : '#e2e8f0', fontSize: 13 }}>{fmtMoney(r.totalA)}</td>
-                            <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: hasB ? colorB : '#e2e8f0', fontSize: 13 }}>{fmtMoney(r.totalB)}</td>
+                            <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: hasA ? colorA : '#2a3155', fontSize: 13 }}>{fmtMoney(r.totalA)}</td>
+                            <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: hasB ? colorB : '#2a3155', fontSize: 13 }}>{fmtMoney(r.totalB)}</td>
                             <td style={{ padding: '10px 12px', textAlign: 'right' }}>
                               {hasA && hasB
                                 ? <DiffCell a={r.totalA} b={r.totalB} money />
-                                : <span style={{ fontSize: 11, color: '#94a3b8' }}>—</span>}
+                                : <span style={{ fontSize: 11, color: '#6b7494' }}>—</span>}
                             </td>
                           </>}
                         </tr>
@@ -472,8 +472,8 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
                   {/* Fila de totales */}
                   {(grandTotalA > 0 || grandTotalB > 0) && (
                     <tfoot>
-                      <tr style={{ background: '#f8fafc', borderTop: '2px solid #e2e8f0' }}>
-                        <td style={{ padding: '12px 14px', fontWeight: 800, color: '#1e293b', fontSize: 13 }}>
+                      <tr style={{ background: '#0f1428', borderTop: '2px solid #2a3155' }}>
+                        <td style={{ padding: '12px 14px', fontWeight: 800, color: '#d0d6f0', fontSize: 13 }}>
                           TOTAL GENERAL
                         </td>
                         {qtyCol && <>
@@ -498,20 +498,20 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
 
           {/* Fallback numérico si no hay producto */}
           {!hasProducts && numericFallback.length > 0 && (
-            <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 12 }}>
+            <div style={{ overflowX: 'auto', border: '1px solid #2a3155', borderRadius: 12 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: '#f8fafc' }}>
-                    <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>Columna</th>
-                    <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorA, borderBottom: '1px solid #e2e8f0' }}>Total A</th>
-                    <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorB, borderBottom: '1px solid #e2e8f0' }}>Total B</th>
-                    <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>Diferencia</th>
+                  <tr style={{ background: '#0f1428' }}>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#6b7494', borderBottom: '1px solid #2a3155' }}>Columna</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorA, borderBottom: '1px solid #2a3155' }}>Total A</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: colorB, borderBottom: '1px solid #2a3155' }}>Total B</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#d0d6f0', borderBottom: '1px solid #2a3155' }}>Diferencia</th>
                   </tr>
                 </thead>
                 <tbody>
                   {numericFallback.map(({ col, colB }, i) => (
-                    <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfc', borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '10px 14px', fontWeight: 700, color: '#1e293b' }}>{col.column}</td>
+                    <tr key={i} style={{ background: i % 2 === 0 ? '#1a1f3a' : '#0f1428', borderBottom: '1px solid #12172e' }}>
+                      <td style={{ padding: '10px 14px', fontWeight: 700, color: '#d0d6f0' }}>{col.column}</td>
                       <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: colorA }}>{fmtMoney(col.sum)}</td>
                       <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: colorB }}>{fmtMoney(colB.sum)}</td>
                       <td style={{ padding: '10px 12px', textAlign: 'right' }}><DiffCell a={col.sum} b={colB.sum} money /></td>
@@ -530,7 +530,7 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
 
           {/* Tabs de modo */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#64748b' }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#6b7494' }}>
               Top {Math.min(chartData.length, 10)} productos — comparando <b>{chartMode === 'total' ? 'monto total' : 'cantidad vendida'}</b>
             </p>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -538,8 +538,8 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
                 <button onClick={() => setChartMode('total')} style={{
                   padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
                   fontSize: 12, fontWeight: 700,
-                  background: chartMode === 'total' ? '#2563eb' : '#f1f5f9',
-                  color: chartMode === 'total' ? '#fff' : '#64748b',
+                  background: chartMode === 'total' ? '#00d4ff' : '#12172e',
+                  color: chartMode === 'total' ? '#0a0e27' : '#6b7494',
                 }}>
                   <DollarSign size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />
                   Monto
@@ -549,8 +549,8 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
                 <button onClick={() => setChartMode('qty')} style={{
                   padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
                   fontSize: 12, fontWeight: 700,
-                  background: chartMode === 'qty' ? '#2563eb' : '#f1f5f9',
-                  color: chartMode === 'qty' ? '#fff' : '#64748b',
+                  background: chartMode === 'qty' ? '#00d4ff' : '#12172e',
+                  color: chartMode === 'qty' ? '#0a0e27' : '#6b7494',
                 }}>
                   <ShoppingCart size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />
                   Cantidad
@@ -560,20 +560,20 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
           </div>
 
           {chartData.length === 0 ? (
-            <div style={{ padding: '40px 24px', textAlign: 'center', color: '#94a3b8', background: '#f8fafc', borderRadius: 12 }}>
+            <div style={{ padding: '40px 24px', textAlign: 'center', color: '#6b7494', background: '#0f1428', borderRadius: 12 }}>
               No hay datos para graficar. Sube CSVs con columnas de producto y monto.
             </div>
           ) : (
-            <div style={{ background: '#fff', borderRadius: 12, padding: '16px 8px', border: '1px solid #f1f5f9' }}>
+            <div style={{ background: '#1a1f3a', borderRadius: 12, padding: '16px 8px', border: '1px solid #12172e' }}>
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={chartData} margin={{ top: 8, right: 20, left: 8, bottom: 70 }} barCategoryGap="28%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#12172e" vertical={false} />
                   <XAxis
-                    dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }}
+                    dataKey="name" tick={{ fontSize: 11, fill: '#6b7494' }}
                     angle={-35} textAnchor="end" interval={0} height={80}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: '#64748b' }}
+                    tick={{ fontSize: 11, fill: '#6b7494' }}
                     tickFormatter={(v: number) => chartMode === 'total' ? fmtMoney(v) : fmtQty(v)}
                     width={80}
                   />
@@ -597,25 +597,25 @@ export const CsvComparisonPanel: React.FC<Props> = ({ comparison }) => {
           {(grandTotalA > 0 || grandTotalB > 0) && (
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <div style={{
-                flex: 1, minWidth: 120, background: `color-mix(in srgb, ${colorA} 8%, #fff)`,
+                flex: 1, minWidth: 120, background: `color-mix(in srgb, ${colorA} 8%, #1a1f3a)`,
                 border: `1px solid ${colorA}`, borderRadius: 10, padding: '10px 14px', textAlign: 'center'
               }}>
                 <div style={{ fontSize: 11, color: colorA, fontWeight: 700 }}>Total A</div>
                 <div style={{ fontSize: 16, fontWeight: 900, color: colorA }}>{fmtMoney(grandTotalA)}</div>
               </div>
               <div style={{
-                flex: 1, minWidth: 120, background: '#f8fafc',
-                border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', textAlign: 'center'
+                flex: 1, minWidth: 120, background: '#0f1428',
+                border: '1px solid #2a3155', borderRadius: 10, padding: '10px 14px', textAlign: 'center'
               }}>
-                <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>Diferencia</div>
+                <div style={{ fontSize: 11, color: '#6b7494', fontWeight: 700 }}>Diferencia</div>
                 <div style={{
                   fontSize: 16, fontWeight: 900,
-                  color: dirTotal === 'up' ? '#059669' : dirTotal === 'down' ? '#dc2626' : '#94a3b8',
+                  color: dirTotal === 'up' ? '#00ff88' : dirTotal === 'down' ? '#ff0055' : '#6b7494',
                 }}>{pctTotal}</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>{fmtMoney(Math.abs(moneyDiff))}</div>
+                <div style={{ fontSize: 11, color: '#6b7494' }}>{fmtMoney(Math.abs(moneyDiff))}</div>
               </div>
               <div style={{
-                flex: 1, minWidth: 120, background: `color-mix(in srgb, ${colorB} 8%, #fff)`,
+                flex: 1, minWidth: 120, background: `color-mix(in srgb, ${colorB} 8%, #1a1f3a)`,
                 border: `1px solid ${colorB}`, borderRadius: 10, padding: '10px 14px', textAlign: 'center'
               }}>
                 <div style={{ fontSize: 11, color: colorB, fontWeight: 700 }}>Total B</div>

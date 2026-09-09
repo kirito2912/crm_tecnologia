@@ -129,7 +129,7 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
       {/* Tarjetas de KPIs Ejecutivos */}
       <div className="admin-kpi-grid">
         <div className="admin-kpi-card">
-          <div className="admin-kpi-icon-box" style={{ background: '#eff6ff', color: '#2563eb' }}>
+          <div className="admin-kpi-icon-box" style={{ background: '#0d2840', color: '#00d4ff' }}>
             <FileText size={20} />
           </div>
           <div className="admin-kpi-info">
@@ -139,36 +139,36 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
         </div>
 
         <div className="admin-kpi-card">
-          <div className="admin-kpi-icon-box" style={{ background: '#fffbeb', color: '#d97706' }}>
+          <div className="admin-kpi-icon-box" style={{ background: '#2a2208', color: '#ffaa00' }}>
             <Clock size={20} />
           </div>
           <div className="admin-kpi-info">
             <span className="admin-kpi-label">Pendientes de Revisión</span>
-            <span className="admin-kpi-number" style={{ color: '#d97706' }}>
+            <span className="admin-kpi-number" style={{ color: '#ffaa00' }}>
               {kpiPendientes}
             </span>
           </div>
         </div>
 
         <div className="admin-kpi-card">
-          <div className="admin-kpi-icon-box" style={{ background: '#f0fdf4', color: '#16a34a' }}>
+          <div className="admin-kpi-icon-box" style={{ background: '#0a2e22', color: '#00ff88' }}>
             <CheckCircle2 size={20} />
           </div>
           <div className="admin-kpi-info">
             <span className="admin-kpi-label">Reportes Aprobados</span>
-            <span className="admin-kpi-number" style={{ color: '#16a34a' }}>
+            <span className="admin-kpi-number" style={{ color: '#00ff88' }}>
               {kpiAprobados}
             </span>
           </div>
         </div>
 
         <div className="admin-kpi-card">
-          <div className="admin-kpi-icon-box" style={{ background: '#fef2f2', color: '#dc2626' }}>
+          <div className="admin-kpi-icon-box" style={{ background: '#3d0d0d', color: '#ff0055' }}>
             <AlertCircle size={20} />
           </div>
           <div className="admin-kpi-info">
             <span className="admin-kpi-label">Con Observaciones</span>
-            <span className="admin-kpi-number" style={{ color: '#dc2626' }}>
+            <span className="admin-kpi-number" style={{ color: '#ff0055' }}>
               {kpiObservaciones}
             </span>
           </div>
@@ -197,7 +197,7 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
         </div>
 
         <div className="admin-search-wrapper">
-          <Search size={15} color="#94a3b8" />
+          <Search size={15} color="#6b7494" />
           <input
             type="text"
             className="admin-search-input"
@@ -211,7 +211,7 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
       {/* Lista de Reportes */}
       {filteredReportes.length === 0 ? (
         <div className="admin-empty-inbox">
-          <Inbox size={48} color="#cbd5e1" />
+          <Inbox size={48} color="#3a4165" />
           <p>No hay reportes en este criterio de búsqueda.</p>
           <span>Los nuevos informes enviados por los analistas aparecerán automáticamente aquí.</span>
         </div>
@@ -239,18 +239,18 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
                 <h3 className="admin-report-title">{rep.titulo}</h3>
 
                 <div className="admin-report-analyst">
-                  <User size={14} color="#6366f1" />
+                  <User size={14} color="#00d4ff" />
                   <span>Preparado por: <strong>{rep.analista_nombre}</strong></span>
                 </div>
 
                 {/* Empresas Comparadas */}
                 <div className="admin-report-companies-box">
-                  <div className="admin-comp-pill" style={{ color: '#2563eb', background: '#eff6ff' }}>
+                  <div className="admin-comp-pill" style={{ color: '#00d4ff', background: '#0d2840' }}>
                     <Building2 size={13} />
                     <span title={rep.dataset_a_nombre}>{rep.dataset_a_nombre}</span>
                   </div>
                   <span className="admin-vs-badge">VS</span>
-                  <div className="admin-comp-pill" style={{ color: '#7c3aed', background: '#f5f3ff' }}>
+                  <div className="admin-comp-pill" style={{ color: '#bf00ff', background: '#1a1535' }}>
                     <Building2 size={13} />
                     <span title={rep.dataset_b_nombre}>{rep.dataset_b_nombre}</span>
                   </div>
@@ -276,8 +276,8 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
                       <span
                         className="admin-metric-mini-tag"
                         style={{
-                          color: delta >= 0 ? '#16a34a' : '#dc2626',
-                          background: delta >= 0 ? '#dcfce7' : '#fee2e2',
+                          color: delta >= 0 ? '#00ff88' : '#ff0055',
+                          background: delta >= 0 ? '#0d3d2c' : '#4a1010',
                         }}
                       >
                         Δ {delta >= 0 ? '+' : ''}{delta.toFixed(1)}%

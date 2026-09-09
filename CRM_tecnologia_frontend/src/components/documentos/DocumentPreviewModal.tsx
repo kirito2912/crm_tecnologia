@@ -89,7 +89,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                     </span>
                   </div>
                   <span className="doc-reader-status">
-                    <CheckCircle2 size={14} color="#16a34a" /> Integridad Verificada
+                    <CheckCircle2 size={14} color="#00ff88" /> Integridad Verificada
                   </span>
                 </div>
 
@@ -201,7 +201,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               <div className="doc-author-card">
                 <div
                   className="doc-author-avatar"
-                  style={{ background: isAdminUpload ? '#4f46e5' : '#059669' }}
+                  style={{ background: isAdminUpload ? '#00b8e6' : '#00ff88' }}
                 >
                   {isAdminUpload ? 'AD' : 'AN'}
                 </div>
@@ -237,7 +237,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
 
             {/* Banner de Sincronización */}
             <div className="doc-sync-banner">
-              <CheckCircle2 size={16} color="#059669" />
+              <CheckCircle2 size={16} color="#00ff88" />
               <span>
                 <strong>Sincronizado:</strong> Este documento está disponible en todas las vistas y
                 roles de la organización.

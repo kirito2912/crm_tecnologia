@@ -84,11 +84,11 @@ export const MONTHLY_SALES_DATA: MonthlySalesData[] = [
 ];
 
 export const HARDWARE_CATEGORIES_DATA: HardwareCategoryData[] = [
-  { name: 'Servidores', category: 'Servidores', value: 471200, percentage: 38, color: '#3b66de', revenue: '$471.2K' },
-  { name: 'Laptops', category: 'Laptops', value: 334800, percentage: 27, color: '#8b5cf6', revenue: '$334.8K' },
-  { name: 'Redes', category: 'Redes', value: 136400, percentage: 11, color: '#0ea5e9', revenue: '$136.4K' },
-  { name: 'Almacenamiento', category: 'Almacenamiento', value: 74400, percentage: 6, color: '#0d9488', revenue: '$74.4K' },
-  { name: 'Periféricos', category: 'Periféricos', value: 223200, percentage: 18, color: '#c084fc', revenue: '$223.2K' },
+  { name: 'Servidores', category: 'Servidores', value: 471200, percentage: 38, color: '#00d4ff', revenue: '$471.2K' },
+  { name: 'Laptops', category: 'Laptops', value: 334800, percentage: 27, color: '#bf00ff', revenue: '$334.8K' },
+  { name: 'Redes', category: 'Redes', value: 136400, percentage: 11, color: '#00ffff', revenue: '$136.4K' },
+  { name: 'Almacenamiento', category: 'Almacenamiento', value: 74400, percentage: 6, color: '#00ff88', revenue: '$74.4K' },
+  { name: 'Periféricos', category: 'Periféricos', value: 223200, percentage: 18, color: '#ff006e', revenue: '$223.2K' },
 ];
 
 export const CLIENTS_DATA: ClientItem[] = [
