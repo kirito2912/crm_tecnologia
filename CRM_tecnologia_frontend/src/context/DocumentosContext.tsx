@@ -61,7 +61,7 @@ export const DocumentosProvider: React.FC<{ children: ReactNode }> = ({ children
     setIsUploading(true);
     setError(null);
 
-    const currentUserRole = (user?.role || 'analista').toLowerCase();
+    const currentUserRole = (user?.role || 'colaborador').toLowerCase();
     const currentUserName = user?.name || 'Usuario';
     const currentUserId = user?.id || '';
 
@@ -75,7 +75,7 @@ export const DocumentosProvider: React.FC<{ children: ReactNode }> = ({ children
         descripcion: meta.descripcion,
         subido_por: currentUserName,
         usuario_id: currentUserId,
-        usuario_rol: currentUserRole.includes('admin') ? 'administrador' : 'analista',
+        usuario_rol: currentUserRole.includes('admin') ? 'administrador' : 'colaborador',
         tags: meta.tags,
         destinatarios_roles: destinatarios,
       });

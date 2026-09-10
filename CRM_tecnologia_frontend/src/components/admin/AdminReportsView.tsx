@@ -30,7 +30,7 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
   searchQuery = '',
 }) => {
   const { user } = useAuth();
-  const role = (user?.role || 'analista').toLowerCase();
+  const role = (user?.role || 'colaborador').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
 
   const { reportes, isLoading, fetchReportes } = useReports();
@@ -111,7 +111,7 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
           </h2>
           <p>
             {isAdmin
-              ? 'Revisa, audita y retroalimenta los análisis de empresas y catálogos preparados por los analistas.'
+              ? 'Revisa, audita y retroalimenta los análisis de empresas y catálogos preparados por los colaboradores.'
               : 'Consulta el historial de análisis comparativos, auditorías de precios y el estado de revisión ejecutiva.'}
           </p>
         </div>
@@ -201,7 +201,7 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
           <input
             type="text"
             className="admin-search-input"
-            placeholder="Buscar por título, empresa o analista..."
+            placeholder="Buscar por título, empresa o colaborador..."
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
           />
@@ -213,7 +213,7 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
         <div className="admin-empty-inbox">
           <Inbox size={48} color="#3a4165" />
           <p>No hay reportes en este criterio de búsqueda.</p>
-          <span>Los nuevos informes enviados por los analistas aparecerán automáticamente aquí.</span>
+          <span>Los nuevos informes enviados por los colaboradores aparecerán automáticamente aquí.</span>
         </div>
       ) : (
         <div className="admin-reports-grid">

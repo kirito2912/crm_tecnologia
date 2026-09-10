@@ -48,7 +48,7 @@ export async function getInvitacionesDashboard(): Promise<InvitacionDashboardDat
           usuario_id: u.id,
           nombre: u.nombre || u.name || '',
           email: u.email,
-          rol: u.rol || 'analista',
+          rol: u.rol || 'colaborador',
           fecha: u.created_at || new Date().toISOString(),
           mensaje: 'Requiere habilitación',
         }));

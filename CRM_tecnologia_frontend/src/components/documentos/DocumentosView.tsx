@@ -47,7 +47,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
   } = useDocumentos();
 
   const { user } = useAuth();
-  const role = (user?.role || 'analista').toLowerCase();
+  const role = (user?.role || 'colaborador').toLowerCase();
   const isAdmin = role.includes('admin');
 
   // Filtros locales
@@ -77,7 +77,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
 
   // Modal de Envío a rol
   const [docToSend, setDocToSend] = useState<Documento | null>(null);
-  const [sendRol, setSendRol] = useState<string>('analista');
+  const [sendRol, setSendRol] = useState<string>('colaborador');
   const [sendSuccess, setSendSuccess] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,8 +102,8 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
   const kpiAdminDocs = documentos.filter((d) =>
     d.usuario_rol.toLowerCase().includes('admin')
   ).length;
-  const kpiAnalistaDocs = documentos.filter((d) =>
-    d.usuario_rol.toLowerCase().includes('analista')
+  const kpiColaboradorDocs = documentos.filter((d) =>
+    d.usuario_rol.toLowerCase().includes('colaborador')
   ).length;
 
   // ── Categorías Únicas ────────────────────────────────────────────────
@@ -309,7 +309,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
             <span className="doc-kpi-label">Almacenamiento Total</span>
             <span className="doc-kpi-value">{formatTotalStorage(totalBytes)}</span>
             <span className="doc-kpi-sub">
-              Admin: {kpiAdminDocs} · Analistas: {kpiAnalistaDocs}
+              Admin: {kpiAdminDocs} · Colaboradors: {kpiColaboradorDocs}
             </span>
           </div>
         </div>
@@ -412,7 +412,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
           >
             <option value="todos">Todos los autores</option>
             <option value="admin">Subidos por Administrador</option>
-            <option value="analista">Subidos por Analistas</option>
+            <option value="colaborador">Subidos por Colaboradors</option>
           </select>
         </div>
 
@@ -491,7 +491,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
               onPreview={(d) => setPreviewDoc(d)}
               onDownload={(d) => downloadDocumento(d)}
               onDelete={() => setDocToDelete(doc)}
-              onSend={(d) => { setDocToSend(d); setSendRol('analista'); }}
+              onSend={(d) => { setDocToSend(d); setSendRol('colaborador'); }}
             />
           ))}
         </div>
@@ -544,7 +544,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
                           isAdminUpload ? 'doc-role-badge--admin' : 'doc-role-badge--analista'
                         }`}
                       >
-                        {isAdminUpload ? 'Administrador' : 'Analista'}
+                        {isAdminUpload ? 'Administrador' : 'Colaborador'}
                       </span>
                     </td>
                     <td>
@@ -619,7 +619,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
                 <div>
                   <h3 className="doc-modal-title">Subir Documento Word o PDF</h3>
                   <span className="doc-modal-subtitle-row">
-                    Se compartirá con Administradores y Analistas en tiempo real
+                    Se compartirá con Administradores y Colaboradors en tiempo real
                   </span>
                 </div>
               </div>
@@ -699,7 +699,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
                 </label>
                 <div className="doc-roles-picker">
                   {[
-                    { id: 'analista',      label: 'Analista de Datos', color: '#00cc6a', bg: '#0d3d2c', border: '#bbf7d0' },
+                    { id: 'colaborador',      label: 'Colaborador', color: '#00cc6a', bg: '#0d3d2c', border: '#bbf7d0' },
                     { id: 'administrador', label: 'Administrador',      color: '#0099cc', bg: '#0f2a48', border: '#1a3a55' },
                   ].map((rol) => {
                     const selected = formDestinatarios.includes(rol.id);
@@ -747,7 +747,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
               <div className="doc-form-author-note">
                 <Shield size={14} color="#00b8e6" />
                 <span>
-                  Se registrará a nombre de <strong>{user?.name || (isAdmin ? 'Jane Doe (Admin)' : 'Carlos Mendoza (Analista)')}</strong> con rol <strong>{isAdmin ? 'Administrador' : 'Analista'}</strong>.
+                  Se registrará a nombre de <strong>{user?.name || (isAdmin ? 'Jane Doe (Admin)' : 'Carlos Mendoza (Colaborador)')}</strong> con rol <strong>{isAdmin ? 'Administrador' : 'Colaborador'}</strong>.
                 </span>
               </div>
 
@@ -860,7 +860,7 @@ export const DocumentosView: React.FC<DocumentosViewProps> = ({ searchQuery = ''
               <p className="doc-send-roles-label">Enviar a:</p>
               <div className="doc-roles-picker">
                 {[
-                  { id: 'analista',      label: 'Analista de Datos', color: '#00cc6a', bg: '#0d3d2c', border: '#bbf7d0' },
+                  { id: 'colaborador',      label: 'Colaborador', color: '#00cc6a', bg: '#0d3d2c', border: '#bbf7d0' },
                   { id: 'administrador', label: 'Administrador',      color: '#0099cc', bg: '#0f2a48', border: '#1a3a55' },
                 ].map((rol) => {
                   const selected = sendRol === rol.id;

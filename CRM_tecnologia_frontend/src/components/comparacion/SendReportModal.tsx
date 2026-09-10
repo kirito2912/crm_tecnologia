@@ -80,7 +80,7 @@ export const SendReportModal: React.FC<SendReportModalProps> = ({
     const payload = {
       titulo: titulo.trim(),
       analista_id: user?.id || 'USR-ANALISTA',
-      analista_nombre: user?.name || 'Carlos Mendoza (Analista)',
+      analista_nombre: user?.name || 'Carlos Mendoza (Colaborador)',
       dataset_a_id: datasetA.id,
       dataset_a_nombre: datasetA.name,
       dataset_b_id: datasetB.id,
@@ -210,7 +210,7 @@ export const SendReportModal: React.FC<SendReportModalProps> = ({
             {/* Campo Resumen Ejecutivo */}
             <div className="report-form-group">
               <label>
-                Resumen Ejecutivo del Analista *
+                Resumen Ejecutivo del Colaborador *
                 <span className="report-label-hint">Lo que observaste en la comparativa</span>
               </label>
               <textarea

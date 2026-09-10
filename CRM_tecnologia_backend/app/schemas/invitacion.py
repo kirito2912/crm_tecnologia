@@ -1,3 +1,4 @@
+from app.core.roles import Role
 from typing import Optional, List
 from datetime import datetime
 # pyrefly: ignore [missing-import]
@@ -8,14 +9,14 @@ from app.schemas.usuario import UsuarioResponse
 class InvitacionCreate(BaseModel):
     email: EmailStr
     nombre_referencial: Optional[str] = None
-    rol_asignado: Optional[str] = "analista"  # "analista", "programador", "auditor", "administrador"
+    rol_asignado: Optional[Role] = "colaborador"  # "colaborador", "programador", "auditor", "administrador"
 
 
 class InvitacionResponse(BaseModel):
     id: str
     email: EmailStr
     nombre_referencial: Optional[str] = None
-    rol_asignado: str
+    rol_asignado: Role
     token: str
     enlace_completo: Optional[str] = None
     estado: str  # "pendiente", "registrado", "cancelado", "expirado"
@@ -31,7 +32,7 @@ class ValidateTokenResponse(BaseModel):
     valido: bool
     email: Optional[str] = None
     nombre_referencial: Optional[str] = None
-    rol_asignado: Optional[str] = None
+    rol_asignado: Optional[Role] = None
     mensaje: str
 
 

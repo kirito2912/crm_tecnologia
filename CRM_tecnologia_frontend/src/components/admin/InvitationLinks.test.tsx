@@ -8,9 +8,9 @@ vi.mock('../../context/InvitacionesContext', () => ({
     refreshDashboard: vi.fn(), generarInvitacion: vi.fn(), alternarEstadoUsuario: vi.fn(),
     cancelarInvitacion,
     invitaciones: [
-      { id: 'old', email: 'old@example.com', estado: 'registrado', created_at: '2026-01-01', rol_asignado: 'analista', token: 'old' },
-      { id: 'hidden', email: 'hidden@example.com', estado: 'cancelado', created_at: '2026-03-01', rol_asignado: 'analista', token: 'hidden' },
-      { id: 'new', email: 'new@example.com', estado: 'pendiente', created_at: '2026-02-01', rol_asignado: 'analista', token: 'new' },
+      { id: 'old', email: 'old@example.com', estado: 'registrado', created_at: '2026-01-01', rol_asignado: 'colaborador', token: 'old' },
+      { id: 'hidden', email: 'hidden@example.com', estado: 'cancelado', created_at: '2026-03-01', rol_asignado: 'colaborador', token: 'hidden' },
+      { id: 'new', email: 'new@example.com', estado: 'pendiente', created_at: '2026-02-01', rol_asignado: 'colaborador', token: 'new' },
     ],
   }),
 }));

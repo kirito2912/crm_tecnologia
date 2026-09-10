@@ -100,7 +100,7 @@ describe('Requirement 4.1 / 4.2: crearInvitacion returns email_enviado field', (
     const invitation = await crearInvitacion({
       email: 'nuevo@empresa.com',
       nombre_referencial: 'Test User',
-      rol_asignado: 'analista',
+      rol_asignado: 'colaborador',
     });
 
     // The Invitacion type has email_enviado?: boolean | null
@@ -164,7 +164,7 @@ describe('Requirement 4.3: invite_token URL detection', () => {
       id: 'INV-TEST01',
       email: 'invitado@empresa.com',
       nombre_referencial: 'Invitado Test',
-      rol_asignado: 'analista',
+      rol_asignado: 'colaborador',
       token: 'valid_test_token_xyz',
       enlace_completo: 'http://localhost/?invite_token=valid_test_token_xyz',
       estado: 'pendiente',
@@ -179,7 +179,7 @@ describe('Requirement 4.3: invite_token URL detection', () => {
 
     expect(result.valido).toBe(true);
     expect(result.email).toBe('invitado@empresa.com');
-    expect(result.rol_asignado).toBe('analista');
+    expect(result.rol_asignado).toBe('colaborador');
   });
 
   it('validarTokenInvitacion returns valido=false for an already-used token', async () => {
@@ -216,7 +216,7 @@ describe('Requirement 4.4: Registration completion sets pending state', () => {
       id: 'INV-REG01',
       email: 'registrando@empresa.com',
       nombre_referencial: 'Nuevo Trabajador',
-      rol_asignado: 'analista',
+      rol_asignado: 'colaborador',
       token,
       estado: 'pendiente',
       creado_por: 'Admin',
@@ -274,7 +274,7 @@ describe('Requirement 4.4: Registration completion sets pending state', () => {
     const invitation = {
       id: 'INV-REG03',
       email: 'marcado@empresa.com',
-      rol_asignado: 'analista',
+      rol_asignado: 'colaborador',
       token,
       estado: 'pendiente',
       creado_por: 'Admin',
@@ -308,7 +308,7 @@ describe('Requirement 4.5: Cuentas en Espera panel reflects pending users', () =
       id: 'USR-PENDING-01',
       nombre: 'Pendiente Usuario',
       email: 'pendiente@empresa.com',
-      rol: 'analista',
+      rol: 'colaborador',
       habilitado: false,
       estado: 'pendiente_aprobacion',
       created_at: new Date().toISOString(),
@@ -333,7 +333,7 @@ describe('Requirement 4.5: Cuentas en Espera panel reflects pending users', () =
         usuario_id: 'USR-001',
         nombre: 'Ana López',
         email: 'ana@empresa.com',
-        rol: 'analista',
+        rol: 'colaborador',
         fecha: new Date().toISOString(),
         mensaje: 'Requiere habilitación',
       },
@@ -368,7 +368,7 @@ describe('Requirement 4.5: Cuentas en Espera panel reflects pending users', () =
     const inv = await crearInvitacion({
       email: 'flujo@empresa.com',
       nombre_referencial: 'Flujo Test',
-      rol_asignado: 'analista',
+      rol_asignado: 'colaborador',
     });
 
     // Step 2: Complete registration using the invitation token

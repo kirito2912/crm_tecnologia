@@ -213,7 +213,7 @@ export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             descripcion: `Dataset cargado desde archivo: ${file.name}`,
             columnas_json: columns,
             muestra_filas_json: rows.slice(0, 50), // primeras 50 filas como muestra
-            creado_por: 'Analista',
+            creado_por: 'Colaborador',
           }),
         });
       } catch {
@@ -243,7 +243,7 @@ export const CsvProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             descripcion: `Dataset: ${dataset.name}`,
             columnas_json: dataset.columns,
             muestra_filas_json: (dataset.rows || []).slice(0, 50),
-            creado_por: 'Analista',
+            creado_por: 'Colaborador',
           }),
         });
       } catch {

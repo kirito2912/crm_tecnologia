@@ -14,3 +14,6 @@ api_router.include_router(datasets_router)
 api_router.include_router(reportes_router)
 api_router.include_router(documentos_router)
 api_router.include_router(invitaciones_router)
+
+from app.api.v1.endpoints.solicitudes_acceso import router as solicitudes_router
+api_router.include_router(solicitudes_router)

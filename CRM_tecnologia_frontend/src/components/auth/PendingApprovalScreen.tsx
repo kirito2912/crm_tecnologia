@@ -22,7 +22,7 @@ export const PendingApprovalScreen: React.FC<PendingApprovalScreenProps> = () =>
   const [isChecking, setIsChecking] = useState(false);
   const [checkMessage, setCheckMessage] = useState<string | null>(null);
 
-  const roleName = (user?.role || 'analista').toUpperCase();
+  const roleName = (user?.role || 'colaborador').toUpperCase();
   const displayName = user?.name || 'Trabajador';
   const email = user?.email || 'usuario@empresa.com';
   const company = user?.company || 'DataTech Analytics';

@@ -31,7 +31,7 @@ interface DashboardContentProps {
 function DashboardContent({ project, onLogout }: DashboardContentProps) {
   const { user } = useAuth();
   const { solicitudesPendientes } = useInvitaciones();
-  const role = (user?.role || 'analista').toLowerCase();
+  const role = (user?.role || 'colaborador').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
 
   // Validación DEFENSIVA: si el usuario no está habilitado o está pendiente,
@@ -43,7 +43,8 @@ function DashboardContent({ project, onLogout }: DashboardContentProps) {
     return <PendingApprovalScreen />;
   }
 
-  const [activeTab, setActiveTab] = useState<NavTab>(isAdmin ? 'reports' : 'dataset');
+  const [selectedTab, setActiveTab] = useState<NavTab>(isAdmin ? 'reports' : 'dataset');
+  const activeTab = selectedTab === 'invitaciones' && !isAdmin ? 'dataset' : selectedTab;
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
@@ -86,9 +87,9 @@ function DashboardContent({ project, onLogout }: DashboardContentProps) {
         )}
 
         {/* Tab 2: Gestión de Invitaciones y Personal (Solo Administrador) */}
-        {activeTab === 'invitaciones' && <InvitacionesView />}
+        {isAdmin && activeTab === 'invitaciones' && <InvitacionesView />}
 
-        {/* Tab 3: Datasets de Empresas CSV (Analista) */}
+        {/* Tab 3: Datasets de Empresas CSV (Colaborador) */}
         {activeTab === 'dataset' && (
           <DatasetView
             searchQuery={searchQuery}
@@ -100,12 +101,12 @@ function DashboardContent({ project, onLogout }: DashboardContentProps) {
           />
         )}
 
-        {/* Tab 4: Módulo Compartido de Documentos Word y PDF (Administrador & Analista) */}
+        {/* Tab 4: Módulo Compartido de Documentos Word y PDF (Administrador & Colaborador) */}
         {activeTab === 'documentos' && (
           <DocumentosView searchQuery={searchQuery} />
         )}
 
-        {/* Tab 5: Módulo de Comparativa Interactiva (Analista & Admin) */}
+        {/* Tab 5: Módulo de Comparativa Interactiva (Colaborador & Admin) */}
         {activeTab === 'comparativa' && (
           <ComparacionView
             preselectedA={preselectedA}

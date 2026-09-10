@@ -1,3 +1,5 @@
+import { AccessRequestsTable } from './AccessRequestsTable';
+import { normalizeRole } from '../../utils/roles';
 import React, { useState } from 'react';
 import './InvitationLinks.css';
 import {
@@ -142,7 +144,7 @@ export const InvitacionesView: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
-  const [inviteRole, setInviteRole] = useState<RolAsignado>('analista');
+  const [inviteRole, setInviteRole] = useState<RolAsignado>('colaborador');
   const [isSubmittingInvite, setIsSubmittingInvite] = useState(false);
   const [createdInviteLink, setCreatedInviteLink] = useState<string | null>(null);
   const [emailEnviado, setEmailEnviado] = useState<boolean | null>(null);
@@ -254,7 +256,7 @@ export const InvitacionesView: React.FC = () => {
     if (statusFilter === 'deshabilitados') matchesStatus = isDeshabilitado;
 
     let matchesRole = true;
-    if (roleFilter !== 'todos') matchesRole = u.rol.toLowerCase() === roleFilter.toLowerCase();
+    if (roleFilter !== 'todos') matchesRole = normalizeRole(u.rol) === roleFilter.toLowerCase();
 
     return matchesSearch && matchesStatus && matchesRole;
   });
@@ -272,7 +274,7 @@ export const InvitacionesView: React.FC = () => {
     return (
       <span className="role-badge badge-analista">
         <Users size={12} />
-        Analista de Datos
+        Colaborador
       </span>
     );
   };
@@ -314,7 +316,7 @@ export const InvitacionesView: React.FC = () => {
               setEmailEnviado(null);
               setInviteEmail('');
               setInviteName('');
-              setInviteRole('analista');
+              setInviteRole('colaborador');
               setIsModalOpen(true);
             }}
           >
@@ -407,6 +409,7 @@ export const InvitacionesView: React.FC = () => {
         )}
       </section>
 
+      <AccessRequestsTable onApproved={refreshDashboard} />
       {/* Main Content: Personal & Invitaciones */}
       <div className="inv-main-grid">
         {/* Directorio de Personal */}
@@ -445,7 +448,7 @@ export const InvitacionesView: React.FC = () => {
               <div className="inv-filter-group">
                 <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
                   <option value="todos">Todos los Roles</option>
-                  <option value="analista">Analista</option>
+                  <option value="colaborador">Colaborador</option>
                   <option value="administrador">Administrador</option>
                 </select>
               </div>
@@ -772,7 +775,7 @@ export const InvitacionesView: React.FC = () => {
                     onChange={(e) => setInviteRole(e.target.value as RolAsignado)}
                     className="inv-form-select"
                   >
-                    <option value="analista">Analista de Datos (Datasets &amp; Comparativas)</option>
+                    <option value="colaborador">Colaborador (Datasets &amp; Comparativas)</option>
                     <option value="administrador">Administrador de Plataforma</option>
                   </select>
                 </div>

@@ -21,7 +21,7 @@ export interface Documento {
   archivo_base64?: string | null;
   subido_por: string;
   usuario_id?: string | null;
-  usuario_rol: 'analista' | 'administrador' | string;
+  usuario_rol: 'colaborador' | 'administrador' | string;
   tags_json?: string[] | null;
   /** Roles que pueden ver este documento. ["todos"] o subconjunto de los roles del sistema. */
   destinatarios_roles?: string[] | null;
@@ -40,7 +40,7 @@ export interface DocumentoCreatePayload {
   archivo_base64?: string;
   subido_por: string;
   usuario_id?: string;
-  usuario_rol?: 'analista' | 'administrador' | string;
+  usuario_rol?: 'colaborador' | 'administrador' | string;
   tags_json?: string[];
   destinatarios_roles?: string[];
 }

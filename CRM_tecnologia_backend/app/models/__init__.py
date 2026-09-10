@@ -6,6 +6,7 @@ from app.models.dataset_ml import DatasetML
 from app.models.reporte_comparativo import ReporteComparativo
 from app.models.documento import Documento
 from app.models.invitacion import Invitacion
+from app.models.solicitud_acceso import SolicitudAcceso
 
 __all__ = [
     "Base",
@@ -16,6 +17,7 @@ __all__ = [
     "ReporteComparativo",
     "Documento",
     "Invitacion",
+    "SolicitudAcceso",
 ]
 
 

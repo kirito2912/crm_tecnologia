@@ -1,3 +1,4 @@
+from app.core.roles import Role
 from typing import Optional, Any
 from datetime import datetime
 import json
@@ -8,7 +9,7 @@ from pydantic import BaseModel, EmailStr, ConfigDict, field_validator, model_val
 class UsuarioBase(BaseModel):
     nombre: str
     email: EmailStr
-    rol: Optional[str] = "analista"  # "analista" | "administrador" | "programador" | "auditor"
+    rol: Optional[Role] = "colaborador"  # "colaborador" | "administrador" | "programador" | "auditor"
     empresa: Optional[str] = None
     avatar: Optional[str] = None
     biometric_verified: Optional[bool] = False
@@ -25,7 +26,7 @@ class UsuarioCreate(UsuarioBase):
 class UsuarioUpdate(BaseModel):
     nombre: Optional[str] = None
     email: Optional[EmailStr] = None
-    rol: Optional[str] = None
+    rol: Optional[Role] = None
     empresa: Optional[str] = None
     avatar: Optional[str] = None
     biometric_verified: Optional[bool] = None
@@ -63,7 +64,7 @@ class UsuarioResponse(UsuarioBase):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: Optional[str] = None
-    role: Optional[str] = None
+    role: Optional[Role] = None
     remember_me: Optional[bool] = False
 
 
@@ -77,7 +78,7 @@ class RegisterRequest(BaseModel):
     full_name: str
     company_email: EmailStr
     password: str
-    role: Optional[str] = "analista"
+    role: Optional[Role] = "colaborador"
     company: Optional[str] = None
     invitacion_token: Optional[str] = None
 

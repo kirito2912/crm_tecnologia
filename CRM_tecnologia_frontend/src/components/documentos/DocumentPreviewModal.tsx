@@ -213,7 +213,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                     }`}
                   >
                     {isAdminUpload ? <Shield size={11} /> : <User size={11} />}
-                    {isAdminUpload ? 'Administrador' : 'Analista'}
+                    {isAdminUpload ? 'Administrador' : 'Colaborador'}
                   </span>
                 </div>
               </div>

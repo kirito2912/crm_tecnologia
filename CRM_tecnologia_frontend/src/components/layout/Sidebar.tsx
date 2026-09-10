@@ -24,12 +24,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, select
 
   const handleLogout = onLogout ?? logout;
 
-  const role = (user?.role || 'analista').toLowerCase();
+  const role = (user?.role || 'colaborador').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
 
   // Ítems de navegación dinámicos según el rol:
   // - Administrador: Reportes, Gestión de Personal e Invitaciones, Documentos Word y PDF
-  // - Analista: Reportes, Datasets CSV, Documentos Word y PDF y Comparativa
+  // - Colaborador: Reportes, Datasets CSV, Documentos Word y PDF y Comparativa
   const menuItems = isAdmin
     ? [
         { id: 'reports' as NavTab, label: 'Reportes de Comparativas', icon: FileText },
@@ -52,8 +52,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, select
 
 
 
-  const displayName = user?.name || (isAdmin ? 'Jane Doe (Admin)' : 'Carlos Mendoza (Analista)');
-  const displayRole = isAdmin ? 'Administrador' : 'Analista de Datos';
+  const displayName = user?.name || (isAdmin ? 'Jane Doe (Admin)' : 'Carlos Mendoza (Colaborador)');
+  const displayRole = isAdmin ? 'Administrador' : 'Colaborador';
   const displayAvatar = user?.avatar || (isAdmin ? 'AD' : 'AN');
 
   return (
@@ -78,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, select
               ? selectedProject.toUpperCase()
               : isAdmin
               ? 'PANEL ADMINISTRADOR'
-              : 'PLATAFORMA ANALISTA'}
+              : 'PLATAFORMA COLABORADOR'}
           </span>
         </div>
       </div>

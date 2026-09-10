@@ -1,3 +1,4 @@
+import { AccessRequestModal } from './AccessRequestModal';
 ﻿import React, { useState, useEffect } from 'react';
 import {
   Eye,
@@ -5,8 +6,6 @@ import {
   ArrowRight,
   User,
   Shield,
-  Code,
-  FileCheck,
   Sparkles,
   Lock,
   Mail,
@@ -25,6 +24,7 @@ import type { UserRole, User as AuthUser } from '../../types/auth';
 import type { ValidateTokenResult } from '../../types/invitacion';
 
 export const AuthPage: React.FC = () => {
+  const [requestOpen, setRequestOpen] = useState(false);
   const { login, requestOtp, completeOtpAuth } = useAuth();
 
   const [inviteToken, setInviteToken] = useState<string | null>(null);
@@ -115,7 +115,7 @@ export const AuthPage: React.FC = () => {
 
     const nameFromEmail = email.split('@')[0].replace(/[._-]/g, ' ');
     const formattedName = nameFromEmail.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'Usuario';
-    const effectiveRole: UserRole = email.toLowerCase().includes('admin') ? 'administrador' : 'analista';
+    const effectiveRole: UserRole = email.toLowerCase().includes('admin') ? 'administrador' : 'colaborador';
     const userData = {
       email: email.toLowerCase().trim(),
       fullName: formattedName,
@@ -150,7 +150,7 @@ export const AuthPage: React.FC = () => {
 
     setIsSubmitting(true);
     const targetEmail = inviteValidation?.email || email;
-    const assignedRole = inviteValidation?.rol_asignado || 'programador';
+    const assignedRole = inviteValidation?.rol_asignado || 'colaborador';
     const userData = { email: targetEmail.toLowerCase().trim(), fullName: inviteFullName.trim(), company: 'DataTech Analytics', role: assignedRole, password: invitePassword, isInvite: true };
     setPendingUserData(userData);
 
@@ -198,10 +198,8 @@ export const AuthPage: React.FC = () => {
 
   const getRoleIconAndBadge = (roleStr: string) => {
     const r = roleStr.toLowerCase();
-    if (r === 'programador' || r === 'developer' || r === 'dev') return (<span className="role-badge badge-dev"><Code size={13} />Programador / Developer</span>);
-    if (r === 'auditor') return (<span className="role-badge badge-auditor"><FileCheck size={13} />Auditor IT & Seguridad</span>);
     if (r === 'administrador' || r === 'admin') return (<span className="role-badge badge-admin"><Shield size={13} />Administrador</span>);
-    return (<span className="role-badge badge-analista"><User size={13} />Analista de Datos</span>);
+    return (<span className="role-badge badge-analista"><User size={13} />Colaborador</span>);
   };
 
   const features = [
@@ -273,7 +271,7 @@ export const AuthPage: React.FC = () => {
                 <User size={18} />
               </div>
               <div>
-                <strong style={{ color: '#e0e6ff' }}>Perfil Analista & Programador</strong>
+                <strong style={{ color: '#e0e6ff' }}>Perfil Colaborador</strong>
                 <p style={{ color: 'rgba(255,255,255,0.65)' }}>Carga de Datasets, comparativa de métricas y gestión de documentos corporativos.</p>
               </div>
             </div>
@@ -392,6 +390,7 @@ export const AuthPage: React.FC = () => {
                 </button>
               </form>
 
+              <button type="button" className="inv-btn-secondary access-request-trigger" onClick={() => setRequestOpen(true)}>Solicitar permiso para ingresar al sistema</button>
               {/* Footer info */}
               <p style={{ fontSize: '12px', color: '#6b7494', textAlign: 'center', marginTop: '20px', lineHeight: '1.6' }}>
                 Al ingresar aceptas los términos de uso corporativo.
@@ -402,6 +401,7 @@ export const AuthPage: React.FC = () => {
         </div>
       </div>
 
+      {requestOpen && <AccessRequestModal onClose={() => setRequestOpen(false)} />}
       {/* Modal de invitación */}
       {inviteToken && (
         <div className="inv-modal-overlay" onClick={closeInviteFlow}>

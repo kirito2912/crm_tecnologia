@@ -21,7 +21,7 @@ from app.schemas.auth import (
     TokenResponse,
     UserResponse as AuthUserResponse,
 )
-from app.services.auth_service import request_otp, verify_otp
+from app.services.auth_service import request_otp, verify_otp, create_access_token
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
@@ -59,7 +59,7 @@ def login_standard(body: LoginRequest, db: Session = Depends(get_db)):
     else:
         user_id = f"USR-{user_otp.id}"
         user_name = user_otp.full_name or "Usuario"
-        user_rol = user_otp.role or "analista"
+        user_rol = user_otp.role or "colaborador"
         requiere_aprobacion = not bool(user_otp.is_active)
         user_response = UsuarioResponse(
             id=user_id,
@@ -73,7 +73,7 @@ def login_standard(body: LoginRequest, db: Session = Depends(get_db)):
             estado="activo" if user_otp.is_active else "deshabilitado",
         )
 
-    token = f"hardcrm_jwt_session_{user_id}_{email_clean.split('@')[0]}"
+    token = create_access_token(usuario or user_otp) if body.password and stored_hash and verify_password(body.password, stored_hash) else None
     return AuthResponse(
         success=True,
         message=f"Bienvenido de nuevo, {user_name} ({user_rol})",
@@ -144,9 +144,9 @@ def register_user(body: RegisterRequest, db: Session = Depends(get_db)):
     parts = body.full_name.strip().split()
     avatar = "".join([p[0].upper() for p in parts[:2]]) if parts else "US"
     hashed_pwd = hash_password(body.password)
-    rol_asignado = (body.role or "analista").lower().strip()
-    if rol_asignado not in ["analista", "administrador", "admin"]:
-        rol_asignado = "analista"
+    rol_asignado = (body.role or "colaborador").lower().strip()
+    if rol_asignado not in ["colaborador", "administrador", "admin"]:
+        rol_asignado = "colaborador"
     if rol_asignado == "admin":
         rol_asignado = "administrador"
 
@@ -203,7 +203,7 @@ def quick_demo_login(role: str, db: Session = Depends(get_db)):
     else:
         target_email = "analista@empresa.com"
         default_name = "Carlos Mendoza"
-        default_rol = "analista"
+        default_rol = "colaborador"
 
     usuario = db.query(Usuario).filter(Usuario.email.ilike(target_email)).first()
 

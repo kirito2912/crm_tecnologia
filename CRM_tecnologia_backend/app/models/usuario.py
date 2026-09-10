@@ -12,7 +12,7 @@ class Usuario(Base):
     nombre = Column(String(150), nullable=False)
     email = Column(String(150), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=True)
-    rol = Column(String(80), default="analista", nullable=False)  # "analista" | "administrador"
+    rol = Column(String(80), default="colaborador", nullable=False)  # "colaborador" | "administrador"
     empresa = Column(String(150), nullable=True)
     avatar = Column(String(10), nullable=True)
     biometric_verified = Column(Boolean, default=False)

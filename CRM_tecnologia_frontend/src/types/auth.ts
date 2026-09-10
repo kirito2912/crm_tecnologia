@@ -1,4 +1,4 @@
-export type UserRole = 'analista' | 'administrador';
+export type UserRole = 'colaborador' | 'administrador';
 
 export interface User {
   id: string;
@@ -70,6 +70,6 @@ export interface AuthContextType {
     userData?: Partial<User>
   ) => Promise<{ success: boolean; error?: string }>;
   completeOtpAuth: (user: User) => void;
-  quickDemoLogin: (roleKey: 'analista' | 'admin' | 'administrador' | string) => void;
+  quickDemoLogin: (roleKey: 'colaborador' | 'admin' | 'administrador' | string) => void;
   logout: () => void;
 }

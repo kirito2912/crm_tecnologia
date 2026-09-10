@@ -1,4 +1,4 @@
-export type RolAsignado = 'analista' | 'programador' | 'auditor' | 'administrador';
+export type RolAsignado = 'colaborador' | 'administrador';
 
 export type EstadoInvitacion = 'pendiente' | 'registrado' | 'cancelado' | 'expirado';
 

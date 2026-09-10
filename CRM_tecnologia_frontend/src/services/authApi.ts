@@ -27,7 +27,7 @@ const DEFAULT_ACCOUNTS: RegisteredAccount[] = [
     email: 'analista@empresa.com',
     password: 'password123',
     fullName: 'Carlos Mendoza',
-    role: 'analista',
+    role: 'colaborador',
     company: 'DataTech Analytics',
     registeredAt: new Date().toISOString(),
   },
@@ -351,7 +351,7 @@ export async function loginBackend(
   const accounts = getLocalRegisteredAccounts();
   const existing = accounts.find((a) => a.email.toLowerCase() === cleanEmail);
 
-  if (!existing && !cleanEmail.includes('admin') && !cleanEmail.includes('analista')) {
+  if (!existing && !cleanEmail.includes('admin') && !cleanEmail.includes('colaborador')) {
     return {
       success: false,
       message: '',
@@ -373,7 +373,7 @@ export async function loginBackend(
   let habilitado = true;
   let estado: 'activo' | 'deshabilitado' | 'pendiente_aprobacion' = 'activo';
   let nombre = existing?.fullName || cleanEmail.split('@')[0];
-  let rol: string = cleanEmail.includes('admin') ? 'administrador' : 'analista';
+  let rol: string = cleanEmail.includes('admin') ? 'administrador' : 'colaborador';
   let empresa = 'DataTech Analytics';
   let avatar = nombre.slice(0, 2).toUpperCase();
   let invitadoPor: string | undefined;
@@ -460,7 +460,7 @@ export async function registerUserBackend(
         company_email: companyEmail.trim().toLowerCase(),
         password,
         company: company || 'DataTech Analytics',
-        role: role || 'analista',
+        role: role || 'colaborador',
       }),
     });
 

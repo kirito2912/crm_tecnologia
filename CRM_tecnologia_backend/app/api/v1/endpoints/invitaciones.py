@@ -1,3 +1,4 @@
+from app.core.roles import normalize_role
 import uuid
 import json
 import secrets
@@ -76,7 +77,7 @@ def crear_invitacion(
         id=inv_id,
         email=email_clean,
         nombre_referencial=body.nombre_referencial or email_clean.split("@")[0],
-        rol_asignado=body.rol_asignado or "analista",
+        rol_asignado=body.rol_asignado or "colaborador",
         token=token_str,
         estado="pendiente",
         creado_por=creado_por or "Jane Doe (Administrador)",
@@ -176,7 +177,7 @@ def completar_registro_invitado(
             nombre=body.full_name,
             email=email_clean,
             password_hash=hashed_pwd,
-            rol=inv.rol_asignado,
+            rol=normalize_role(inv.rol_asignado),
             empresa="DataTech Analytics",
             avatar=avatar,
             biometric_verified=True,
@@ -188,7 +189,7 @@ def completar_registro_invitado(
     else:
         usuario.nombre = body.full_name
         usuario.password_hash = hashed_pwd
-        usuario.rol = inv.rol_asignado
+        usuario.rol = normalize_role(inv.rol_asignado)
         usuario.avatar = avatar
         usuario.biometric_verified = True
         usuario.habilitado = False
@@ -202,7 +203,7 @@ def completar_registro_invitado(
             email=email_clean,
             full_name=body.full_name,
             password_hash=hashed_pwd,
-            role=inv.rol_asignado,
+            role=normalize_role(inv.rol_asignado),
             is_active=False,
             is_verified=True,
         )
@@ -210,7 +211,7 @@ def completar_registro_invitado(
     else:
         user_otp.full_name = body.full_name
         user_otp.password_hash = hashed_pwd
-        user_otp.role = inv.rol_asignado
+        user_otp.role = normalize_role(inv.rol_asignado)
         user_otp.is_active = False
         user_otp.is_verified = True
 

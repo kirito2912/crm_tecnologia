@@ -121,7 +121,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             }`}
           >
             {isAdminUpload ? <Shield size={10} /> : <User size={10} />}
-            {isAdminUpload ? 'Administrador' : 'Analista'}
+            {isAdminUpload ? 'Administrador' : 'Colaborador'}
           </span>
         </div>
 

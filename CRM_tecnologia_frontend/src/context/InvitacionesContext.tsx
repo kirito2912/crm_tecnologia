@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import { normalizeRole } from '../utils/roles';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type {
   Invitacion,
@@ -45,6 +47,10 @@ interface InvitacionesContextType {
 const InvitacionesContext = createContext<InvitacionesContextType | undefined>(undefined);
 
 export const InvitacionesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  const canManageInvitations = !!user && normalizeRole(user.role) === 'administrador' && user.habilitado !== false && user.estado !== 'pendiente_aprobacion';
+  const activeAdmin = useRef<string | null>(null);
+  activeAdmin.current = canManageInvitations ? user.id : null;
   const [usuarios, setUsuarios] = useState<InvitacionDashboardData['usuarios']>([]);
   const [invitaciones, setInvitaciones] = useState<Invitacion[]>([]);
   const [solicitudesPendientes, setSolicitudesPendientes] = useState<NotificacionSolicitud[]>([]);
@@ -57,9 +63,19 @@ export const InvitacionesProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const refreshDashboard = useCallback(async () => {
+    if (!canManageInvitations) {
+      setUsuarios([]);
+      setInvitaciones([]);
+      setSolicitudesPendientes([]);
+      setKpis({ totalUsuarios: 0, usuariosHabilitados: 0, usuariosPendientes: 0, invitacionesActivas: 0 });
+      setIsLoading(false);
+      return;
+    }
     try {
       setIsLoading(true);
+      const requester = activeAdmin.current;
       const data = await getInvitacionesDashboard();
+      if (!requester || activeAdmin.current !== requester) return;
       setUsuarios(data.usuarios || []);
       setInvitaciones(data.invitaciones || []);
       setSolicitudesPendientes(data.solicitudes_pendientes || []);
@@ -74,16 +90,17 @@ export const InvitacionesProvider: React.FC<{ children: ReactNode }> = ({ childr
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [canManageInvitations]);
 
   useEffect(() => {
     refreshDashboard();
+    if (!canManageInvitations) return;
     // Auto polling every 10 seconds to detect new registered workers awaiting approval
     const timer = setInterval(() => {
       refreshDashboard();
     }, 10000);
     return () => clearInterval(timer);
-  }, [refreshDashboard]);
+  }, [refreshDashboard, canManageInvitations]);
 
   const generarInvitacion = async (
     payload: InvitacionCreatePayload,
@@ -166,9 +183,9 @@ export const InvitacionesProvider: React.FC<{ children: ReactNode }> = ({ childr
   return (
     <InvitacionesContext.Provider
       value={{
-        usuarios,
-        invitaciones,
-        solicitudesPendientes,
+        usuarios: canManageInvitations ? usuarios : [],
+        invitaciones: canManageInvitations ? invitaciones : [],
+        solicitudesPendientes: canManageInvitations ? solicitudesPendientes : [],
         kpis,
         isLoading,
         refreshDashboard,

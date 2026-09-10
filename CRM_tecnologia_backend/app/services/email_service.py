@@ -8,6 +8,8 @@ Estrategia de envío:
   3. Si ninguno está configurado → imprime el código en consola (modo dev sin credenciales)
 """
 
+from app.core.roles import normalize_role
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -282,14 +284,11 @@ def send_invitation_email(
     expires_days: int = 7,
 ) -> bool:
     """Envía el enlace de invitación al correo del trabajador invitado."""
-    rol_map = {
-        "analista": ("Analista de Datos", "#15803d", "#dcfce7"),
-        "programador": ("Programador / Developer", "#1d4ed8", "#dbeafe"),
-        "auditor": ("Auditor IT & Seguridad", "#b45309", "#fef3c7"),
-        "administrador": ("Administrador", "#4338ca", "#e0e7ff"),
-    }
-    rol_display, rol_color, rol_bg = rol_map.get(
-        rol_asignado.lower(), (rol_asignado.capitalize(), "#4338ca", "#e0e7ff")
+    role = normalize_role(rol_asignado)
+    rol_display, rol_color, rol_bg = (
+        ("Administrador", "#4338ca", "#e0e7ff")
+        if role == "administrador"
+        else ("Colaborador", "#15803d", "#dcfce7")
     )
 
     subject = f"Has sido invitado a DataTech Analytics — {rol_display}"

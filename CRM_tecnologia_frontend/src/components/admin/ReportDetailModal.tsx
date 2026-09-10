@@ -28,7 +28,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
   const { user } = useAuth();
   const { updateReporteEstado, deleteReporte } = useReports();
 
-  const role = (user?.role || 'analista').toLowerCase();
+  const role = (user?.role || 'colaborador').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
 
   const [estado, setEstado] = useState<EstadoReporte>(reporte.estado);
@@ -98,7 +98,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
           {/* Metadatos del emisor y empresas */}
           <div className="rep-detail-meta-grid">
             <div className="rep-detail-meta-card">
-              <span className="rep-meta-label">Analista Emisor</span>
+              <span className="rep-meta-label">Colaborador Emisor</span>
               <div className="rep-meta-user">
                 <User size={15} color="#00b8e6" />
                 <strong>{reporte.analista_nombre}</strong>
@@ -168,11 +168,11 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
             </div>
           )}
 
-          {/* Resumen Ejecutivo del Analista */}
+          {/* Resumen Ejecutivo del Colaborador */}
           <div className="rep-section-block">
             <h4 className="rep-section-title">
               <Sparkles size={16} color="#00b8e6" />
-              1. Resumen Ejecutivo del Analista
+              1. Resumen Ejecutivo del Colaborador
             </h4>
             <div className="rep-section-content">
               <p>{reporte.resumen_ejecutivo}</p>
@@ -243,13 +243,13 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
                 </div>
 
                 <div className="report-form-group rep-form-group--full">
-                  <label>Comentario / Retroalimentación al Analista</label>
+                  <label>Comentario / Retroalimentación al Colaborador</label>
                   <textarea
                     className="report-textarea"
                     rows={3}
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}
-                    placeholder="Escribe notas ejecutivas, aprobación de estrategias o solicitud de ajustes al analista..."
+                    placeholder="Escribe notas ejecutivas, aprobación de estrategias o solicitud de ajustes al colaborador..."
                   />
                 </div>
               </div>

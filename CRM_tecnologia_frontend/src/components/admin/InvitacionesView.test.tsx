@@ -59,7 +59,7 @@ const solicitudArb = fc.record({
   usuario_id: fc.uuid(),
   nombre: fc.string({ minLength: 2, maxLength: 20 }).filter((s) => s.trim().length > 0),
   email: fc.emailAddress(),
-  rol: fc.constantFrom('analista', 'administrador'),
+  rol: fc.constantFrom('colaborador', 'administrador'),
   fecha: fc.constant(new Date().toISOString()),
   mensaje: fc.string({ minLength: 1, maxLength: 40 }),
 });
@@ -154,7 +154,7 @@ describe('Property 9: Habilitar user state transition', () => {
           id: userId,
           nombre: 'Test User',
           email: `test+${userId.slice(0, 8)}@empresa.com`,
-          rol: 'analista',
+          rol: 'colaborador',
           habilitado: false,
           estado: 'pendiente_aprobacion',
         };
@@ -185,7 +185,7 @@ describe('Property 9: Habilitar user state transition', () => {
           id: userId,
           nombre: 'Active User',
           email: `active+${userId.slice(0, 8)}@empresa.com`,
-          rol: 'analista',
+          rol: 'colaborador',
           habilitado: true,
           estado: 'activo',
         };

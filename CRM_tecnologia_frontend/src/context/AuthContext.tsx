@@ -1,3 +1,4 @@
+import { normalizeRole } from '../utils/roles';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { User, RegisterFormData, LoginFormData, AuthContextType } from '../types/auth';
@@ -7,7 +8,8 @@ const STORAGE_KEY = 'hardcrm_auth_user_v2';
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setStoredUser] = useState<User | null>(null);
+  const setUser = (next: User | null) => setStoredUser(next ? { ...next, role: normalizeRole(next.role) } : null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Initialize auth from localStorage on mount only
@@ -92,7 +94,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' ') || 'Usuario';
 
-    let assignedRole = formData.role || 'analista';
+    let assignedRole = formData.role || 'colaborador';
     if (emailClean.includes('admin') || emailClean.includes('jane')) {
       assignedRole = 'administrador';
     }
@@ -171,12 +173,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const emailClean = email.toLowerCase().trim();
     let formattedName: string;
-    let assignedRole: 'analista' | 'administrador' | string;
+    let assignedRole: 'colaborador' | 'administrador' | string;
     let companyName: string;
 
-    if (emailClean.includes('analista') || emailClean.includes('carlos')) {
+    if (emailClean.includes('colaborador') || emailClean.includes('carlos')) {
       formattedName = 'Carlos Mendoza';
-      assignedRole = 'analista';
+      assignedRole = 'colaborador';
       companyName = 'DataTech Analytics';
     } else if (emailClean.includes('admin') || emailClean.includes('jane')) {
       formattedName = 'Jane Doe';
@@ -189,7 +191,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           .split(/[._-]/)
           .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
           .join(' ') || 'Usuario';
-      assignedRole = 'analista';
+      assignedRole = 'colaborador';
       companyName = emailClean.split('@')[1]?.split('.')[0].toUpperCase() || 'DataTech Analytics';
     }
 
@@ -216,7 +218,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return { success: false, error: 'Por favor completa todos los datos requeridos.' };
     }
 
-    const role = formData.role || 'analista';
+    const role = formData.role || 'colaborador';
 
     try {
       const { saveLocalRegisteredAccount, registerUserBackend } = await import('../services/authApi');
@@ -310,7 +312,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         'Usuario Verificado';
 
       const detectedRole =
-        userData?.role || (emailClean.includes('admin') ? 'administrador' : 'analista');
+        userData?.role || (emailClean.includes('admin') ? 'administrador' : 'colaborador');
 
       const authUser: User = {
         id: userData?.id || `USR-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -341,7 +343,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
   };
 
-  const quickDemoLogin = (roleKey: 'analista' | 'admin' | 'administrador' | string) => {
+  const quickDemoLogin = (roleKey: 'colaborador' | 'admin' | 'administrador' | string) => {
     let demoUser: User;
     const key = roleKey.toLowerCase();
     if (key === 'admin' || key === 'administrador') {
@@ -362,7 +364,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         id: 'USR-ANALISTA',
         name: 'Carlos Mendoza',
         email: 'analista@empresa.com',
-        role: 'analista',
+        role: 'colaborador',
         company: 'DataTech Analytics',
         avatar: 'CM',
         biometricVerified: true,

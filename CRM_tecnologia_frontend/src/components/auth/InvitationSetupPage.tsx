@@ -6,8 +6,6 @@ import {
   EyeOff,
   User,
   Shield,
-  Code,
-  FileCheck,
   Sparkles,
   Clock,
   AlertCircle,
@@ -101,20 +99,6 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
 
   const getRoleIconAndBadge = (roleStr: string) => {
     const r = roleStr.toLowerCase();
-    if (r === 'programador' || r === 'developer' || r === 'dev')
-      return (
-        <span className="role-badge badge-dev">
-          <Code size={13} />
-          Programador / Developer
-        </span>
-      );
-    if (r === 'auditor')
-      return (
-        <span className="role-badge badge-auditor">
-          <FileCheck size={13} />
-          Auditor IT & Seguridad
-        </span>
-      );
     if (r === 'administrador' || r === 'admin')
       return (
         <span className="role-badge badge-admin">
@@ -125,7 +109,7 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
     return (
       <span className="role-badge badge-analista">
         <User size={13} />
-        Analista de Datos
+        Colaborador
       </span>
     );
   };
@@ -154,7 +138,7 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
 
     setIsSubmitting(true);
     const targetEmail = inviteValidation.email.toLowerCase().trim();
-    const assignedRole = inviteValidation.rol_asignado || 'analista';
+    const assignedRole = inviteValidation.rol_asignado || 'colaborador';
     const userData = {
       email: targetEmail,
       fullName: fullName.trim(),

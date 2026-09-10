@@ -19,7 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
   unreadCount = 1,
 }) => {
   const { user } = useAuth();
-  const role = (user?.role || 'analista').toLowerCase();
+  const role = (user?.role || 'colaborador').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
 
   const getTitles = () => {
@@ -82,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
             }}
           >
             {isAdmin ? <Shield size={12} /> : <User size={12} />}
-            {isAdmin ? 'Modo Administrador' : 'Modo Analista'}
+            {isAdmin ? 'Modo Administrador' : 'Modo Colaborador'}
           </span>
         </div>
         <p className="page-subtitle">{subtitle}</p>
@@ -96,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="search-input"
             placeholder={
               activeTab === 'reports'
-                ? 'Buscar por reporte, empresa o analista...'
+                ? 'Buscar por reporte, empresa o colaborador...'
                 : activeTab === 'documentos'
                 ? 'Buscar documentos por nombre, categoría, tags o autor...'
                 : activeTab === 'invitaciones'

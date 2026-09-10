@@ -105,7 +105,7 @@ describe('Property 7: Sidebar tabs by role', () => {
      *
      * For any user with role `analista`, the Sidebar renders exactly 4 tabs.
      */
-    const analistaRoles = fc.constantFrom('analista', 'Analista', 'ANALISTA');
+    const analistaRoles = fc.constantFrom('colaborador', 'Colaborador', 'ANALISTA');
 
     fc.assert(
       fc.property(analistaRoles, (role) => {
