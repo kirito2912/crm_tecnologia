@@ -9,3 +9,8 @@ def normalize_role(value: object) -> str:
 
 
 Role = Annotated[Literal["administrador", "colaborador"], BeforeValidator(normalize_role)]
+
+
+def database_role(value: object) -> str:
+    """Map the UI collaborator label to the existing database role."""
+    return "administrador" if normalize_role(value) == "administrador" else "analista"

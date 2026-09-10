@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from app.db.conexion import Base, get_db
 from app.models.usuario import Usuario
+from app.models.user import User
 from app.models.invitacion import Invitacion
 from app.api.v1.endpoints import invitaciones, solicitudes_acceso
 from app.services import admin_notifications
@@ -44,6 +45,10 @@ class RegistrationNotificationsTests(unittest.TestCase):
     def test_saved_account_is_visible_and_notifies_only_enabled_admin(self):
         response = self.register()
         self.assertEqual(response.status_code, 201, response.text)
+        self.assertEqual(response.json()["user"]["rol"], "colaborador")
+        with self.session() as db:
+            self.assertEqual(db.query(Usuario).filter_by(email="new@example.com").one().rol, "analista")
+            self.assertEqual(db.query(User).filter_by(email="new@example.com").one().role, "analista")
         self.mail.assert_called_once()
         self.assertEqual(self.mail.call_args.args[0], "admin@example.com")
         dashboard = self.client.get("/invitaciones/dashboard").json()

@@ -8,7 +8,7 @@ from app.models.user import User
 from app.models.otp_code import OTPCode
 from app.models.invitacion import Invitacion
 from app.api.admin_access import require_admin
-from app.core.roles import normalize_role
+from app.core.roles import normalize_role, database_role
 from sqlalchemy import or_
 from app.schemas.usuario import UsuarioCreate, UsuarioUpdate, UsuarioResponse
 
@@ -25,7 +25,7 @@ def listar_usuarios(
     """Obtiene el listado de todos los usuarios registrados."""
     query = db.query(Usuario)
     if rol:
-        query = query.filter(Usuario.rol == rol)
+        query = query.filter(Usuario.rol == database_role(rol))
     return query.offset(skip).limit(limit).all()
 
 

@@ -1,3 +1,5 @@
+from sqlalchemy.orm import validates
+from app.core.roles import database_role
 from datetime import datetime
 
 # pyrefly: ignore [missing-import]
@@ -15,10 +17,14 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    role: Mapped[str] = mapped_column(String(50), default="colaborador", nullable=False)
+    role: Mapped[str] = mapped_column(String(50), default="analista", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+
+    @validates("role")
+    def validate_database_role(self, key, value):
+        return database_role(value)

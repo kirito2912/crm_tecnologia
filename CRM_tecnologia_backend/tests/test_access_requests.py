@@ -67,7 +67,7 @@ class AccessRequestsTests(unittest.TestCase):
         self.assertTrue(response.json()["correo_enviado"])
         with self.session() as db:
             inv = db.query(Invitacion).one()
-            self.assertEqual(inv.rol_asignado, "colaborador")
+            self.assertEqual(inv.rol_asignado, "analista")
             self.assertEqual(inv.id, response.json()["invitacion_id"])
         self.assertEqual(self.mail.call_args.kwargs['recipient_email'], 'new@example.com')
         self.assertEqual(self.decide(sid, 'rechazar').status_code, 409)
@@ -133,4 +133,4 @@ class AccessRequestsTests(unittest.TestCase):
         self.assertEqual(response.json()['invitacion_id'], 'existing')
         with self.session() as db:
             self.assertEqual(db.query(Invitacion).count(), 1)
-            self.assertEqual(db.get(Invitacion, 'existing').rol_asignado, 'colaborador')
+            self.assertEqual(db.get(Invitacion, 'existing').rol_asignado, 'analista')

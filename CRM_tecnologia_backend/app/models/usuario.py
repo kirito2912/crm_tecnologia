@@ -1,3 +1,5 @@
+from sqlalchemy.orm import validates
+from app.core.roles import database_role
 # pyrefly: ignore [missing-import]
 from sqlalchemy import Column, String, Boolean, DateTime
 # pyrefly: ignore [missing-import]
@@ -12,7 +14,7 @@ class Usuario(Base):
     nombre = Column(String(150), nullable=False)
     email = Column(String(150), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=True)
-    rol = Column(String(80), default="colaborador", nullable=False)  # "colaborador" | "administrador"
+    rol = Column(String(80), default="analista", nullable=False)  # "colaborador" | "administrador"
     empresa = Column(String(150), nullable=True)
     avatar = Column(String(10), nullable=True)
     biometric_verified = Column(Boolean, default=False)
@@ -22,3 +24,7 @@ class Usuario(Base):
     permisos_proyectos = Column(String(500), nullable=True, default=None)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+
+    @validates("rol")
+    def validate_database_role(self, key, value):
+        return database_role(value)

@@ -103,16 +103,6 @@ _FRONTEND_ORIGINS.extend([
     "https://crm-tecnologia-frontend.vercel.app",
 ])
 
-# Configuración de CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=_FRONTEND_ORIGINS,
-    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:\d+|http://127\.0\.0\.1:\d+",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Inclusión del Router API v1
 app.include_router(api_router, prefix="/api/v1")
 
@@ -148,3 +138,19 @@ def test_database_connection(db: Session = Depends(get_db)):
             }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error de conexión: {str(e)}")
+
+from app.api.registration_trace import trace_registration
+app.middleware("http")(trace_registration)
+
+# Include CORS on server errors as well as successful responses.
+# Configuración de CORS
+app = CORSMiddleware(
+    app,
+    allow_origins=_FRONTEND_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:\d+|http://127\.0\.0\.1:\d+",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["X-Request-ID"],
+)
+
