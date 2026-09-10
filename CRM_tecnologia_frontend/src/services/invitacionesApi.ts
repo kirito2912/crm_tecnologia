@@ -95,7 +95,11 @@ export async function crearInvitacion(
       return res.json();
     },
     () => {
-      // localStorage fallback
+      // Never fabricate a usable invitation when the production API is unavailable.
+      if (import.meta.env.PROD) {
+        throw new Error('No se pudo conectar con el servidor. No se creó la invitación ni se envió el correo. Inténtalo de nuevo.');
+      }
+      // localStorage fallback (development only)
       const rawInvs = localStorage.getItem(LOCAL_STORAGE_INVITACIONES_KEY);
       const invitaciones: any[] = rawInvs ? JSON.parse(rawInvs) : [];
       const token = `inv_${Date.now()}_${Math.random().toString(36).slice(2)}`;

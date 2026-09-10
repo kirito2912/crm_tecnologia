@@ -1,0 +1,19 @@
+.inv-links-list { padding: 2px 6px 6px 2px; }
+.inv-links-list .inv-link-card { flex-shrink: 0; gap: 16px; padding: 20px; }
+.inv-links-list .inv-link-email-info { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 6px 10px; }
+.inv-links-list .inv-link-email-info strong { white-space: normal; overflow-wrap: anywhere; font-size: 14px; }
+.inv-links-list .inv-link-ref-name { grid-column: 2; white-space: normal; overflow-wrap: anywhere; }
+.inv-links-list .inv-token-display { padding: 10px 12px; }
+.inv-links-list .inv-token-text { white-space: normal; overflow-wrap: anywhere; line-height: 1.6; }
+.inv-links-list .inv-link-footer-row { align-items: center; flex-wrap: wrap; gap: 16px; }
+.inv-links-list .inv-link-left-meta { flex: 1 1 220px; gap: 10px; }
+.inv-links-list .inv-link-meta { white-space: normal; overflow-wrap: anywhere; }
+.inv-links-list .inv-link-actions-group { flex-wrap: wrap; gap: 10px; }
+.inv-links-list .btn-copy-token, .inv-links-list .btn-revoke-token { width: auto; height: auto; min-height: 40px; padding: 9px 12px; gap: 7px; font-size: 12px; font-weight: 600; }
+.inv-links-list button:disabled { opacity: 0.6; cursor: wait; }
+.inv-links-list button:focus-visible { outline: 2px solid #00d4ff; outline-offset: 3px; }
+@media (max-width: 600px) {
+  .inv-links-list .inv-link-card { padding: 14px; }
+  .inv-links-list .inv-link-actions-group { width: 100%; }
+  .inv-links-list .inv-link-actions-group button { flex: 1; justify-content: center; }
+}

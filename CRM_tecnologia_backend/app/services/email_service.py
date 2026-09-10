@@ -2,6 +2,7 @@
 Servicio de envío de emails — DataTech Analytics
 =================================================
 Estrategia de envío:
+  0. Si hay variables GMAIL_* → usa Gmail API (HTTPS con OAuth).
   1. Si RESEND_API_KEY está configurado → usa Resend (HTTP API, funciona en Render)
   2. Si no → fallback a SMTP Gmail (solo funciona en desarrollo local)
   3. Si ninguno está configurado → imprime el código en consola (modo dev sin credenciales)
@@ -11,11 +12,12 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from app.core.config import settings
+from app.services.gmail_service import gmail_configured, send_via_gmail
 
-# Cargar .env explícitamente
+# Cargar valores locales sin reemplazar las variables del servidor.
 _backend_env = Path(__file__).resolve().parent.parent.parent / ".env"
-load_dotenv(_backend_env, override=True)
-load_dotenv(override=True)
+load_dotenv(_backend_env, override=False)
+load_dotenv(override=False)
 
 
 # ──────────────────────────────────────────────
@@ -34,7 +36,7 @@ def _send_via_resend(to: str, subject: str, html: str, text: str) -> bool:
 
         from_name = settings.email_from_name or "DataTech Analytics"
         # Resend requiere un dominio verificado para el from.
-        # Con el plan gratuito puedes usar onboarding@resend.dev o tu dominio.
+        # resend.dev solo permite pruebas al correo propietario de la cuenta.
         from_address = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev").strip()
 
         params = {
@@ -112,6 +114,10 @@ def _send_via_smtp(to: str, subject: str, html: str, text: str) -> bool:
 def _send_email(to: str, subject: str, html: str, text: str) -> bool:
     """Intenta Resend primero, luego SMTP, luego imprime en consola."""
 
+    # Gmail is authoritative when configured; avoid duplicate sends on failure.
+    if gmail_configured():
+        return send_via_gmail(to, subject, html, text)
+
     # 1. Resend
     if _send_via_resend(to, subject, html, text):
         return True
@@ -124,7 +130,7 @@ def _send_email(to: str, subject: str, html: str, text: str) -> bool:
     print("\n" + "=" * 60)
     print(f"[EMAIL NO ENVIADO] Destino: {to}")
     print(f"Asunto: {subject}")
-    print("Sin credenciales configuradas (RESEND_API_KEY o EMAIL_USER/EMAIL_PASSWORD).")
+    print("No se pudo enviar: revisa los errores anteriores y la configuración del proveedor.")
     print("=" * 60 + "\n")
     return False
 

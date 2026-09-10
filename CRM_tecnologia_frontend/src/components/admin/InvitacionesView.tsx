@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './InvitationLinks.css';
 import {
   UserPlus,
   Users,
@@ -147,6 +148,9 @@ export const InvitacionesView: React.FC = () => {
   const [emailEnviado, setEmailEnviado] = useState<boolean | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
+  const [deletingInviteId, setDeletingInviteId] = useState<string | null>(null);
+  const visibleInvitations = invitaciones.filter((inv) => inv.estado !== 'cancelado').slice().sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activos' | 'pendientes' | 'deshabilitados'>('todos');
@@ -213,9 +217,16 @@ export const InvitacionesView: React.FC = () => {
   };
 
   const handleRevokeInvite = async (invId: string, email: string) => {
-    if (window.confirm(`¿Seguro que deseas cancelar la invitación para ${email}?`)) {
+    if (deletingInviteId) return;
+    if (!window.confirm(`¿Eliminar el enlace para ${email}? Dejará de funcionar y se quitará de la lista. Las cuentas ya creadas se conservarán.`)) return;
+    setDeletingInviteId(invId);
+    try {
       const ok = await cancelarInvitacion(invId);
-      if (ok) showToast(`Invitación para ${email} revocada.`);
+      showToast(ok ? 'Enlace eliminado.' : 'No se pudo eliminar el enlace. Inténtalo de nuevo.');
+    } catch {
+      showToast('No se pudo eliminar el enlace. Inténtalo de nuevo.');
+    } finally {
+      setDeletingInviteId(null);
     }
   };
 
@@ -547,13 +558,13 @@ export const InvitacionesView: React.FC = () => {
         <div className="inv-section-card">
           <div className="inv-section-card-header">
             <div>
-              <h2>Enlaces de Invitación (Estilo GitHub)</h2>
-              <p>Enlaces criptográficos únicos generados para nuevos ingresos.</p>
+              <h2>Enlaces de invitación</h2>
+              <p>Invitaciones más recientes primero. Copia un enlace o elimina los que ya no necesites.</p>
             </div>
           </div>
 
           <div className="inv-links-list">
-            {invitaciones.length === 0 ? (
+            {visibleInvitations.length === 0 ? (
               <div className="inv-links-empty">
                 <LinkIcon size={32} />
                 <p>No hay enlaces de invitación creados.</p>
@@ -567,8 +578,7 @@ export const InvitacionesView: React.FC = () => {
                 </button>
               </div>
             ) : (
-              invitaciones.map((inv) => {
-                const isPending = inv.estado === 'pendiente';
+              visibleInvitations.map((inv) => {
                 const isCopied = copiedToken === inv.id;
 
                 return (
@@ -612,14 +622,14 @@ export const InvitacionesView: React.FC = () => {
                           {isCopied ? <Check size={14} /> : <Copy size={14} />}
                           <span>{isCopied ? 'Copiado' : 'Copiar'}</span>
                         </button>
-                        {isPending && (
+                        {(
                           <button
                             type="button"
                             className="btn-revoke-token"
                             onClick={() => handleRevokeInvite(inv.id, inv.email)}
-                            title="Revocar invitación"
+                            title="Eliminar enlace" aria-label={`Eliminar enlace para ${inv.email}`} disabled={deletingInviteId !== null}
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={14} /><span>{deletingInviteId === inv.id ? 'Eliminando...' : 'Eliminar enlace'}</span>
                           </button>
                         )}
                       </div>
