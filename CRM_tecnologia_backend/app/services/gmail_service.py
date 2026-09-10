@@ -8,19 +8,34 @@ from email.utils import formataddr
 import httpx
 
 logger = logging.getLogger(__name__)
-GMAIL_VARIABLES = (
-    "GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET",
-    "GMAIL_REFRESH_TOKEN", "GMAIL_SENDER_EMAIL",
-)
+GMAIL_ALIASES = {
+    "GMAIL_CLIENT_ID": ("GMAIL_CLIENT_ID", "GOOGLE_CLIENT_ID"),
+    "GMAIL_CLIENT_SECRET": ("GMAIL_CLIENT_SECRET", "GOOGLE_CLIENT_SECRET"),
+    "GMAIL_REFRESH_TOKEN": ("GMAIL_REFRESH_TOKEN", "GOOGLE_REFRESH_TOKEN"),
+    "GMAIL_SENDER_EMAIL": ("GMAIL_SENDER_EMAIL", "GOOGLE_SENDER_EMAIL", "EMAIL_USER"),
+}
+
+
+def gmail_config() -> dict[str, str]:
+    return {
+        key: next((os.getenv(name, "").strip() for name in names
+                   if os.getenv(name, "").strip()), "")
+        for key, names in GMAIL_ALIASES.items()
+    }
 
 
 def gmail_configured() -> bool:
-    """Select Gmail even for partial configuration so mistakes are reported."""
-    return any(os.getenv(name, "").strip() for name in GMAIL_VARIABLES)
+    """EMAIL_USER alone must keep existing SMTP installations working."""
+    return any(
+        os.getenv(name, "").strip()
+        for names in GMAIL_ALIASES.values()
+        for name in names
+        if name != "EMAIL_USER"
+    )
 
 
 def send_via_gmail(to: str, subject: str, html: str, text: str) -> bool:
-    config = {name: os.getenv(name, "").strip() for name in GMAIL_VARIABLES}
+    config = gmail_config()
     missing = [name for name, value in config.items() if not value]
     if missing:
         logger.error("[Gmail API] Faltan variables: %s", ", ".join(missing))

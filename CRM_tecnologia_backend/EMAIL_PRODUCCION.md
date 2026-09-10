@@ -33,3 +33,9 @@ No guardes secretos en GitHub ni en variables VITE_*.
 Referencias:
 https://developers.google.com/workspace/gmail/api/guides/sending
 https://developers.google.com/identity/protocols/oauth2/web-server#offline
+
+## Nombres alternativos
+También se aceptan GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET y GOOGLE_REFRESH_TOKEN.
+Para el remitente se acepta GOOGLE_SENDER_EMAIL o EMAIL_USER.
+Las variables GMAIL_* tienen prioridad si ambos nombres tienen valores.
+EMAIL_USER por sí sola no activa Gmail API.

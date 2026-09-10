@@ -91,3 +91,31 @@ class GmailDeliveryTests(unittest.TestCase):
                 gmail.assert_called_once()
                 resend.assert_not_called()
                 smtp.assert_not_called()
+
+    def test_google_aliases_and_email_user_select_gmail(self):
+        with patch.dict(os.environ, {
+            "GOOGLE_CLIENT_ID": "google-client",
+            "GOOGLE_CLIENT_SECRET": "google-secret",
+            "GOOGLE_REFRESH_TOKEN": "google-refresh",
+            "EMAIL_USER": "sender@gmail.com",
+        }, clear=True):
+            self.assertTrue(gmail_service.gmail_configured())
+            self.assertEqual(gmail_service.gmail_config(), {
+                "GMAIL_CLIENT_ID": "google-client",
+                "GMAIL_CLIENT_SECRET": "google-secret",
+                "GMAIL_REFRESH_TOKEN": "google-refresh",
+                "GMAIL_SENDER_EMAIL": "sender@gmail.com",
+            })
+            with patch.object(email_service, "send_via_gmail", return_value=True) as send:
+                self.assertTrue(email_service._send_email("a@example.com", "s", "h", "t"))
+                send.assert_called_once()
+
+    def test_email_user_alone_keeps_smtp_selection(self):
+        with patch.dict(os.environ, {"EMAIL_USER": "sender@gmail.com"}, clear=True):
+            self.assertFalse(gmail_service.gmail_configured())
+
+    def test_gmail_names_take_priority_over_google_aliases(self):
+        with patch.dict(os.environ, {"GOOGLE_CLIENT_ID": "other-client", "GOOGLE_SENDER_EMAIL": "other@gmail.com"}):
+            config = gmail_service.gmail_config()
+            self.assertEqual(config["GMAIL_CLIENT_ID"], "client-test")
+            self.assertEqual(config["GMAIL_SENDER_EMAIL"], "sender@gmail.com")
