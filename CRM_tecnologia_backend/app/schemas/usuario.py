@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Optional, Any
 from datetime import datetime
+import json
 # pyrefly: ignore [missing-import]
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, field_validator, model_validator
 
 
 class UsuarioBase(BaseModel):
@@ -37,9 +38,26 @@ class UsuarioUpdate(BaseModel):
 class UsuarioResponse(UsuarioBase):
     id: str
     created_at: Optional[datetime] = None
-    permisos_proyectos: Optional[str] = None
+    permisos_proyectos: Optional[Any] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("permisos_proyectos", mode="before")
+    @classmethod
+    def parse_permisos_proyectos(cls, v: Any) -> Any:
+        if v is None:
+            return []
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return parsed
+                return []
+            except (ValueError, TypeError):
+                return []
+        return []
 
 
 class LoginRequest(BaseModel):

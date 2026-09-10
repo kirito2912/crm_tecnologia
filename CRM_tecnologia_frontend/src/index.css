@@ -41,6 +41,42 @@
   box-sizing: border-box;
 }
 
+/* ==========================================================================
+   GLOBAL CUSTOM SCROLLBARS (ALL MODULES)
+   ========================================================================== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3155 #0f1428;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: #0f1428;
+  border-radius: 999px;
+  border: 1px solid #1a2038;
+}
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2a3155 0%, #3d4680 100%);
+  border-radius: 999px;
+  border: 2px solid #0f1428;
+  transition: background 0.25s ease;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00d4ff 0%, #bf00ff 100%);
+  border-color: #0f1428;
+}
+*::-webkit-scrollbar-corner {
+  background: #0f1428;
+}
+
+/* Forzamos scrollbar visible y fino en Firefox */
+html, body {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3155 #0a0e27;
+}
+
 body {
   font-family: var(--font-family);
   background-color: var(--bg-app);
@@ -988,11 +1024,26 @@ textarea {
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 20;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: #2a3155 var(--bg-sidebar);
 }
-
 .sidebar::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+  height: 8px;
+  display: block;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 999px;
+  border: none;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: #2a3155;
+  border-radius: 999px;
+  border: 1px solid #0d1117;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00d4ff 0%, #bf00ff 100%);
 }
 
 .sidebar-brand {
@@ -1145,7 +1196,7 @@ textarea {
   background-color: #4a1010;
 }
 
-/* Main Content Area */
+/* Main Content Area - con scrollbar visible */
 .main-content {
   flex: 1;
   min-width: 0;
@@ -1157,18 +1208,63 @@ textarea {
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
+  overflow-y: scroll;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #2a3155 var(--bg-app);
+}
+.main-content > * {
+  flex-shrink: 0;
+  min-width: 0;
+}
+.main-content::-webkit-scrollbar {
+  width: 11px;
+}
+.main-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.main-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2a3155 0%, #3d4680 100%);
+  border-radius: 999px;
+  border: 3px solid var(--bg-app);
+}
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00d4ff 0%, #bf00ff 100%);
 }
 
-/* Table Container & Base Table */
+/* Table Container & Base Table - con scrollbar visible */
 .table-container {
   background: #1a1f3a;
   border-radius: 14px;
   border: 1px solid #2a3155;
   box-shadow: 0 1px 3px rgba(0, 212, 255, 0.08);
-  overflow-x: auto;
+  overflow: auto;
   max-width: 100%;
   width: 100%;
+  max-height: 65vh;
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #2a3155 #0f1428;
+}
+.table-container::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.table-container::-webkit-scrollbar-track {
+  background: #0f1428;
+  border-radius: 0 0 14px 14px;
+  border: 1px solid #1a2038;
+}
+.table-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2a3155 0%, #3d4680 100%);
+  border-radius: 999px;
+  border: 2px solid #0f1428;
+}
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00d4ff 0%, #bf00ff 100%);
 }
 
 .data-table {
@@ -13417,10 +13513,10 @@ textarea {
   background: #00cc6a;
 }
 
-/* Main Grid */
+/* Main Grid - Invitaciones debajo de Cuentas Habilitadas (1 sola columna) */
 .inv-main-grid {
   display: grid;
-  grid-template-columns: 1.55fr 1fr;
+  grid-template-columns: 1fr;
   gap: 20px;
 }
 
@@ -13433,6 +13529,39 @@ textarea {
   flex-direction: column;
   gap: 18px;
   box-shadow: 0 2px 8px rgba(0, 212, 255, 0.08);
+  min-width: 0;
+}
+.inv-section-card > * {
+  min-width: 0;
+}
+/* Scrollbar interno de la tarjeta: headers fijos, tabla/lista scrolleable */
+.inv-section-card .inv-table-wrapper,
+.inv-section-card .inv-links-list {
+  max-height: 52vh;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #2a3155 #0f1428;
+}
+.inv-section-card .inv-table-wrapper::-webkit-scrollbar,
+.inv-section-card .inv-links-list::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.inv-section-card .inv-table-wrapper::-webkit-scrollbar-track,
+.inv-section-card .inv-links-list::-webkit-scrollbar-track {
+  background: #0f1428;
+  border-radius: 999px;
+  border: 1px solid #1a2038;
+}
+.inv-section-card .inv-table-wrapper::-webkit-scrollbar-thumb,
+.inv-section-card .inv-links-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2a3155 0%, #3d4680 100%);
+  border-radius: 999px;
+  border: 2px solid #0f1428;
+}
+.inv-section-card .inv-table-wrapper::-webkit-scrollbar-thumb:hover,
+.inv-section-card .inv-links-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00d4ff 0%, #bf00ff 100%);
 }
 
 .inv-section-card-header h2 {
@@ -13934,7 +14063,9 @@ textarea {
   width: 100%;
   max-width: 520px;
   box-shadow: 0 25px 60px -8px rgba(0, 0, 0, 0.24), 0 4px 16px rgba(0, 212, 255, 0.12);
-  overflow: hidden;
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
   animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid rgba(226, 232, 240, 0.8);
 }

@@ -46,6 +46,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (res.user) {
         const u = res.user;
+        const permisosRaw = (u as any).permisos_proyectos;
+        let permisosParsed: string[] | undefined = undefined;
+        if (Array.isArray(permisosRaw)) {
+          permisosParsed = permisosRaw;
+        } else if (typeof permisosRaw === 'string' && permisosRaw) {
+          try {
+            const parsed = JSON.parse(permisosRaw);
+            if (Array.isArray(parsed)) permisosParsed = parsed;
+          } catch {
+            // ignore malformed JSON
+          }
+        }
+
         const authUser: User = {
           id: u.id,
           name: u.nombre,
@@ -58,6 +71,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           habilitado: u.habilitado !== false && u.estado !== 'pendiente_aprobacion',
           estado: (u.estado as User['estado']) || (u.habilitado !== false ? 'activo' : 'deshabilitado'),
           invitadoPor: u.invitado_por,
+          permisosProyectos: permisosParsed,
         };
         setUser(authUser);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
@@ -86,18 +100,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     let isHabilitado = true;
     let estadoAcceso: 'activo' | 'deshabilitado' | 'pendiente_aprobacion' = 'activo';
 
+    let localPermisos: string[] | undefined = undefined;
     try {
-      const { getInvitacionesDashboard } = await import('../services/invitacionesApi');
+      const { getInvitacionesDashboard, getPermisosUsuario } = await import('../services/invitacionesApi');
       const dashboard = await getInvitacionesDashboard();
-      interface UsuarioBusqueda {
-        email?: string;
-        estado?: 'activo' | 'deshabilitado' | 'pendiente_aprobacion' | string;
-        habilitado?: boolean;
-        nombre?: string;
-        rol?: string;
-      }
-      const found = (dashboard.usuarios || []).find(
-        (u: UsuarioBusqueda) => (u.email || '').toLowerCase() === emailClean
+      const usuariosList = (dashboard.usuarios || []) as any[];
+      const found = usuariosList.find(
+        (u: any) => (u.email || '').toLowerCase() === emailClean
       );
       if (found) {
         const estadoRaw = found.estado;
@@ -113,6 +122,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         estadoAcceso = estado;
         formattedName = found.nombre || formattedName;
         assignedRole = found.rol || assignedRole;
+
+        if (found.id) {
+          const p = getPermisosUsuario(found.id);
+          if (p) localPermisos = p;
+        }
+        const foundPerm = (found as any).permisos_proyectos;
+        if (!localPermisos && foundPerm) {
+          if (Array.isArray(foundPerm)) {
+            localPermisos = foundPerm;
+          } else if (typeof foundPerm === 'string') {
+            try {
+              const parsed = JSON.parse(foundPerm);
+              if (Array.isArray(parsed)) localPermisos = parsed;
+            } catch {
+              // ignore
+            }
+          }
+        }
       }
     } catch {
       // Silenciar errores de red; continuar con el fallback local
@@ -129,6 +156,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       registeredAt: new Date().toISOString(),
       habilitado: isHabilitado,
       estado: estadoAcceso,
+      permisosProyectos: localPermisos,
     };
 
     setUser(authUser);

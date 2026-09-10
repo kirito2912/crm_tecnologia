@@ -12,6 +12,7 @@ export interface User {
   habilitado?: boolean;
   estado?: 'activo' | 'deshabilitado' | 'pendiente_aprobacion';
   invitadoPor?: string;
+  permisosProyectos?: string[];
 }
 
 export interface RegisterFormData {

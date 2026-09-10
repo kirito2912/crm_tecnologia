@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CsvProvider } from './context/CsvContext';
 import { ReportsProvider } from './context/ReportsContext';
@@ -6,8 +6,10 @@ import { DocumentosProvider } from './context/DocumentosContext';
 import { InvitacionesProvider, useInvitaciones } from './context/InvitacionesContext';
 
 import { AuthPage } from './components/auth/AuthPage';
+import { InvitationSetupPage } from './components/auth/InvitationSetupPage';
 import { PendingApprovalScreen } from './components/auth/PendingApprovalScreen';
 import { ProjectSelector } from './components/auth/ProjectSelector';
+import type { User as AuthUser } from './types/auth';
 import { Sidebar } from './components/layout/Sidebar';
 import type { NavTab } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
@@ -31,6 +33,15 @@ function DashboardContent({ project, onLogout }: DashboardContentProps) {
   const { solicitudesPendientes } = useInvitaciones();
   const role = (user?.role || 'analista').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
+
+  // Validación DEFENSIVA: si el usuario no está habilitado o está pendiente,
+  // nunca mostrar el dashboard aunque haya un proyecto seleccionado previamente
+  const isStillPending =
+    !!user &&
+    (user.habilitado === false || user.estado === 'pendiente_aprobacion');
+  if (isStillPending) {
+    return <PendingApprovalScreen />;
+  }
 
   const [activeTab, setActiveTab] = useState<NavTab>(isAdmin ? 'reports' : 'dataset');
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,10 +128,25 @@ const PERMISSIONS_STORAGE_KEY = 'hardcrm_user_permissions_v2';
 function MainApp() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tok = params.get('invite_token');
+    if (tok) setInviteToken(tok);
+  }, []);
+
+  const clearInviteTokenFromUrl = () => {
+    setInviteToken(null);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  };
 
   // Compute allowed projects for current user from localStorage
   const allowedProjects = useMemo<string[] | null>(() => {
     if (!user?.id) return null;
+    if (Array.isArray((user as any).permisosProyectos)) {
+      return (user as any).permisosProyectos;
+    }
     try {
       const raw = localStorage.getItem(PERMISSIONS_STORAGE_KEY);
       if (!raw) return null;
@@ -131,12 +157,16 @@ function MainApp() {
       // ignore parse errors
     }
     return null;
-  }, [user?.id]);
+  }, [user?.id, user as any]);
 
   // Reset project on logout
   const handleLogout = () => {
     setSelectedProject(null);
     logout();
+  };
+
+  const handleRegistrationComplete = (_registeredUser: AuthUser) => {
+    clearInviteTokenFromUrl();
   };
 
   if (isLoading) {
@@ -161,13 +191,26 @@ function MainApp() {
     );
   }
 
+  // 0. Si hay un invite_token en la URL Y el usuario NO está autenticado, mostrar página dedicada de configuración
+  if (inviteToken && (!isAuthenticated || !user)) {
+    return (
+      <InvitationSetupPage
+        inviteToken={inviteToken}
+        onGotoLogin={clearInviteTokenFromUrl}
+        onRegistrationComplete={handleRegistrationComplete}
+      />
+    );
+  }
+
   // 1. Si no está autenticado, entrar directo a la pantalla de Inicio de Sesión
   if (!isAuthenticated || !user) {
     return <AuthPage />;
   }
 
   // 2. Si la cuenta está deshabilitada o pendiente de autorización, mostrar pantalla de bloqueo
-  const isPendingApproval = user.habilitado === false || user.estado === 'pendiente_aprobacion';
+  // IMPORTANTE: Esta comprobación es estricta y tiene prioridad sobre todo lo demás (incluye selectedProject previo)
+  const isPendingApproval =
+    user.habilitado === false || user.estado === 'pendiente_aprobacion';
   if (isPendingApproval) {
     return <PendingApprovalScreen />;
   }
@@ -182,7 +225,7 @@ function MainApp() {
     );
   }
 
-  // 4. Proyecto seleccionado → ingresar a la plataforma
+  // 4. Proyecto seleccionado → ingresar a la plataforma (con validación defensiva de habilitación)
   return <DashboardContent project={selectedProject} onLogout={handleLogout} />;
 }
 
