@@ -208,91 +208,27 @@ describe('Requirement 4.3: invite_token URL detection', () => {
 // Requirements: 4.4
 // ---------------------------------------------------------------------------
 
-describe('Requirement 4.4: Registration completion sets pending state', () => {
-  it('completarRegistroInvitado creates user with habilitado=false and estado=pendiente_aprobacion', async () => {
-    // Seed a pending invitation
-    const token = 'reg_test_token_987';
-    const invitation = {
-      id: 'INV-REG01',
-      email: 'registrando@empresa.com',
-      nombre_referencial: 'Nuevo Trabajador',
-      rol_asignado: 'colaborador',
-      token,
-      estado: 'pendiente',
-      creado_por: 'Admin',
-      created_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 3600000 * 24 * 7).toISOString(),
-    };
-    localStorage.setItem(LOCAL_STORAGE_INVITACIONES_KEY, JSON.stringify([invitation]));
-
-    const result = await completarRegistroInvitado({
-      token,
-      full_name: 'Nuevo Trabajador',
-      password: 'password123',
-    });
-
-    expect(result.success).toBe(true);
-    expect(result.requiere_aprobacion).toBe(true);
-    expect(result.user).toBeDefined();
-    expect(result.user.habilitado).toBe(false);
-    expect(result.user.estado).toBe('pendiente_aprobacion');
-    expect(result.user.nombre).toBe('Nuevo Trabajador');
+describe('Registration requires server confirmation', () => {
+  const payload = { token: 'test-token', full_name: 'New User', password: 'secret123' };
+  it('returns the account confirmed by the server', async () => {
+    const saved = { success: true, user: { id: 'db-id', habilitado: false, estado: 'pendiente_aprobacion' }, requiere_aprobacion: true };
+    const mock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify(saved), { status: 201 }));
+    try {
+      expect(await completarRegistroInvitado(payload)).toEqual(saved);
+      expect(JSON.parse(mock.mock.calls[0][1]!.body as string)).toEqual(payload);
+    } finally { mock.mockRestore(); }
   });
-
-  it('completarRegistroInvitado persists new user in localStorage with pending state', async () => {
-    const token = 'reg_test_token_456';
-    const invitation = {
-      id: 'INV-REG02',
-      email: 'otro@empresa.com',
-      rol_asignado: 'programador',
-      token,
-      estado: 'pendiente',
-      creado_por: 'Admin',
-      created_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 3600000).toISOString(),
-    };
-    localStorage.setItem(LOCAL_STORAGE_INVITACIONES_KEY, JSON.stringify([invitation]));
-
-    await completarRegistroInvitado({
-      token,
-      full_name: 'Otro Trabajador',
-      password: 'pass12345',
-    });
-
-    // Verify the user was saved to localStorage
-    const rawUsers = localStorage.getItem(LOCAL_STORAGE_USERS_KEY);
-    expect(rawUsers).not.toBeNull();
-    const users = JSON.parse(rawUsers!);
-    const createdUser = users.find((u: any) => u.email === 'otro@empresa.com');
-    expect(createdUser).toBeDefined();
-    expect(createdUser.habilitado).toBe(false);
-    expect(createdUser.estado).toBe('pendiente_aprobacion');
+  it('propagates server rejection', async () => {
+    const mock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ detail: 'Invitación expirada' }), { status: 400 }));
+    try { await expect(completarRegistroInvitado(payload)).rejects.toThrow('Invitación expirada'); }
+    finally { mock.mockRestore(); }
   });
-
-  it('completarRegistroInvitado marks the invitation as registrado after use', async () => {
-    const token = 'mark_used_token_789';
-    const invitation = {
-      id: 'INV-REG03',
-      email: 'marcado@empresa.com',
-      rol_asignado: 'colaborador',
-      token,
-      estado: 'pendiente',
-      creado_por: 'Admin',
-      created_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 3600000).toISOString(),
-    };
-    localStorage.setItem(LOCAL_STORAGE_INVITACIONES_KEY, JSON.stringify([invitation]));
-
-    await completarRegistroInvitado({
-      token,
-      full_name: 'Marcado User',
-      password: 'pass12345',
-    });
-
-    const rawInvs = localStorage.getItem(LOCAL_STORAGE_INVITACIONES_KEY);
-    const invs = JSON.parse(rawInvs!);
-    const used = invs.find((i: any) => i.token === token);
-    expect(used.estado).toBe('registrado');
+  it('does not invent a local account on network failure', async () => {
+    const mock = vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    try {
+      await expect(completarRegistroInvitado(payload)).rejects.toThrow('Failed to fetch');
+      expect(localStorage.getItem(LOCAL_STORAGE_USERS_KEY)).toBeNull();
+    } finally { mock.mockRestore(); }
   });
 });
 
@@ -363,27 +299,15 @@ describe('Requirement 4.5: Cuentas en Espera panel reflects pending users', () =
     unmount();
   });
 
-  it('full flow: register via invite → user appears in solicitudesPendientes', async () => {
-    // Step 1: Create an invitation
-    const inv = await crearInvitacion({
-      email: 'flujo@empresa.com',
-      nombre_referencial: 'Flujo Test',
-      rol_asignado: 'colaborador',
-    });
-
-    // Step 2: Complete registration using the invitation token
-    await completarRegistroInvitado({
-      token: inv.token,
-      full_name: 'Flujo Test',
-      password: 'password123',
-    });
-
-    // Step 3: Fetch dashboard and check solicitudes_pendientes
-    const dashboard = await getInvitacionesDashboard();
-    const pendientes = dashboard.solicitudes_pendientes;
-
-    const found = pendientes.find((s) => s.email === 'flujo@empresa.com');
-    expect(found).toBeDefined();
-    expect(found!.nombre).toBe('Flujo Test');
+  it('does not consume a cached invitation when the server is unavailable', async () => {
+    const invitation = { token: 'cached-token', email: 'new@example.com', estado: 'pendiente' };
+    const cache = JSON.stringify([invitation]);
+    localStorage.setItem(LOCAL_STORAGE_INVITACIONES_KEY, cache);
+    const mock = vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    try {
+      await expect(completarRegistroInvitado({ token: invitation.token, full_name: 'New User', password: 'secret123' })).rejects.toThrow();
+      expect(localStorage.getItem(LOCAL_STORAGE_INVITACIONES_KEY)).toBe(cache);
+      expect(localStorage.getItem(LOCAL_STORAGE_USERS_KEY)).toBeNull();
+    } finally { mock.mockRestore(); }
   });
 });

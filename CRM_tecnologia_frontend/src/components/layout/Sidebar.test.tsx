@@ -5,7 +5,7 @@
  * Validates: Requirements 3.1, 3.2
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import fc from 'fast-check';
 import { Sidebar } from './Sidebar';
 
@@ -27,6 +27,20 @@ const mockInvitaciones = {
 
 const ADMIN_TAB_IDS = ['reports', 'invitaciones', 'dataset', 'documentos', 'comparativa'];
 const ANALISTA_TAB_IDS = ['reports', 'dataset', 'documentos', 'comparativa'];
+
+it('returns to project selection without logging out', () => {
+  const logout = vi.fn();
+  const selectProject = vi.fn();
+  (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({ user: buildUser('colaborador'), logout });
+  (useInvitaciones as ReturnType<typeof vi.fn>).mockReturnValue(mockInvitaciones);
+  render(<Sidebar activeTab="dataset" onSelectTab={vi.fn()} onSelectProject={selectProject} />);
+  const selectButton = screen.getByRole('button', { name: 'Seleccionar proyecto' });
+  const logoutButton = screen.getByRole('button', { name: 'Cerrar sesión' });
+  expect(selectButton.compareDocumentPosition(logoutButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  fireEvent.click(selectButton);
+  expect(selectProject).toHaveBeenCalledOnce();
+  expect(logout).not.toHaveBeenCalled();
+});
 
 function buildUser(role: string) {
   return {

@@ -35,6 +35,7 @@ class AccessRequestsTests(unittest.TestCase):
         self.client = TestClient(app)
         self.addCleanup(self.client.close)
         self.headers = {"Authorization": f"Bearer {create_access_token(User(id=1, email='admin@example.com'))}"}
+        patch("app.services.admin_notifications._send_email", return_value=True).start()
         self.mail = patch.object(routes, "send_invitation_email", return_value=True).start()
         self.reject_mail = patch.object(routes, "_send_email", return_value=True).start()
         self.addCleanup(patch.stopall)

@@ -13,6 +13,26 @@ const LOCAL_STORAGE_PERMISSIONS_KEY = 'hardcrm_user_permissions_v2';
 const LOCAL_STORAGE_INVITACIONES_KEY = 'hardcrm_invitaciones_list_v2';
 const LOCAL_STORAGE_USERS_KEY = 'hardcrm_users_directory_v2';
 
+export async function eliminarColaborador(userId: string): Promise<void> {
+  const token = localStorage.getItem('hardcrm_access_token');
+  if (!token) throw new Error('Vuelve a iniciar sesión como administrador para eliminar colaboradores.');
+  const res = await fetch(`${BACKEND_BASE_URL}/api/v1/usuarios/${encodeURIComponent(userId)}`, {
+    method: 'DELETE', headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(typeof data.detail === 'string' ? data.detail : 'No se pudo eliminar el colaborador.');
+  }
+  // Clear only this account's cached permissions after confirmed server deletion.
+  try {
+    const perms = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PERMISSIONS_KEY) || '{}');
+    delete perms[userId];
+    localStorage.setItem(LOCAL_STORAGE_PERMISSIONS_KEY, JSON.stringify(perms));
+    const users = JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY) || '[]');
+    localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users.filter((user: { id: string }) => user.id !== userId)));
+  } catch { /* The server deletion already succeeded. */ }
+}
+
 // ---------------------------------------------------------------------------
 // Helper: try a fetch, fall back to localStorage logic on network error.
 // ---------------------------------------------------------------------------
@@ -154,47 +174,16 @@ export async function completarRegistroInvitado(data: RegisterInvitedPayload): P
   user: any;
   requiere_aprobacion: boolean;
 }> {
-  return _tryFetch(
-    async () => {
-      const res = await fetch(`${API_BASE_URL}/completar-registro`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || 'Error al completar el registro');
-      }
-      return res.json();
-    },
-    () => {
-      // localStorage fallback
-      const rawInvs = localStorage.getItem(LOCAL_STORAGE_INVITACIONES_KEY);
-      const invs: any[] = rawInvs ? JSON.parse(rawInvs) : [];
-      const inv = invs.find((i) => i.token === data.token);
-      if (!inv) throw new Error('Token de invitación no encontrado');
-
-      const rawUsers = localStorage.getItem(LOCAL_STORAGE_USERS_KEY);
-      const users: any[] = rawUsers ? JSON.parse(rawUsers) : [];
-      const newUser = {
-        id: `USR-${Date.now()}`,
-        nombre: data.full_name,
-        email: inv.email,
-        rol: inv.rol_asignado,
-        habilitado: false,
-        estado: 'pendiente_aprobacion',
-        created_at: new Date().toISOString(),
-      };
-      users.push(newUser);
-      localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users));
-
-      // Mark invitation as used
-      inv.estado = 'registrado';
-      localStorage.setItem(LOCAL_STORAGE_INVITACIONES_KEY, JSON.stringify(invs));
-
-      return { success: true, message: 'Registro completado', user: newUser, requiere_aprobacion: true };
-    }
-  );
+  const res = await fetch(`${API_BASE_URL}/completar-registro`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Error al completar el registro');
+  }
+  return res.json();
 }
 
 export async function toggleUserStatus(

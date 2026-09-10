@@ -26,9 +26,10 @@ import { Cpu } from 'lucide-react';
 interface DashboardContentProps {
   project: string;
   onLogout: () => void;
+  onSelectProject: () => void;
 }
 
-function DashboardContent({ project, onLogout }: DashboardContentProps) {
+function DashboardContent({ project, onLogout, onSelectProject }: DashboardContentProps) {
   const { user } = useAuth();
   const { solicitudesPendientes } = useInvitaciones();
   const role = (user?.role || 'colaborador').toLowerCase();
@@ -67,6 +68,7 @@ function DashboardContent({ project, onLogout }: DashboardContentProps) {
         }}
         selectedProject={project}
         onLogout={onLogout}
+        onSelectProject={onSelectProject}
       />
 
       {/* Contenido Principal */}
@@ -227,7 +229,7 @@ function MainApp() {
   }
 
   // 4. Proyecto seleccionado → ingresar a la plataforma (con validación defensiva de habilitación)
-  return <DashboardContent project={selectedProject} onLogout={handleLogout} />;
+  return <DashboardContent project={selectedProject} onLogout={handleLogout} onSelectProject={() => setSelectedProject(null)} />;
 }
 
 export function App() {

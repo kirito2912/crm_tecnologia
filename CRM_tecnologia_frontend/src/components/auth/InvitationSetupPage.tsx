@@ -24,6 +24,7 @@ type InviteFlowStage =
   | 'invalid'
   | 'password_form'
   | 'otp_sent'
+  | 'saving'
   | 'success_saved'
   | 'error';
 
@@ -48,6 +49,8 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
     role: UserRole | string;
     password: string;
   } | null>(null);
+
+  const [savedUser, setSavedUser] = useState<AuthUser | null>(null);
 
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
@@ -169,11 +172,8 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
   };
 
   const handleOtpSuccess = async () => {
-    setStage('success_saved');
-  };
-
-  const handleContinueAfterSuccess = async () => {
     if (!pendingUserData || !inviteToken) return;
+    setStage('saving');
 
     try {
       const { completarRegistroInvitado } = await import('../../services/invitacionesApi');
@@ -183,6 +183,8 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
         password: pendingUserData.password,
       });
 
+      if (!res.success || !res.user?.id) throw new Error('El servidor no confirmó el registro.');
+
       const avatar = pendingUserData.fullName
         .split(' ')
         .map((n) => n[0])
@@ -191,7 +193,7 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
         .toUpperCase();
 
       const newUser: AuthUser = {
-        id: res.user?.id || `USR-${Math.floor(1000 + Math.random() * 9000)}`,
+        id: res.user.id,
         name: pendingUserData.fullName,
         email: pendingUserData.email,
         role: pendingUserData.role,
@@ -204,14 +206,23 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
         invitadoPor: (res.user as any)?.invitado_por || 'Administrador',
       };
 
-      completeOtpAuth(newUser);
-      onRegistrationComplete(newUser);
+      setSavedUser(newUser);
+      setPendingUserData({ ...pendingUserData, password: '' });
+      setPassword('');
+      setConfirmPassword('');
+      setStage('success_saved');
     } catch (err: unknown) {
       const msg =
         err instanceof Error ? err.message : 'Error al completar el registro.';
       setErrorMessage(msg);
       setStage('error');
     }
+  };
+
+  const handleContinueAfterSuccess = () => {
+    if (!savedUser) return;
+    completeOtpAuth(savedUser);
+    onRegistrationComplete(savedUser);
   };
 
   return (
@@ -764,6 +775,8 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
               }}
             />
           )}
+
+          {stage === 'saving' && <p role="status">Guardando tu cuenta para la aprobación del administrador...</p>}
 
           {stage === 'success_saved' && (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>

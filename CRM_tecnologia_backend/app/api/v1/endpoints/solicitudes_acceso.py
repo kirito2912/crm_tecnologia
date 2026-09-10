@@ -1,10 +1,11 @@
+from app.services.admin_notifications import admin_recipients, notify_admins
 import logging
 import secrets
 import uuid
 from datetime import datetime, timedelta
 from html import escape
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import BackgroundTasks, APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -46,7 +47,7 @@ def send_decision(row: SolicitudAcceso, db: Session) -> bool:
 
 
 @router.post("/", status_code=201)
-def solicitar(body: SolicitudCreate, db: Session = Depends(get_db)):
+def solicitar(body: SolicitudCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     email = str(body.email).strip().lower()
     if db.query(Usuario).filter(Usuario.email.ilike(email)).first():
         raise HTTPException(409, "Ya existe una cuenta con este correo. Contacta al administrador.")
@@ -57,6 +58,7 @@ def solicitar(body: SolicitudCreate, db: Session = Depends(get_db)):
     except IntegrityError:
         db.rollback()
         raise HTTPException(409, "Ya enviaste una solicitud con este correo. Contacta al administrador para consultar su estado.")
+    background_tasks.add_task(notify_admins, admin_recipients(db), row.nombre, row.email)
     return {"message": "Solicitud enviada al administrador. Recibirás su respuesta por correo."}
 
 

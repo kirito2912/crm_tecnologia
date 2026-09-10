@@ -5,6 +5,7 @@ import {
   LogOut,
   Files,
   UserPlus,
+  LayoutGrid,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useInvitaciones } from '../../context/InvitacionesContext';
@@ -16,9 +17,10 @@ interface SidebarProps {
   onSelectTab: (tab: NavTab) => void;
   selectedProject?: string;
   onLogout?: () => void;
+  onSelectProject?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, selectedProject, onLogout }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, selectedProject, onLogout, onSelectProject }) => {
   const { user, logout } = useAuth();
   const { kpis } = useInvitaciones();
 
@@ -134,14 +136,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, select
               {displayRole}
             </span>
           </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+          {onSelectProject && <button type="button" className="sidebar-link" onClick={onSelectProject}>
+            <LayoutGrid size={16} /><span>Seleccionar proyecto</span>
+          </button>}
           <button
             type="button"
-            className="logout-btn"
+            className="sidebar-link"
             onClick={handleLogout}
             title="Cerrar Sesión"
             aria-label="Cerrar sesión"
           >
             <LogOut size={16} />
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </div>

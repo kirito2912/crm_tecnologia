@@ -1,3 +1,4 @@
+from app.services.admin_notifications import admin_recipients, notify_admins
 from app.core.roles import normalize_role
 import uuid
 import json
@@ -5,7 +6,7 @@ import secrets
 from datetime import datetime, timedelta
 from typing import List, Optional
 # pyrefly: ignore [missing-import]
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import BackgroundTasks, APIRouter, Depends, HTTPException, status, Query
 # pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 # pyrefly: ignore [missing-import]
@@ -151,11 +152,12 @@ def validar_token_invitacion(token: str, db: Session = Depends(get_db)):
 @router.post("/completar-registro", status_code=status.HTTP_201_CREATED)
 def completar_registro_invitado(
     body: RegisterInvitedRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     """Completa el registro del trabajador invitado. La cuenta queda en estado 'pendiente_aprobacion' (deshabilitada) hasta autorización del admin."""
-    inv = db.query(Invitacion).filter(Invitacion.token == body.token).first()
-    if not inv or inv.estado != "pendiente":
+    inv = db.query(Invitacion).filter(Invitacion.token == body.token).with_for_update().first()
+    if not inv or inv.estado != "pendiente" or (inv.expires_at and inv.expires_at < datetime.utcnow()):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="La invitación no es válida o ya fue utilizada.",
@@ -170,8 +172,7 @@ def completar_registro_invitado(
     avatar = "".join([p[0].upper() for p in parts[:2]]) if parts else "TR"
 
     if not usuario:
-        total = db.query(Usuario).count()
-        user_id = f"USR-{total + 101:03d}"
+        user_id = f"USR-{uuid.uuid4().hex}"
         usuario = Usuario(
             id=user_id,
             nombre=body.full_name,
@@ -220,6 +221,7 @@ def completar_registro_invitado(
 
     db.commit()
     db.refresh(usuario)
+    background_tasks.add_task(notify_admins, admin_recipients(db), usuario.nombre, usuario.email, registered=True)
 
     return {
         "success": True,

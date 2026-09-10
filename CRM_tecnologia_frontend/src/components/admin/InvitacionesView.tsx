@@ -25,7 +25,7 @@ import {
 import { useInvitaciones } from '../../context/InvitacionesContext';
 import type { RolAsignado } from '../../types/invitacion';
 import { PROJECTS } from '../auth/ProjectSelector';
-import { actualizarPermisosUsuario, getPermisosUsuario } from '../../services/invitacionesApi';
+import { actualizarPermisosUsuario, getPermisosUsuario, eliminarColaborador } from '../../services/invitacionesApi';
 
 // ---------------------------------------------------------------------------
 // PermisosModal — inline component
@@ -151,6 +151,18 @@ export const InvitacionesView: React.FC = () => {
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   const [deletingInviteId, setDeletingInviteId] = useState<string | null>(null);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const handleDeleteUser = async (id: string, nombre: string) => {
+    if (deletingUserId || !window.confirm(`¿Eliminar definitivamente la cuenta de ${nombre}? Se eliminarán sus credenciales y se cancelarán sus enlaces pendientes. Esta acción no se puede deshacer.`)) return;
+    setDeletingUserId(id);
+    try {
+      await eliminarColaborador(id);
+      await refreshDashboard();
+      showToast('Colaborador eliminado correctamente.');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'No se pudo eliminar el colaborador.');
+    } finally { setDeletingUserId(null); }
+  };
   const visibleInvitations = invitaciones.filter((inv) => inv.estado !== 'cancelado').slice().sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
 
   // Filters
@@ -517,11 +529,12 @@ export const InvitacionesView: React.FC = () => {
                           </span>
                         </td>
                         <td style={{ textAlign: 'center' }}>
-                          <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                          <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
                             <button
                               type="button"
                               className={`btn-toggle-status ${isHabilitado ? 'btn-disable' : 'btn-enable'}`}
                               onClick={() => handleToggleStatus(u.id, isHabilitado, u.nombre)}
+                              disabled={deletingUserId !== null}
                               title={isHabilitado ? 'Deshabilitar acceso' : 'Habilitar acceso'}
                             >
                               {isHabilitado ? (
@@ -546,6 +559,12 @@ export const InvitacionesView: React.FC = () => {
                               <Settings size={14} />
                               <span>Permisos</span>
                             </button>
+                            {normalizeRole(u.rol) === 'colaborador' && u.habilitado === false && u.estado === 'deshabilitado' && (
+                              <button type="button" className="btn-toggle-status btn-disable" disabled={deletingUserId !== null}
+                                aria-label={`Eliminar colaborador ${u.nombre}`} onClick={() => void handleDeleteUser(u.id, u.nombre)}>
+                                <Trash2 size={14} /><span>{deletingUserId === u.id ? 'Eliminando...' : 'Eliminar colaborador'}</span>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

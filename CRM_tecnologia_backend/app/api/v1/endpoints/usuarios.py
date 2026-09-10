@@ -4,6 +4,12 @@ from sqlalchemy.orm import Session
 from app.db.conexion import get_db
 from app.core.security import hash_password
 from app.models.usuario import Usuario
+from app.models.user import User
+from app.models.otp_code import OTPCode
+from app.models.invitacion import Invitacion
+from app.api.admin_access import require_admin
+from app.core.roles import normalize_role
+from sqlalchemy import or_
 from app.schemas.usuario import UsuarioCreate, UsuarioUpdate, UsuarioResponse
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
@@ -109,14 +115,28 @@ def actualizar_usuario(
 
 
 @router.delete("/{usuario_id}", status_code=status.HTTP_200_OK)
-def eliminar_usuario(usuario_id: str, db: Session = Depends(get_db)):
-    """Elimina un usuario por su ID."""
-    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+def eliminar_usuario(usuario_id: str, db: Session = Depends(get_db), admin: Usuario = Depends(require_admin)):
+    """Elimina solo colaboradores deshabilitados y sus credenciales vinculadas."""
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).with_for_update().first()
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Usuario con ID '{usuario_id}' no encontrado",
         )
+    if usuario.id == admin.id or normalize_role(usuario.rol) != "colaborador":
+        raise HTTPException(403, "Solo puedes eliminar cuentas de colaboradores.")
+    if usuario.habilitado or usuario.estado != "deshabilitado":
+        raise HTTPException(409, "Primero debes deshabilitar la cuenta del colaborador.")
+    account = db.query(User).filter(User.email.ilike(usuario.email)).with_for_update().first()
+    if account and normalize_role(account.role) == "administrador":
+        raise HTTPException(409, "La cuenta vinculada tiene permisos de administrador. Revisa sus roles antes de eliminarla.")
+    otp_filter = OTPCode.email.ilike(usuario.email)
+    if account:
+        otp_filter = or_(otp_filter, OTPCode.user_id == account.id)
+    db.query(OTPCode).filter(otp_filter).delete(synchronize_session=False)
+    if account:
+        db.delete(account)
+    db.query(Invitacion).filter(Invitacion.email.ilike(usuario.email), Invitacion.estado == "pendiente").update({"estado": "cancelado"}, synchronize_session=False)
     db.delete(usuario)
     db.commit()
     return {"message": f"Usuario '{usuario_id}' eliminado exitosamente"}
