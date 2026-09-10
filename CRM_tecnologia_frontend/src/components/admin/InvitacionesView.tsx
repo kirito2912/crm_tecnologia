@@ -25,7 +25,7 @@ import {
 import { useInvitaciones } from '../../context/InvitacionesContext';
 import type { RolAsignado } from '../../types/invitacion';
 import { PROJECTS } from '../auth/ProjectSelector';
-import { actualizarPermisosUsuario, getPermisosUsuario, eliminarColaborador } from '../../services/invitacionesApi';
+import { actualizarPermisosUsuario, eliminarColaborador } from '../../services/invitacionesApi';
 
 // ---------------------------------------------------------------------------
 // PermisosModal — inline component
@@ -246,9 +246,12 @@ export const InvitacionesView: React.FC = () => {
 
   const handleSavePermisos = async (projectIds: string[]) => {
     if (!permisosTarget) return;
+    try {
     await actualizarPermisosUsuario(permisosTarget.id, projectIds);
+    await refreshDashboard();
     showToast(`Permisos actualizados para ${permisosTarget.nombre}`);
     setPermisosTarget(null);
+    } catch (error) { showToast(error instanceof Error ? error.message : 'No se pudieron guardar los permisos.'); }
   };
 
   // Filtrado de usuarios
@@ -559,8 +562,8 @@ export const InvitacionesView: React.FC = () => {
                               <Settings size={14} />
                               <span>Permisos</span>
                             </button>
-                            {normalizeRole(u.rol) === 'colaborador' && u.habilitado === false && u.estado === 'deshabilitado' && (
-                              <button type="button" className="btn-toggle-status btn-disable" disabled={deletingUserId !== null}
+                            {normalizeRole(u.rol) === 'colaborador' && (
+                              <button type="button" className="btn-toggle-status btn-disable" disabled={deletingUserId !== null || u.habilitado !== false || u.estado !== 'deshabilitado'} title="Primero deshabilita la cuenta para eliminarla"
                                 aria-label={`Eliminar colaborador ${u.nombre}`} onClick={() => void handleDeleteUser(u.id, u.nombre)}>
                                 <Trash2 size={14} /><span>{deletingUserId === u.id ? 'Eliminando...' : 'Eliminar colaborador'}</span>
                               </button>
@@ -829,7 +832,7 @@ export const InvitacionesView: React.FC = () => {
       {permisosTarget && (
         <PermisosModal
           usuario={permisosTarget}
-          currentPermissions={getPermisosUsuario(permisosTarget.id) ?? PROJECTS.map((p) => p.id)}
+          currentPermissions={usuarios.find(u => u.id === permisosTarget.id)?.permisos_proyectos ?? PROJECTS.map((p) => p.id)}
           onSave={handleSavePermisos}
           onClose={() => setPermisosTarget(null)}
         />

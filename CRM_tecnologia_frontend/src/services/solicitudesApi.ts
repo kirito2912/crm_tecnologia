@@ -26,7 +26,7 @@ async function request<T>(path: string, options: RequestInit = {}, admin = false
   if (options.body) headers.set('Content-Type', 'application/json');
   if (admin) {
     const token = localStorage.getItem('hardcrm_access_token');
-    if (!token) throw new Error('Vuelve a iniciar sesión para gestionar solicitudes.');
+    if (!token) throw Object.assign(new Error('Vuelve a iniciar sesión para gestionar solicitudes.'), { status: 401 });
     headers.set('Authorization', `Bearer ${token}`);
   }
   let response: Response;
@@ -34,6 +34,11 @@ async function request<T>(path: string, options: RequestInit = {}, admin = false
     response = await fetch(`${base}${path}`, { ...options, headers });
   } catch {
     throw new Error('No se pudo conectar con el servidor. Actualiza la tabla antes de reintentar.');
+  }
+  if (admin && response.status === 401) {
+    localStorage.removeItem('hardcrm_access_token');
+    window.dispatchEvent(new Event('hardcrm:session-expired'));
+    throw Object.assign(new Error('Tu sesión venció o no es válida. Vuelve a iniciar sesión.'), { status: 401 });
   }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'No se pudo procesar la solicitud. Revisa los datos e inténtalo de nuevo.');

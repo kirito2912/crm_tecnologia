@@ -165,8 +165,10 @@ export const AuthPage: React.FC = () => {
     }
   };
 
-  const handleOtpSuccess = async () => {
+  const handleOtpSuccess = async (accessToken?: string) => {
     if (!pendingUserData) return;
+    localStorage.removeItem('hardcrm_access_token');
+    if (accessToken) localStorage.setItem('hardcrm_access_token', accessToken);
 
     if (pendingUserData.isInvite && inviteToken) {
       try {

@@ -5,12 +5,12 @@
  * Feature: project-selector-and-auth-improvements
  * Properties 8, 9, 10
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import fc from 'fast-check';
 import React from 'react';
 import type { NotificacionSolicitud } from '../../types/invitacion';
-import { actualizarPermisosUsuario, getPermisosUsuario } from '../../services/invitacionesApi';
+import { actualizarPermisosUsuario } from '../../services/invitacionesApi';
 import { PROJECTS } from '../auth/ProjectSelector';
 
 // ---------------------------------------------------------------------------
@@ -140,10 +140,12 @@ describe('Property 9: Habilitar user state transition', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    vi.restoreAllMocks();
   });
 
   afterEach(() => {
     localStorage.clear();
+    vi.restoreAllMocks();
   });
 
   it('enables any pending user — sets habilitado=true and estado=activo', async () => {
@@ -162,17 +164,12 @@ describe('Property 9: Habilitar user state transition', () => {
 
         // Import toggleUserStatus dynamically to use the real localStorage fallback
         const { toggleUserStatus } = await import('../../services/invitacionesApi');
+        vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ ...pendingUser, habilitado: true, estado: 'activo' })));
         const result = await toggleUserStatus(userId, true);
 
         expect(result.habilitado).toBe(true);
         expect(result.estado).toBe('activo');
 
-        // Also verify the localStorage was updated
-        const stored = JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY) ?? '[]');
-        const user = stored.find((u: any) => u.id === userId);
-        expect(user).toBeDefined();
-        expect(user.habilitado).toBe(true);
-        expect(user.estado).toBe('activo');
       }),
       { numRuns: 100 }
     );
@@ -192,6 +189,7 @@ describe('Property 9: Habilitar user state transition', () => {
         localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify([activeUser]));
 
         const { toggleUserStatus } = await import('../../services/invitacionesApi');
+        vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ ...activeUser, habilitado: false, estado: 'deshabilitado' })));
         const result = await toggleUserStatus(userId, false);
 
         expect(result.habilitado).toBe(false);
@@ -218,20 +216,22 @@ describe('Property 10: Permissions save round trip', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    vi.restoreAllMocks();
   });
 
   afterEach(() => {
     localStorage.clear();
+    vi.restoreAllMocks();
   });
 
   it('round-trips any subset of project IDs through save and retrieve', async () => {
     await fc.assert(
       fc.asyncProperty(fc.uuid(), projectSubsetArb, async (userId, projectSubset) => {
-        // Save permissions (uses localStorage fallback since no backend in tests)
+        const mock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}'));
         await actualizarPermisosUsuario(userId, projectSubset);
 
         // Read back
-        const retrieved = getPermisosUsuario(userId);
+        const retrieved = JSON.parse(mock.mock.calls.at(-1)![1]!.body as string).proyectos_permitidos;
 
         // Must not be null
         expect(retrieved).not.toBeNull();
@@ -250,10 +250,11 @@ describe('Property 10: Permissions save round trip', () => {
         projectSubsetArb,
         projectSubsetArb,
         async (userId, firstSubset, secondSubset) => {
+          const mock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}'));
           await actualizarPermisosUsuario(userId, firstSubset);
           await actualizarPermisosUsuario(userId, secondSubset);
 
-          const retrieved = getPermisosUsuario(userId);
+          const retrieved = JSON.parse(mock.mock.calls.at(-1)![1]!.body as string).proyectos_permitidos;
           expect(retrieved!.sort()).toEqual([...secondSubset].sort());
         }
       ),

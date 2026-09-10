@@ -17,7 +17,9 @@ beforeEach(() => { vi.clearAllMocks(); vi.spyOn(window, 'confirm').mockReturnVal
 it('only offers deletion for a disabled collaborator', () => {
   render(<InvitacionesView />);
   const buttons = screen.getAllByRole('button', { name: /Eliminar colaborador/ });
-  expect(buttons).toHaveLength(1);
+  expect(buttons).toHaveLength(3);
+  expect(screen.getByRole('button', { name: 'Eliminar colaborador Activo' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Eliminar colaborador Pendiente' })).toBeDisabled();
   expect(buttons[0]).toHaveAccessibleName('Eliminar colaborador Deshabilitado');
 });
 it('requires confirmation before permanent deletion', () => {

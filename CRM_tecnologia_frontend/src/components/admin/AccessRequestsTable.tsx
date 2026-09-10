@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { listarSolicitudes, reenviarRespuesta, resolverSolicitud } from '../../services/solicitudesApi';
 import type { SolicitudAcceso } from '../../services/solicitudesApi';
 import '../auth/AccessRequest.css';
@@ -10,9 +10,14 @@ export function AccessRequestsTable({ onApproved }: { onApproved: () => Promise<
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [roles, setRoles] = useState<Record<string, 'administrador' | 'colaborador'>>({});
+  const authRejected = useRef(false);
   const reload = useCallback(async () => {
+    if (authRejected.current) return;
     try { setRows(await listarSolicitudes()); setError(''); }
-    catch (err) { setError(err instanceof Error ? err.message : 'No se pudieron cargar las solicitudes.'); }
+    catch (err) {
+      if ((err as { status?: number })?.status === 401) { authRejected.current = true; setRows([]); }
+      setError(err instanceof Error ? err.message : 'No se pudieron cargar las solicitudes.');
+    }
     finally { setLoading(false); }
   }, []);
   useEffect(() => { void reload(); const timer = setInterval(() => { void reload(); }, 15000); return () => clearInterval(timer); }, [reload]);

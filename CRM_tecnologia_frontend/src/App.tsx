@@ -219,7 +219,7 @@ function MainApp() {
   }
 
   // 3. Si está autenticado y habilitado, mostrar selector de proyecto primero
-  if (!selectedProject) {
+  if (!selectedProject || (allowedProjects !== null && !allowedProjects.includes(selectedProject))) {
     return (
       <ProjectSelector
         allowedProjects={allowedProjects}

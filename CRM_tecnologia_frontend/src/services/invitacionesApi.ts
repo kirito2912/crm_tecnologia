@@ -191,31 +191,17 @@ export async function toggleUserStatus(
   habilitado: boolean,
   motivo?: string
 ): Promise<any> {
-  return _tryFetch(
-    async () => {
-      const payload: ToggleUserStatusPayload = { habilitado, motivo };
-      const res = await fetch(`${API_BASE_URL}/usuarios/${userId}/toggle-status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || 'Error al cambiar estado del usuario');
-      }
-      return res.json();
-    },
-    () => {
-      const raw = localStorage.getItem(LOCAL_STORAGE_USERS_KEY);
-      const users: any[] = raw ? JSON.parse(raw) : [];
-      const idx = users.findIndex((u) => u.id === userId);
-      if (idx === -1) throw new Error('Usuario no encontrado');
-      users[idx].habilitado = habilitado;
-      users[idx].estado = habilitado ? 'activo' : 'deshabilitado';
-      localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users));
-      return users[idx];
-    }
-  );
+  const payload: ToggleUserStatusPayload = { habilitado, motivo };
+  const res = await fetch(`${API_BASE_URL}/usuarios/${userId}/toggle-status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Error al cambiar estado del usuario');
+  }
+  return res.json();
 }
 
 export async function revocarInvitacion(invitacionId: string): Promise<{ message: string }> {
@@ -233,28 +219,16 @@ export async function actualizarPermisosUsuario(
   userId: string,
   proyectosPermitidos: string[]
 ): Promise<void> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/usuarios/${userId}/permisos`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ proyectos_permitidos: proyectosPermitidos }),
-    });
-    if (res.ok) {
-      // Also sync localStorage for ProjectSelector to pick up immediately
-      const raw = localStorage.getItem(LOCAL_STORAGE_PERMISSIONS_KEY);
-      const all: Record<string, string[]> = raw ? JSON.parse(raw) : {};
-      all[userId] = proyectosPermitidos;
-      localStorage.setItem(LOCAL_STORAGE_PERMISSIONS_KEY, JSON.stringify(all));
-      return;
-    }
-  } catch (err) {
-    console.warn('[InvitacionesApi] Permisos PATCH fallback:', err);
+  const res = await fetch(API_BASE_URL + '/usuarios/' + encodeURIComponent(userId) + '/permisos', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ proyectos_permitidos: proyectosPermitidos }),
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.detail || 'No se pudieron guardar los permisos en el servidor.');
   }
-  // Fallback: persist only in localStorage
-  const raw = localStorage.getItem(LOCAL_STORAGE_PERMISSIONS_KEY);
-  const all: Record<string, string[]> = raw ? JSON.parse(raw) : {};
-  all[userId] = proyectosPermitidos;
-  localStorage.setItem(LOCAL_STORAGE_PERMISSIONS_KEY, JSON.stringify(all));
+  window.dispatchEvent(new Event('hardcrm:permissions-updated'));
 }
 
 export function getPermisosUsuario(userId: string): string[] | null {

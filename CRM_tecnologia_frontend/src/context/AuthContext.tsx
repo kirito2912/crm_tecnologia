@@ -1,5 +1,6 @@
+import { useLiveAccount, applyAccountUpdate } from './useLiveAccount';
 import { normalizeRole } from '../utils/roles';
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { User, RegisterFormData, LoginFormData, AuthContextType } from '../types/auth';
 
@@ -11,6 +12,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setStoredUser] = useState<User | null>(null);
   const setUser = (next: User | null) => setStoredUser(next ? { ...next, role: normalizeRole(next.role) } : null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const expire = () => {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('hardcrm_access_token');
+      setStoredUser(null);
+    };
+    window.addEventListener('hardcrm:session-expired', expire);
+    return () => window.removeEventListener('hardcrm:session-expired', expire);
+  }, []);
+
+  const syncAccount = useCallback((row: any | null) => {
+    if (!row) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('hardcrm_access_token');
+      setStoredUser(null);
+      return;
+    }
+    setStoredUser(current => {
+      if (!current || current.id !== row.id) return current;
+      const next = applyAccountUpdate(current, row);
+      next.role = normalizeRole(next.role);
+      if (JSON.stringify(next) === JSON.stringify(current)) return current;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+  useLiveAccount(user?.id, syncAccount);
 
   // Initialize auth from localStorage on mount only
   useEffect(() => {

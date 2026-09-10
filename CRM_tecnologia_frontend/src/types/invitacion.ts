@@ -67,6 +67,7 @@ export interface InvitacionDashboardData {
     empresa?: string;
     avatar?: string;
     biometric_verified?: boolean;
+    permisos_proyectos?: string[] | null;
     habilitado?: boolean;
     estado?: EstadoUsuario | string;
     invitado_por?: string;
