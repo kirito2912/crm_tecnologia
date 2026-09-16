@@ -14,7 +14,12 @@ export function useLiveAccount(userId: string | undefined, update: (row: any | n
         const base = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').replace(/\/$/, '');
         const response = await fetch(base + '/api/v1/usuarios/' + encodeURIComponent(userId), { cache: 'no-store', signal: controller.signal });
         if (stopped) return;
-        if (response.status === 404) { update(null); return; }
+        // Si el usuario no existe en el backend (404), NO borrar la sesión
+        // El usuario puede estar autenticado localmente o mediante OTP
+        if (response.status === 404) { 
+          console.warn('[useLiveAccount] Usuario no encontrado en backend, manteniendo sesión local');
+          return; 
+        }
         if (!response.ok) return;
         const row = await response.json();
         if (!stopped && row.id === userId) update(row);
