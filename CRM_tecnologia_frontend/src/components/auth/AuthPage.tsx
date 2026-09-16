@@ -181,7 +181,6 @@ export const AuthPage: React.FC = () => {
       }
     }
     
-    localStorage.removeItem('hardcrm_access_token');
     if (accessToken) localStorage.setItem('hardcrm_access_token', accessToken);
 
     if (pendingUserData.isInvite && inviteToken) {
@@ -208,7 +207,7 @@ export const AuthPage: React.FC = () => {
         setStage('form');
       }
     } else {
-      // OTP ya verificado, crear usuario con datos del backend o fallback
+      // OTP ya verificado exitosamente - crear usuario directamente
       const emailClean = pendingUserData.email.toLowerCase().trim();
       const nameFromEmail = emailClean.split('@')[0];
       const formattedName = pendingUserData.fullName || 
@@ -231,15 +230,15 @@ export const AuthPage: React.FC = () => {
         estado: 'activo',
       };
       
-      console.log('[AuthPage] Usuario creado después de OTP:', authUser);
+      // Guardar directamente en localStorage Y en el estado
+      localStorage.setItem('hardcrm_auth_user_v2', JSON.stringify(authUser));
       
-      // Usar completeOtpAuth en lugar de login para evitar bucle
+      // Completar autenticación usando el contexto
       completeOtpAuth(authUser);
       
-      // Force re-render después de un pequeño delay
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
+      // Resetear el stage para limpiar el estado
+      setStage('form');
+      setPendingUserData(null);
     }
   };
 
