@@ -11,7 +11,7 @@ export function useLiveAccount(userId: string | undefined, update: (row: any | n
       if (stopped || running) return;
       running = true;
       try {
-        const base = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+        const base = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').replace(/\/$/, '');
         const response = await fetch(base + '/api/v1/usuarios/' + encodeURIComponent(userId), { cache: 'no-store', signal: controller.signal });
         if (stopped) return;
         if (response.status === 404) { update(null); return; }
