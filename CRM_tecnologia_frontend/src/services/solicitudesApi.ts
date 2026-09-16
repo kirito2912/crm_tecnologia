@@ -19,7 +19,8 @@ export interface SolicitudPayload {
   motivo: string;
 }
 
-const base = `${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')}/api/v1/solicitudes-acceso`;
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const base = `${BACKEND_BASE_URL}/api/v1/solicitudes-acceso`;
 
 async function request<T>(path: string, options: RequestInit = {}, admin = false): Promise<T> {
   const headers = new Headers(options.headers);

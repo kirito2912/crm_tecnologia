@@ -7,7 +7,7 @@ import type {
   InvitacionDashboardData,
 } from '../types/invitacion';
 
-const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 const API_BASE_URL = `${BACKEND_BASE_URL}/api/v1/invitaciones`;
 const LOCAL_STORAGE_PERMISSIONS_KEY = 'hardcrm_user_permissions_v2';
 const LOCAL_STORAGE_INVITACIONES_KEY = 'hardcrm_invitaciones_list_v2';
