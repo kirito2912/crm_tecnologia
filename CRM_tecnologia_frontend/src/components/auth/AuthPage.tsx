@@ -194,7 +194,30 @@ export const AuthPage: React.FC = () => {
         setStage('form');
       }
     } else {
-      await login({ email: pendingUserData.email, password: pendingUserData.password, role: pendingUserData.role as UserRole, rememberMe });
+      // OTP ya verificado, crear usuario directamente sin volver a pedir OTP
+      const emailClean = pendingUserData.email.toLowerCase().trim();
+      const nameFromEmail = emailClean.split('@')[0];
+      const formattedName = pendingUserData.fullName || 
+        nameFromEmail
+          .split(/[._-]/)
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ') || 'Usuario Verificado';
+
+      const authUser: AuthUser = {
+        id: `USR-${Math.floor(1000 + Math.random() * 9000)}`,
+        name: formattedName,
+        email: emailClean,
+        role: pendingUserData.role,
+        company: emailClean.split('@')[1]?.split('.')[0].toUpperCase() || 'DataTech Analytics',
+        avatar: formattedName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase(),
+        biometricVerified: true,
+        registeredAt: new Date().toISOString(),
+        habilitado: true,
+        estado: 'activo',
+      };
+      
+      // Usar completeOtpAuth en lugar de login para evitar bucle
+      completeOtpAuth(authUser);
     }
   };
 
