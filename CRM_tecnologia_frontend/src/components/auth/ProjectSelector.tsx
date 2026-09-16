@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Database, Cloud, Brain } from 'lucide-react';
+import { FacialVerification } from '../biometric/FacialVerification';
+import { useAuth } from '../../context/AuthContext';
 
 export interface Project {
   id: string;
@@ -38,11 +40,31 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   allowedProjects,
   onSelectProject,
 }) => {
+  const { user } = useAuth();
+  const [showFacialVerification, setShowFacialVerification] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
   // When allowedProjects is non-null, filter to only those IDs
   const visibleProjects =
     allowedProjects === null
       ? PROJECTS
       : PROJECTS.filter((p) => allowedProjects.includes(p.id));
+
+  const handleProjectClick = (project: Project) => {
+    setSelectedProject(project);
+    setShowFacialVerification(true);
+  };
+
+  const handleVerificationSuccess = () => {
+    if (selectedProject) {
+      onSelectProject(selectedProject.id);
+    }
+  };
+
+  const handleVerificationCancel = () => {
+    setShowFacialVerification(false);
+    setSelectedProject(null);
+  };
 
   return (
     <div className="project-selector-wrapper">
@@ -74,7 +96,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
               <button
                 key={project.id}
                 className="project-card"
-                onClick={() => onSelectProject(project.id)}
+                onClick={() => handleProjectClick(project)}
                 data-project-id={project.id}
               >
                 <div className="project-card-icon">
@@ -86,6 +108,16 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
             );
           })}
         </div>
+      )}
+
+      {/* Modal de verificación facial */}
+      {showFacialVerification && selectedProject && user && (
+        <FacialVerification
+          projectName={selectedProject.name}
+          userEmail={user.email}
+          onVerified={handleVerificationSuccess}
+          onCancel={handleVerificationCancel}
+        />
       )}
     </div>
   );
