@@ -20,7 +20,7 @@ const CARD_COLORS = [
   '#8b93b0',
 ];
 
-const BACKEND_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 const API_DATASETS_URL = `${BACKEND_BASE_URL}/api/v1/datasets`;
 
 import Papa from 'papaparse';
