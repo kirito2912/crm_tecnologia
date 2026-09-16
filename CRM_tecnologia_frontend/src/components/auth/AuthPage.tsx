@@ -167,6 +167,20 @@ export const AuthPage: React.FC = () => {
 
   const handleOtpSuccess = async (accessToken?: string) => {
     if (!pendingUserData) return;
+    
+    // Recuperar los datos del usuario verificado
+    const otpUserData = sessionStorage.getItem('otp_verified_user');
+    let backendUser = null;
+    if (otpUserData) {
+      try {
+        const parsed = JSON.parse(otpUserData);
+        backendUser = parsed.user;
+        sessionStorage.removeItem('otp_verified_user');
+      } catch {
+        // ignore
+      }
+    }
+    
     localStorage.removeItem('hardcrm_access_token');
     if (accessToken) localStorage.setItem('hardcrm_access_token', accessToken);
 
@@ -194,17 +208,18 @@ export const AuthPage: React.FC = () => {
         setStage('form');
       }
     } else {
-      // OTP ya verificado, crear usuario directamente sin volver a pedir OTP
+      // OTP ya verificado, crear usuario con datos del backend o fallback
       const emailClean = pendingUserData.email.toLowerCase().trim();
       const nameFromEmail = emailClean.split('@')[0];
       const formattedName = pendingUserData.fullName || 
+        (backendUser?.full_name) ||
         nameFromEmail
           .split(/[._-]/)
           .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
           .join(' ') || 'Usuario Verificado';
 
       const authUser: AuthUser = {
-        id: `USR-${Math.floor(1000 + Math.random() * 9000)}`,
+        id: backendUser?.id?.toString() || `USR-${Math.floor(1000 + Math.random() * 9000)}`,
         name: formattedName,
         email: emailClean,
         role: pendingUserData.role,
@@ -216,8 +231,15 @@ export const AuthPage: React.FC = () => {
         estado: 'activo',
       };
       
+      console.log('[AuthPage] Usuario creado después de OTP:', authUser);
+      
       // Usar completeOtpAuth en lugar de login para evitar bucle
       completeOtpAuth(authUser);
+      
+      // Force re-render después de un pequeño delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
   };
 

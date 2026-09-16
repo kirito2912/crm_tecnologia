@@ -110,6 +110,14 @@ export const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({
     try {
       const res = await verifyOtpApi(email, code);
       if (res.success) {
+        // Guardar el usuario en localStorage antes de llamar onSuccess
+        if (res.user) {
+          const userData = {
+            user: res.user,
+            accessToken: res.accessToken
+          };
+          sessionStorage.setItem('otp_verified_user', JSON.stringify(userData));
+        }
         onSuccess(res.accessToken);
       } else {
         setErrorMessage(res.error || 'Código OTP incorrecto o expirado.');
