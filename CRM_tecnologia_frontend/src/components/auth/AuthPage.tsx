@@ -168,6 +168,8 @@ export const AuthPage: React.FC = () => {
   const handleOtpSuccess = async (accessToken?: string) => {
     if (!pendingUserData) return;
     
+    console.log('[AuthPage] 🔐 OTP verificado exitosamente, iniciando autenticación...');
+    
     // Recuperar los datos del usuario verificado
     const otpUserData = sessionStorage.getItem('otp_verified_user');
     let backendUser = null;
@@ -175,15 +177,20 @@ export const AuthPage: React.FC = () => {
       try {
         const parsed = JSON.parse(otpUserData);
         backendUser = parsed.user;
+        console.log('[AuthPage] 👤 Datos del usuario desde backend:', backendUser);
         sessionStorage.removeItem('otp_verified_user');
       } catch {
-        // ignore
+        console.warn('[AuthPage] ⚠️ No se pudo parsear datos del usuario del backend');
       }
     }
     
-    if (accessToken) localStorage.setItem('hardcrm_access_token', accessToken);
+    if (accessToken) {
+      console.log('[AuthPage] 🔑 Guardando token de acceso');
+      localStorage.setItem('hardcrm_access_token', accessToken);
+    }
 
     if (pendingUserData.isInvite && inviteToken) {
+      console.log('[AuthPage] 📧 Procesando registro por invitación...');
       try {
         const res = await completarRegistroInvitado({ token: inviteToken, full_name: pendingUserData.fullName, password: pendingUserData.password || '' });
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -200,14 +207,17 @@ export const AuthPage: React.FC = () => {
           estado: 'pendiente_aprobacion',
           invitadoPor: 'Administrador',
         };
+        console.log('[AuthPage] ✅ Usuario de invitación creado:', newUser);
         completeOtpAuth(newUser);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Error al completar el registro.';
+        console.error('[AuthPage] ❌ Error al completar registro:', msg);
         setErrorMessage(msg);
         setStage('form');
       }
     } else {
       // OTP ya verificado exitosamente - crear usuario directamente
+      console.log('[AuthPage] 🔄 Creando usuario autenticado...');
       const emailClean = pendingUserData.email.toLowerCase().trim();
       const nameFromEmail = emailClean.split('@')[0];
       const formattedName = pendingUserData.fullName || 
@@ -230,15 +240,20 @@ export const AuthPage: React.FC = () => {
         estado: 'activo',
       };
       
+      console.log('[AuthPage] ✅ Usuario autenticado creado:', authUser);
+      
       // Guardar directamente en localStorage Y en el estado
       localStorage.setItem('hardcrm_auth_user_v2', JSON.stringify(authUser));
+      console.log('[AuthPage] 💾 Usuario guardado en localStorage');
       
       // Completar autenticación usando el contexto
       completeOtpAuth(authUser);
+      console.log('[AuthPage] 🎯 completeOtpAuth ejecutado');
       
       // Resetear el stage para limpiar el estado
       setStage('form');
       setPendingUserData(null);
+      console.log('[AuthPage] 🔄 Stage reseteado, esperando redirección al dashboard...');
     }
   };
 
