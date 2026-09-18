@@ -52,7 +52,14 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
 
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
-    setShowFacialVerification(true);
+    
+    // Solo mostrar verificación facial para el proyecto AWS
+    if (project.id === 'cloud-aws') {
+      setShowFacialVerification(true);
+    } else {
+      // Para otros proyectos (Big Data, Azure AI), acceder directamente
+      onSelectProject(project.id);
+    }
   };
 
   const handleVerificationSuccess = () => {
