@@ -233,7 +233,7 @@ export const AuthPage: React.FC = () => {
         email: emailClean,
         role: pendingUserData.role,
         company: emailClean.split('@')[1]?.split('.')[0].toUpperCase() || 'DataTech Analytics',
-        avatar: formattedName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase(),
+        avatar: formattedName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase(),
         biometricVerified: true,
         registeredAt: new Date().toISOString(),
         habilitado: true,
