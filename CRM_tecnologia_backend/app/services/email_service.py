@@ -114,18 +114,18 @@ def _send_via_smtp(to: str, subject: str, html: str, text: str) -> bool:
 # ──────────────────────────────────────────────
 
 def _send_email(to: str, subject: str, html: str, text: str) -> bool:
-    """Intenta Resend primero, luego SMTP, luego imprime en consola."""
+    """Intenta SMTP primero (desarrollo local), luego Resend, luego imprime en consola."""
 
     # Gmail is authoritative when configured; avoid duplicate sends on failure.
     if gmail_configured():
         return send_via_gmail(to, subject, html, text)
 
-    # 1. Resend
-    if _send_via_resend(to, subject, html, text):
+    # 1. SMTP (local) - Prioridad para desarrollo
+    if _send_via_smtp(to, subject, html, text):
         return True
 
-    # 2. SMTP (local)
-    if _send_via_smtp(to, subject, html, text):
+    # 2. Resend (fallback)
+    if _send_via_resend(to, subject, html, text):
         return True
 
     # 3. Sin credenciales — solo consola
