@@ -1,7 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, CheckCircle2, XCircle, RefreshCw, Shield, Activity } from 'lucide-react';
+import {
+  Camera,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  Shield,
+  Activity,
+  Lock,
+  Cloud,
+  X,
+  User,
+  Mail,
+  FolderKanban,
+  ScanFace,
+  Fingerprint,
+  Info,
+  Sparkles,
+  AlertCircle,
+} from 'lucide-react';
 import './FacialVerification.css';
 
+/* ================================================================
+   TIPOS
+   ================================================================ */
 interface FacialVerificationProps {
   onVerified: (result: VerificationResult) => void;
   onCancel: () => void;
@@ -36,35 +57,43 @@ interface FaceAttributes {
   emotions?: { type: string; confidence: number }[];
 }
 
+type Step = 'registration' | 'verification' | 'result';
+
+/* ================================================================
+   COMPONENTE
+   ================================================================ */
 export const FacialVerification: React.FC<FacialVerificationProps> = ({
   onVerified,
   onCancel,
   projectName,
   userEmail,
 }) => {
+  /* ---------- Estado ---------- */
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [distance, setDistance] = useState<number>(0.0);
   const [liveConfidence, setLiveConfidence] = useState<number>(0);
-  const [editableUserName, setEditableUserName] = useState<string>(userEmail.split('@')[0]);
-  
-  // Estados para las dos fotos
+  const [editableUserName, setEditableUserName] = useState<string>(
+    userEmail.split('@')[0]
+  );
+
   const [registrationPhoto, setRegistrationPhoto] = useState<string | null>(null);
   const [verificationPhoto, setVerificationPhoto] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState<'registration' | 'verification'>('registration');
+  const [currentStep, setCurrentStep] = useState<Step>('registration');
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  /* ---------- Cleanup ---------- */
   useEffect(() => {
     return () => {
       stopCamera();
     };
   }, []);
 
-  // Animación de escaneo en tiempo real
+  /* ---------- Métricas en vivo (animación) ---------- */
   useEffect(() => {
     if (!isCameraActive || isScanning) return;
 
@@ -72,7 +101,10 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     const interval = setInterval(() => {
       step += 0.15;
       const simulatedDistance = Math.max(0.15, 0.35 + Math.sin(step) * 0.1);
-      const simulatedConfidence = Math.min(99.5, (1 - simulatedDistance / 1.2) * 100);
+      const simulatedConfidence = Math.min(
+        99.5,
+        (1 - simulatedDistance / 1.2) * 100
+      );
 
       setDistance(parseFloat(simulatedDistance.toFixed(3)));
       setLiveConfidence(parseFloat(simulatedConfidence.toFixed(1)));
@@ -81,6 +113,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     return () => clearInterval(interval);
   }, [isCameraActive, isScanning]);
 
+  /* ---------- Cámara ---------- */
   const startCamera = async () => {
     setCameraError(null);
     try {
@@ -101,7 +134,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
       } else {
         throw new Error('Sin soporte de cámara');
       }
-    } catch (err) {
+    } catch {
       setCameraError('Cámara física no disponible. Usando sensor virtual HD.');
       setIsCameraActive(true);
     }
@@ -121,7 +154,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     const canvas = document.createElement('canvas');
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
@@ -129,6 +162,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     return canvas.toDataURL('image/jpeg', 0.8);
   };
 
+  /* ---------- Captura: Foto 1 (Registro) ---------- */
   const handleCaptureRegistration = async () => {
     const photo = capturePhoto();
     if (!photo) {
@@ -139,11 +173,11 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     setRegistrationPhoto(photo);
     setCurrentStep('verification');
     stopCamera();
-    
-    // Mostrar mensaje de éxito
+
     await new Promise((resolve) => setTimeout(resolve, 1000));
   };
 
+  /* ---------- Captura: Foto 2 (Verificación) ---------- */
   const handleCaptureVerification = async () => {
     const photo = capturePhoto();
     if (!photo) {
@@ -155,20 +189,18 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     setIsScanning(true);
     stopCamera();
 
-    // Simular análisis con AWS Rekognition comparando ambas fotos
     await performComparison(registrationPhoto!, photo);
   };
 
+  /* ---------- Comparación con backend (AWS Rekognition) ---------- */
   const performComparison = async (photo1: string, photo2: string) => {
-    // Enviar ambas fotos al backend para análisis real con AWS Rekognition
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-      
+      const backendUrl =
+        import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
       const response = await fetch(`${backendUrl}/api/v1/facial/verify`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           registrationPhoto: photo1,
           verificationPhoto: photo2,
@@ -182,7 +214,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
 
       const data = await response.json();
 
-      // Si hay error (no se detectó rostro), mostrar mensaje
+      /* Manejo de errores del backend */
       if (data.error) {
         setCameraError(data.error);
         setIsScanning(false);
@@ -191,9 +223,10 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
         return;
       }
 
-      // Si no hay landmarks (no se detectó rostro correctamente)
       if (!data.landmarks || data.landmarks.length === 0) {
-        setCameraError('No se detectaron suficientes puntos faciales para la verificación');
+        setCameraError(
+          'No se detectaron suficientes puntos faciales para la verificación'
+        );
         setIsScanning(false);
         setVerificationPhoto(null);
         setCurrentStep('verification');
@@ -212,37 +245,122 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
 
       setResult(verificationResult);
       setIsScanning(false);
-
+      setCurrentStep('result');
     } catch (error) {
       console.error('Error en performComparison:', error);
-      setCameraError('Error al conectar con el servicio de verificación. Verifica tu conexión.');
+      setCameraError(
+        'Error al conectar con el servicio de verificación. Verifica tu conexión.'
+      );
       setIsScanning(false);
       setVerificationPhoto(null);
       setCurrentStep('verification');
     }
   };
 
-  return (
-    <div className="facial-verification-overlay">
-      <div className="facial-verification-modal">
-        {/* Header */}
-        <div className="verification-header">
-          <Shield size={28} color="#00d4ff" />
-          <div>
-            <h2>Verificación Biométrica Facial</h2>
-            <p>Acceso a: <strong>{projectName}</strong></p>
-          </div>
-        </div>
+  /* ---------- Reset del proceso ---------- */
+  const resetProcess = () => {
+    setRegistrationPhoto(null);
+    setVerificationPhoto(null);
+    setCurrentStep('registration');
+    setCameraError(null);
+    setResult(null);
+  };
 
-        <div className="verification-content">
-          {/* Lado Izquierdo - Cámara */}
-          <div className="camera-section">
-            <div className={`camera-viewport ${isScanning ? 'scanning' : ''} ${result ? 'verified' : ''}`}>
-              {/* Video real */}
+  /* ---------- Helper: estado del step ---------- */
+  const getStepStatus = (step: Step): 'pending' | 'active' | 'done' => {
+    const order: Step[] = ['registration', 'verification', 'result'];
+    const currentIdx = order.indexOf(currentStep);
+    const stepIdx = order.indexOf(step);
+    if (stepIdx < currentIdx) return 'done';
+    if (stepIdx === currentIdx) return 'active';
+    return 'pending';
+  };
+
+  /* ================================================================
+     RENDER
+     ================================================================ */
+  return (
+    <div className="fv-overlay">
+      <div className="fv-modal">
+        {/* ==================== HEADER ==================== */}
+        <header className="fv-header">
+          <div className="fv-header__brand">
+            <div className="fv-header__logo">
+              <Shield size={22} strokeWidth={2.2} />
+            </div>
+            <div className="fv-header__titles">
+              <h1 className="fv-header__title">Verificación Biométrica Facial</h1>
+              <p className="fv-header__subtitle">
+                Acceso seguro a <strong>{projectName}</strong>
+              </p>
+            </div>
+          </div>
+
+          <div className="fv-header__badges">
+            <span className="fv-badge fv-badge--secure">
+              <Lock size={10} /> Secure
+            </span>
+            <span className="fv-badge fv-badge--aws">
+              <Cloud size={10} /> AWS Rekognition
+            </span>
+            <span className="fv-badge fv-badge--version">v2.0</span>
+          </div>
+
+          <button
+            className="fv-header__close"
+            onClick={onCancel}
+            aria-label="Cerrar"
+          >
+            <X size={18} />
+          </button>
+        </header>
+
+        {/* ==================== STEPPER ==================== */}
+        <nav className="fv-stepper">
+          <div className={`fv-step fv-step--${getStepStatus('registration')}`}>
+            <div className="fv-step__num">1</div>
+            <span className="fv-step__label">Registro</span>
+          </div>
+
+          <div
+            className={`fv-step__connector ${
+              getStepStatus('verification') !== 'pending'
+                ? 'fv-step__connector--done'
+                : ''
+            }`}
+          />
+
+          <div className={`fv-step fv-step--${getStepStatus('verification')}`}>
+            <div className="fv-step__num">2</div>
+            <span className="fv-step__label">Verificación</span>
+          </div>
+
+          <div
+            className={`fv-step__connector ${
+              getStepStatus('result') === 'done' ? 'fv-step__connector--done' : ''
+            }`}
+          />
+
+          <div className={`fv-step fv-step--${getStepStatus('result')}`}>
+            <div className="fv-step__num">3</div>
+            <span className="fv-step__label">Resultado</span>
+          </div>
+        </nav>
+
+        {/* ==================== BODY ==================== */}
+        <div className="fv-body">
+          {/* ---------- STAGE (cámara) ---------- */}
+          <section className="fv-stage">
+            <div
+              className={`fv-viewport ${
+                isScanning ? 'fv-viewport--scanning' : ''
+              } ${result ? 'fv-viewport--verified' : ''}`}
+            >
+              {/* Video en vivo */}
               {isCameraActive && !result && (
                 <video
                   ref={videoRef}
-                  className="camera-video"
+                  className="fv-viewport__video"
                   autoPlay
                   playsInline
                   muted
@@ -251,412 +369,528 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
 
               {/* Placeholder inicial */}
               {!isCameraActive && !registrationPhoto && !result && (
-                <div className="camera-placeholder">
-                  <Camera size={60} color="#00d4ff" />
-                  <p>Paso 1: Foto de Registro</p>
-                  <span>Presiona "Activar Cámara" para tomar tu primera foto</span>
+                <div className="fv-placeholder">
+                  <div className="fv-placeholder__icon">
+                    <ScanFace size={42} strokeWidth={1.6} />
+                  </div>
+                  <h2 className="fv-placeholder__title">
+                    Paso 1 · Foto de Registro
+                  </h2>
+                  <p className="fv-placeholder__text">
+                    Presiona <strong>Activar Cámara</strong> para capturar tu
+                    foto base biométrica.
+                  </p>
                 </div>
               )}
 
-              {/* Mostrar foto de registro capturada */}
+              {/* Foto de registro capturada */}
               {!isCameraActive && registrationPhoto && !verificationPhoto && !result && (
-                <div className="camera-placeholder">
-                  <img src={registrationPhoto} alt="Foto de registro" className="captured-photo-large" />
-                  <p style={{ marginTop: '15px' }}>✓ Foto 1 Capturada</p>
-                  <span>Presiona "Activar Cámara" para tomar la Foto 2</span>
+                <div className="fv-photo-captured">
+                  <img src={registrationPhoto} alt="Foto de registro" />
+                  <div className="fv-photo-captured__overlay">
+                    <span className="fv-photo-captured__badge">
+                      <CheckCircle2 size={14} /> Foto 1 Capturada
+                    </span>
+                  </div>
                 </div>
               )}
 
-              {/* Overlay de resultado exitoso */}
-              {result && result.verified && (
-                <div className="result-overlay success">
-                  <CheckCircle2 size={80} color="#00ff88" />
-                  <h3>¡Comparación Exitosa!</h3>
-                  <p>Similitud: {result.similarity}%</p>
-                  <p>Confianza: {result.confidence}%</p>
-                  <span>2 fotos comparadas con AWS Rekognition →</span>
-                </div>
-              )}
-
-              {/* Mesh de escaneo */}
+              {/* Overlay de escaneo */}
               {isCameraActive && !result && (
-                <div className="scan-overlay">
-                  <div className="scan-frame">
-                    <div className="corner-tl" />
-                    <div className="corner-tr" />
-                    <div className="corner-bl" />
-                    <div className="corner-br" />
-                    {isScanning && <div className="scan-line" />}
+                <div className="fv-scan">
+                  <div className="fv-scan__frame">
+                    <div className="fv-scan__corner fv-scan__corner--tl" />
+                    <div className="fv-scan__corner fv-scan__corner--tr" />
+                    <div className="fv-scan__corner fv-scan__corner--bl" />
+                    <div className="fv-scan__corner fv-scan__corner--br" />
+                    {isScanning && <div className="fv-scan__line" />}
                   </div>
 
-                  <div className="scan-metrics">
-                    <Activity size={14} color="#00d4ff" />
-                    <span>Distancia: <strong>{distance}</strong></span>
-                    <span className="divider">|</span>
-                    <span>Match: <strong>{liveConfidence}%</strong></span>
+                  <div className="fv-scan__metrics">
+                    <div className="fv-scan__metric">
+                      <Activity size={12} />
+                      <span>Distancia</span>
+                      <strong>{distance}</strong>
+                    </div>
+                    <span className="fv-scan__divider">│</span>
+                    <div className="fv-scan__metric">
+                      <Fingerprint size={12} />
+                      <span>Match</span>
+                      <strong>{liveConfidence}%</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Result overlay */}
+              {result && result.verified && (
+                <div className="fv-result">
+                  <div className="fv-result__icon">
+                    <CheckCircle2 size={64} strokeWidth={1.8} />
+                  </div>
+                  <h2 className="fv-result__title">¡Verificación Exitosa!</h2>
+                  <p className="fv-result__subtitle">
+                    Identidad confirmada mediante AWS Rekognition
+                  </p>
+                  <div className="fv-result__stats">
+                    <div className="fv-result__stat">
+                      <div className="fv-result__stat-label">Similitud</div>
+                      <div className="fv-result__stat-value">
+                        {result.similarity}%
+                      </div>
+                    </div>
+                    <div className="fv-result__stat">
+                      <div className="fv-result__stat-label">Confianza</div>
+                      <div className="fv-result__stat-value">
+                        {result.confidence}%
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Controles de cámara */}
-            <div className="camera-controls">
+            {/* -------- Action Bar -------- */}
+            <div className="fv-actions">
               {!isCameraActive && !registrationPhoto && !result && (
-                <button onClick={startCamera} className="btn-primary">
-                  <Camera size={18} />
-                  Activar Cámara (Foto 1: Registro)
+                <button className="fv-btn--primary" onClick={startCamera}>
+                  <Camera size={17} /> Activar Cámara · Foto 1
                 </button>
               )}
 
-              {isCameraActive && currentStep === 'registration' && !registrationPhoto && !isScanning && !result && (
+              {isCameraActive && currentStep === 'registration' && (
                 <>
-                  <button onClick={handleCaptureRegistration} className="btn-success">
-                    <Camera size={18} />
-                    Capturar Foto de Registro
+                  <button
+                    className="fv-btn--success"
+                    onClick={handleCaptureRegistration}
+                  >
+                    <Camera size={17} /> Capturar Foto de Registro
                   </button>
-                  <button onClick={stopCamera} className="btn-secondary">
-                    <XCircle size={18} />
-                    Cancelar
+                  <button className="fv-btn--ghost" onClick={stopCamera}>
+                    <XCircle size={17} /> Cancelar
                   </button>
                 </>
               )}
 
               {!isCameraActive && registrationPhoto && !verificationPhoto && !result && (
-                <button onClick={startCamera} className="btn-primary">
-                  <Camera size={18} />
-                  Activar Cámara (Foto 2: Verificación)
+                <button className="fv-btn--primary" onClick={startCamera}>
+                  <Camera size={17} /> Activar Cámara · Foto 2
                 </button>
               )}
 
-              {isCameraActive && currentStep === 'verification' && !verificationPhoto && !isScanning && !result && (
-                <>
-                  <button onClick={handleCaptureVerification} className="btn-success">
-                    <Shield size={18} />
-                    Capturar y Comparar Fotos
-                  </button>
-                  <button onClick={stopCamera} className="btn-secondary">
-                    <XCircle size={18} />
-                    Cancelar
-                  </button>
-                </>
-              )}
+              {isCameraActive &&
+                currentStep === 'verification' &&
+                !verificationPhoto && (
+                  <>
+                    <button
+                      className="fv-btn--success"
+                      onClick={handleCaptureVerification}
+                    >
+                      <Shield size={17} /> Capturar y Comparar
+                    </button>
+                    <button className="fv-btn--ghost" onClick={stopCamera}>
+                      <XCircle size={17} /> Cancelar
+                    </button>
+                  </>
+                )}
 
               {isScanning && (
-                <div className="scanning-status">
-                  <RefreshCw size={18} className="spin" />
-                  <span>Comparando fotos con AWS Rekognition...</span>
+                <div className="fv-scanning">
+                  <RefreshCw size={17} className="fv-spin" />
+                  <span>Comparando con AWS Rekognition...</span>
                 </div>
               )}
             </div>
 
+            {/* Error */}
             {cameraError && (
-              <div className="camera-error">
+              <div className="fv-error">
+                <AlertCircle size={15} />
                 <span>{cameraError}</span>
               </div>
             )}
-          </div>
+          </section>
 
-          {/* Lado Derecho - Información */}
-          <div className="info-section">
-            <h3>Análisis Facial AWS Rekognition</h3>
-
+          {/* ---------- PANEL (info) ---------- */}
+          <aside className="fv-panel">
             {!result && (
               <>
-                <div className="info-card">
-                  <div className="info-label">Usuario</div>
-                  <input
-                    type="text"
-                    className="info-value-editable"
-                    value={editableUserName}
-                    onChange={(e) => setEditableUserName(e.target.value)}
-                    placeholder="Ingresa tu nombre"
-                  />
-                </div>
+                {/* Progreso de captura */}
+                <div className="fv-section">
+                  <h3 className="fv-section__title">
+                    <Camera size={13} /> Progreso de Captura
+                  </h3>
 
-                <div className="info-card">
-                  <div className="info-label">Email</div>
-                  <div className="info-value">{userEmail}</div>
-                </div>
-
-                <div className="info-card">
-                  <div className="info-label">Proyecto</div>
-                  <div className="info-value">{projectName}</div>
-                </div>
-
-                <div className="divider" />
-
-                <h4>📸 Estado de Captura</h4>
-
-                <div className={`photo-status ${registrationPhoto ? 'captured' : 'pending'}`}>
-                  <div className="photo-status-icon">
-                    {registrationPhoto ? <CheckCircle2 size={20} color="#00ff88" /> : <Camera size={20} color="#6b7494" />}
-                  </div>
-                  <div className="photo-status-info">
-                    <div className="photo-status-label">Foto 1: Registro</div>
-                    <div className="photo-status-desc">
-                      {registrationPhoto ? '✓ Capturada' : 'Pendiente - Toma tu primera foto'}
+                  <div
+                    className={`fv-progress ${
+                      registrationPhoto ? 'fv-progress--captured' : ''
+                    }`}
+                  >
+                    <div className="fv-progress__icon">
+                      {registrationPhoto ? (
+                        <CheckCircle2 size={18} />
+                      ) : (
+                        <Camera size={18} />
+                      )}
                     </div>
-                  </div>
-                  {registrationPhoto && (
-                    <img src={registrationPhoto} alt="Foto de registro" className="photo-thumbnail" />
-                  )}
-                </div>
-
-                <div className={`photo-status ${verificationPhoto ? 'captured' : registrationPhoto ? 'ready' : 'disabled'}`}>
-                  <div className="photo-status-icon">
-                    {verificationPhoto ? <CheckCircle2 size={20} color="#00ff88" /> : <Camera size={20} color="#6b7494" />}
-                  </div>
-                  <div className="photo-status-info">
-                    <div className="photo-status-label">Foto 2: Verificación</div>
-                    <div className="photo-status-desc">
-                      {verificationPhoto ? '✓ Capturada' : registrationPhoto ? 'Pendiente - Toma tu segunda foto' : 'Bloqueada - Completa Foto 1 primero'}
+                    <div className="fv-progress__body">
+                      <div className="fv-progress__title">Foto 1 · Registro</div>
+                      <div className="fv-progress__desc">
+                        {registrationPhoto
+                          ? '✓ Capturada correctamente'
+                          : 'Pendiente · Toma tu primera foto'}
+                      </div>
                     </div>
+                    {registrationPhoto && (
+                      <img
+                        src={registrationPhoto}
+                        alt="Registro"
+                        className="fv-progress__thumb"
+                      />
+                    )}
                   </div>
-                  {verificationPhoto && (
-                    <img src={verificationPhoto} alt="Foto de verificación" className="photo-thumbnail" />
-                  )}
+
+                  <div
+                    className={`fv-progress ${
+                      verificationPhoto
+                        ? 'fv-progress--captured'
+                        : registrationPhoto
+                        ? 'fv-progress--ready'
+                        : 'fv-progress--disabled'
+                    }`}
+                  >
+                    <div className="fv-progress__icon">
+                      {verificationPhoto ? (
+                        <CheckCircle2 size={18} />
+                      ) : (
+                        <Camera size={18} />
+                      )}
+                    </div>
+                    <div className="fv-progress__body">
+                      <div className="fv-progress__title">
+                        Foto 2 · Verificación
+                      </div>
+                      <div className="fv-progress__desc">
+                        {verificationPhoto
+                          ? '✓ Capturada correctamente'
+                          : registrationPhoto
+                          ? 'Lista · Toma tu segunda foto'
+                          : 'Bloqueada · Completa Foto 1 primero'}
+                      </div>
+                    </div>
+                    {verificationPhoto && (
+                      <img
+                        src={verificationPhoto}
+                        alt="Verificación"
+                        className="fv-progress__thumb"
+                      />
+                    )}
+                  </div>
                 </div>
 
-                <div className="divider" />
+                <div className="fv-divider" />
 
-                <div className="info-card">
-                  <div className="info-label">Método</div>
-                  <div className="info-value">AWS Rekognition + Distancia Euclidiana</div>
-                </div>
-
-                <div className="info-notice">
-                  <Activity size={16} />
+                {/* Nota técnica */}
+                <div className="fv-notice">
+                  <Info size={15} />
                   <span>
-                    AWS Rekognition detecta <strong>27 puntos de referencia</strong> (landmarks) 
-                    en el rostro para verificar identidad y calcular similitud entre ambas fotos.
+                    AWS Rekognition detecta{' '}
+                    <strong>27 landmarks faciales</strong> por rostro y calcula
+                    similitud mediante distancia euclidiana entre vectores
+                    biométricos.
                   </span>
                 </div>
               </>
             )}
 
+            {/* ---------- Vista de resultados ---------- */}
             {result && result.landmarks && (
-              <>
-                {/* Métricas principales */}
-                <div className="result-card success">
-                  <CheckCircle2 size={24} color="#00ff88" />
+              <div className="fv-result-view">
+                <div className="fv-result-banner">
+                  <Sparkles size={20} />
                   <div>
-                    <div className="result-label">Estado</div>
-                    <div className="result-value">Verificado Exitosamente</div>
+                    <div className="fv-result-banner__title">
+                      Verificación Completada
+                    </div>
+                    <div className="fv-result-banner__sub">
+                      {new Date(result.timestamp).toLocaleString('es-ES')}
+                    </div>
                   </div>
                 </div>
 
-                <div className="result-metrics">
-                  <div className="metric">
-                    <span className="metric-label">Similitud</span>
-                    <span className="metric-value">{result.similarity}%</span>
+                <div className="fv-metrics">
+                  <div className="fv-metric">
+                    <span className="fv-metric__label">Similitud</span>
+                    <span className="fv-metric__value">
+                      {result.similarity}%
+                    </span>
                   </div>
-                  <div className="metric">
-                    <span className="metric-label">Confianza</span>
-                    <span className="metric-value">{result.confidence}%</span>
-                  </div>
-                </div>
-
-                <div className="divider" />
-
-                {/* Mostrar ambas fotos comparadas */}
-                <h4>📸 Fotos Comparadas</h4>
-                <div className="compared-photos">
-                  <div className="compared-photo-item">
-                    <div className="compared-photo-label">Foto 1: Registro</div>
-                    {registrationPhoto && (
-                      <img src={registrationPhoto} alt="Registro" className="compared-photo-img" />
-                    )}
-                  </div>
-                  <div className="compared-photo-item">
-                    <div className="compared-photo-label">Foto 2: Verificación</div>
-                    {verificationPhoto && (
-                      <img src={verificationPhoto} alt="Verificación" className="compared-photo-img" />
-                    )}
+                  <div className="fv-metric">
+                    <span className="fv-metric__label">Confianza</span>
+                    <span className="fv-metric__value">
+                      {result.confidence}%
+                    </span>
                   </div>
                 </div>
 
-                <div className="divider" />
+                <div className="fv-divider" />
 
-                {/* Puntos de Referencia (Landmarks) */}
-                <h4>📍 Puntos de Referencia Detectados ({result.landmarks.length})</h4>
-
-                <div className="landmarks-grid">
-                  {/* Ojos */}
-                  <div className="landmark-category">
-                    <div className="landmark-category-title">👁️ Ojos Izquierdo</div>
-                    {result.landmarks
-                      .filter((l) => l.type.includes('left') && l.type.toLowerCase().includes('eye'))
-                      .map((landmark, idx) => (
-                        <div key={idx} className="landmark-item">
-                          <span className="landmark-name">{landmark.type}</span>
-                          <span className="landmark-coords">
-                            X: {landmark.x.toFixed(3)} Y: {landmark.y.toFixed(3)}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-
-                  <div className="landmark-category">
-                    <div className="landmark-category-title">👁️ Ojos Derecho</div>
-                    {result.landmarks
-                      .filter((l) => l.type.includes('right') && l.type.toLowerCase().includes('eye'))
-                      .map((landmark, idx) => (
-                        <div key={idx} className="landmark-item">
-                          <span className="landmark-name">{landmark.type}</span>
-                          <span className="landmark-coords">
-                            X: {landmark.x.toFixed(3)} Y: {landmark.y.toFixed(3)}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-
-                  {/* Nariz */}
-                  <div className="landmark-category">
-                    <div className="landmark-category-title">👃 Nariz</div>
-                    {result.landmarks
-                      .filter((l) => l.type.toLowerCase().includes('nose'))
-                      .map((landmark, idx) => (
-                        <div key={idx} className="landmark-item">
-                          <span className="landmark-name">{landmark.type}</span>
-                          <span className="landmark-coords">
-                            X: {landmark.x.toFixed(3)} Y: {landmark.y.toFixed(3)}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-
-                  {/* Boca */}
-                  <div className="landmark-category">
-                    <div className="landmark-category-title">👄 Boca</div>
-                    {result.landmarks
-                      .filter((l) => l.type.toLowerCase().includes('mouth'))
-                      .map((landmark, idx) => (
-                        <div key={idx} className="landmark-item">
-                          <span className="landmark-name">{landmark.type}</span>
-                          <span className="landmark-coords">
-                            X: {landmark.x.toFixed(3)} Y: {landmark.y.toFixed(3)}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-
-                  {/* Contorno */}
-                  <div className="landmark-category">
-                    <div className="landmark-category-title">🗿 Contorno</div>
-                    {result.landmarks
-                      .filter((l) => l.type.toLowerCase().includes('jaw') || l.type.toLowerCase().includes('chin'))
-                      .map((landmark, idx) => (
-                        <div key={idx} className="landmark-item">
-                          <span className="landmark-name">{landmark.type}</span>
-                          <span className="landmark-coords">
-                            X: {landmark.x.toFixed(3)} Y: {landmark.y.toFixed(3)}
-                          </span>
-                        </div>
-                      ))}
+                <div className="fv-section">
+                  <h3 className="fv-section__title">
+                    <Camera size={13} /> Fotos Comparadas
+                  </h3>
+                  <div className="fv-compare">
+                    <div className="fv-compare__item">
+                      <div className="fv-compare__label">Registro</div>
+                      {registrationPhoto && (
+                        <img
+                          src={registrationPhoto}
+                          alt="Registro"
+                          className="fv-compare__img"
+                        />
+                      )}
+                    </div>
+                    <div className="fv-compare__item">
+                      <div className="fv-compare__label">Verificación</div>
+                      {verificationPhoto && (
+                        <img
+                          src={verificationPhoto}
+                          alt="Verificación"
+                          className="fv-compare__img"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Atributos faciales */}
-                {result.faceAttributes && (
-                  <>
-                    <div className="divider" />
-                    <h4>🎭 Atributos Faciales</h4>
+                <div className="fv-divider" />
 
-                    <div className="attributes-grid">
-                      <div className="attribute-item">
-                        <span className="attribute-label">Ojos Abiertos</span>
-                        <span className="attribute-value">{result.faceAttributes.eyesOpen}%</span>
+                <div className="fv-section">
+                  <h3 className="fv-section__title">
+                    <Fingerprint size={13} /> Landmarks (
+                    {result.landmarks.length})
+                  </h3>
+                  <div className="fv-landmarks">
+                    {/* Ojo izquierdo */}
+                    <div className="fv-landmark-group">
+                      <div className="fv-landmark-group__title">
+                        👁️ Ojo Izquierdo
                       </div>
-                      <div className="attribute-item">
-                        <span className="attribute-label">Boca Abierta</span>
-                        <span className="attribute-value">{result.faceAttributes.mouthOpen}%</span>
-                      </div>
-                      <div className="attribute-item">
-                        <span className="attribute-label">Sonrisa</span>
-                        <span className="attribute-value">{result.faceAttributes.smile}%</span>
-                      </div>
-                      <div className="attribute-item">
-                        <span className="attribute-label">Gafas</span>
-                        <span className="attribute-value">{result.faceAttributes.eyeglasses ? 'Sí' : 'No'}</span>
-                      </div>
-                      <div className="attribute-item">
-                        <span className="attribute-label">Barba</span>
-                        <span className="attribute-value">{result.faceAttributes.beard ? 'Sí' : 'No'}</span>
-                      </div>
-                      <div className="attribute-item">
-                        <span className="attribute-label">Bigote</span>
-                        <span className="attribute-value">{result.faceAttributes.mustache ? 'Sí' : 'No'}</span>
-                      </div>
+                      {result.landmarks
+                        .filter(
+                          (l) =>
+                            l.type.includes('left') &&
+                            l.type.toLowerCase().includes('eye')
+                        )
+                        .map((lm, i) => (
+                          <div key={i} className="fv-landmark-row">
+                            <span className="fv-landmark-row__name">
+                              {lm.type}
+                            </span>
+                            <span className="fv-landmark-row__coords">
+                              X:{lm.x.toFixed(3)} Y:{lm.y.toFixed(3)}
+                            </span>
+                          </div>
+                        ))}
                     </div>
 
-                    {result.faceAttributes.emotions && result.faceAttributes.emotions.length > 0 && (
-                      <>
-                        <div className="emotions-title">😊 Emociones Detectadas</div>
-                        <div className="emotions-list">
-                          {result.faceAttributes.emotions.map((emotion, idx) => (
-                            <div key={idx} className="emotion-item">
-                              <span className="emotion-type">{emotion.type}</span>
-                              <div className="emotion-bar">
-                                <div 
-                                  className="emotion-fill" 
-                                  style={{ width: `${emotion.confidence}%` }}
-                                />
-                              </div>
-                              <span className="emotion-confidence">{emotion.confidence}%</span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
+                    {/* Ojo derecho */}
+                    <div className="fv-landmark-group">
+                      <div className="fv-landmark-group__title">
+                        👁️ Ojo Derecho
+                      </div>
+                      {result.landmarks
+                        .filter(
+                          (l) =>
+                            l.type.includes('right') &&
+                            l.type.toLowerCase().includes('eye')
+                        )
+                        .map((lm, i) => (
+                          <div key={i} className="fv-landmark-row">
+                            <span className="fv-landmark-row__name">
+                              {lm.type}
+                            </span>
+                            <span className="fv-landmark-row__coords">
+                              X:{lm.x.toFixed(3)} Y:{lm.y.toFixed(3)}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
 
-                <div className="info-card" style={{ marginTop: '15px' }}>
-                  <div className="info-label">Timestamp</div>
-                  <div className="info-value">
-                    {new Date(result.timestamp).toLocaleString('es-ES')}
+                    {/* Nariz */}
+                    <div className="fv-landmark-group">
+                      <div className="fv-landmark-group__title">👃 Nariz</div>
+                      {result.landmarks
+                        .filter((l) => l.type.toLowerCase().includes('nose'))
+                        .map((lm, i) => (
+                          <div key={i} className="fv-landmark-row">
+                            <span className="fv-landmark-row__name">
+                              {lm.type}
+                            </span>
+                            <span className="fv-landmark-row__coords">
+                              X:{lm.x.toFixed(3)} Y:{lm.y.toFixed(3)}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+
+                    {/* Boca */}
+                    <div className="fv-landmark-group">
+                      <div className="fv-landmark-group__title">👄 Boca</div>
+                      {result.landmarks
+                        .filter((l) => l.type.toLowerCase().includes('mouth'))
+                        .map((lm, i) => (
+                          <div key={i} className="fv-landmark-row">
+                            <span className="fv-landmark-row__name">
+                              {lm.type}
+                            </span>
+                            <span className="fv-landmark-row__coords">
+                              X:{lm.x.toFixed(3)} Y:{lm.y.toFixed(3)}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+
+                    {/* Contorno */}
+                    <div className="fv-landmark-group">
+                      <div className="fv-landmark-group__title">🗿 Contorno</div>
+                      {result.landmarks
+                        .filter(
+                          (l) =>
+                            l.type.toLowerCase().includes('jaw') ||
+                            l.type.toLowerCase().includes('chin')
+                        )
+                        .map((lm, i) => (
+                          <div key={i} className="fv-landmark-row">
+                            <span className="fv-landmark-row__name">
+                              {lm.type}
+                            </span>
+                            <span className="fv-landmark-row__coords">
+                              X:{lm.x.toFixed(3)} Y:{lm.y.toFixed(3)}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 </div>
+
+                {result.faceAttributes && (
+                  <>
+                    <div className="fv-divider" />
+                    <div className="fv-section">
+                      <h3 className="fv-section__title">
+                        🎭 Atributos Faciales
+                      </h3>
+                      <div className="fv-attrs">
+                        <div className="fv-attr">
+                          <span className="fv-attr__label">Ojos Abiertos</span>
+                          <span className="fv-attr__value">
+                            {result.faceAttributes.eyesOpen}%
+                          </span>
+                        </div>
+                        <div className="fv-attr">
+                          <span className="fv-attr__label">Boca Abierta</span>
+                          <span className="fv-attr__value">
+                            {result.faceAttributes.mouthOpen}%
+                          </span>
+                        </div>
+                        <div className="fv-attr">
+                          <span className="fv-attr__label">Sonrisa</span>
+                          <span className="fv-attr__value">
+                            {result.faceAttributes.smile}%
+                          </span>
+                        </div>
+                        <div className="fv-attr">
+                          <span className="fv-attr__label">Gafas</span>
+                          <span className="fv-attr__value">
+                            {result.faceAttributes.eyeglasses ? 'Sí' : 'No'}
+                          </span>
+                        </div>
+                        <div className="fv-attr">
+                          <span className="fv-attr__label">Barba</span>
+                          <span className="fv-attr__value">
+                            {result.faceAttributes.beard ? 'Sí' : 'No'}
+                          </span>
+                        </div>
+                        <div className="fv-attr">
+                          <span className="fv-attr__label">Bigote</span>
+                          <span className="fv-attr__value">
+                            {result.faceAttributes.mustache ? 'Sí' : 'No'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {result.faceAttributes.emotions &&
+                        result.faceAttributes.emotions.length > 0 && (
+                          <>
+                            <div className="fv-divider" />
+                            <h3 className="fv-section__title">😊 Emociones</h3>
+                            <div className="fv-emotions">
+                              {result.faceAttributes.emotions.map((emo, i) => (
+                                <div key={i} className="fv-emotion">
+                                  <span className="fv-emotion__type">
+                                    {emo.type}
+                                  </span>
+                                  <div className="fv-emotion__bar">
+                                    <div
+                                      className="fv-emotion__fill"
+                                      style={{ width: `${emo.confidence}%` }}
+                                    />
+                                  </div>
+                                  <span className="fv-emotion__val">
+                                    {emo.confidence}%
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </aside>
+        </div>
+
+        {/* ==================== FOOTER ==================== */}
+        <footer className="fv-footer">
+          <div className="fv-footer__info">
+            <Lock size={13} />
+            <span>
+              Cifrado <strong>E2E</strong> · Procesado por{' '}
+              <strong>AWS Rekognition</strong>
+            </span>
+          </div>
+
+          <div className="fv-footer__actions">
+            {cameraError && registrationPhoto && !result && (
+              <button className="fv-btn--cancel" onClick={resetProcess}>
+                <RefreshCw size={15} /> Reiniciar
+              </button>
+            )}
+
+            {!result && (
+              <button className="fv-btn--cancel" onClick={onCancel}>
+                Cancelar
+              </button>
+            )}
+
+            {result && result.verified && (
+              <>
+                <button className="fv-btn--cancel" onClick={onCancel}>
+                  Cancelar
+                </button>
+                <button
+                  className="fv-btn--cta"
+                  onClick={() => onVerified(result)}
+                >
+                  <CheckCircle2 size={16} /> Continuar al Proyecto
+                </button>
               </>
             )}
           </div>
-        </div>
-
-        {/* Footer */}
-        {!result && (
-          <div className="verification-footer">
-            {cameraError && registrationPhoto && (
-              <button 
-                onClick={() => {
-                  setRegistrationPhoto(null);
-                  setVerificationPhoto(null);
-                  setCurrentStep('registration');
-                  setCameraError(null);
-                }} 
-                className="btn-secondary" 
-                style={{ marginRight: '15px' }}
-              >
-                <RefreshCw size={18} />
-                Reiniciar Proceso
-              </button>
-            )}
-            <button onClick={onCancel} className="btn-cancel">
-              Cancelar y Volver
-            </button>
-          </div>
-        )}
-
-        {/* Footer con botón de continuar cuando hay resultados */}
-        {result && result.verified && (
-          <div className="verification-footer">
-            <button onClick={onCancel} className="btn-secondary" style={{ marginRight: '15px' }}>
-              Cancelar
-            </button>
-            <button onClick={() => onVerified(result)} className="btn-success-large">
-              Continuar al Proyecto AWS
-            </button>
-          </div>
-        )}
+        </footer>
       </div>
     </div>
   );
