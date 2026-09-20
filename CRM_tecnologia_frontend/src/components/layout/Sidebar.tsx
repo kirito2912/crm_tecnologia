@@ -6,11 +6,12 @@ import {
   Files,
   UserPlus,
   LayoutGrid,
+  Shield,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useInvitaciones } from '../../context/InvitacionesContext';
 
-export type NavTab = 'reports' | 'dataset' | 'documentos' | 'comparativa' | 'invitaciones';
+export type NavTab = 'reports' | 'dataset' | 'documentos' | 'comparativa' | 'invitaciones' | 'biometric';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -44,12 +45,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, select
         { id: 'dataset' as NavTab, label: 'Datasets de Empresas', icon: Database },
         { id: 'documentos' as NavTab, label: 'Documentos Word y PDF', icon: Files },
         { id: 'comparativa' as NavTab, label: 'Módulo Comparativa', icon: GitCompare },
+        { id: 'biometric' as NavTab, label: 'Historial Biométrico', icon: Shield },
       ]
     : [
         { id: 'reports' as NavTab, label: 'Reportes de Comparativas', icon: FileText },
         { id: 'dataset' as NavTab, label: 'Datasets de Empresas', icon: Database },
         { id: 'documentos' as NavTab, label: 'Documentos Word y PDF', icon: Files },
         { id: 'comparativa' as NavTab, label: 'Módulo Comparativa', icon: GitCompare },
+        { id: 'biometric' as NavTab, label: 'Historial Biométrico', icon: Shield },
       ];
 
 

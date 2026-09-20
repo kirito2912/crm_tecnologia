@@ -86,6 +86,18 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  /* ---------- Función para guardar en historial ---------- */
+  const saveBiometricRecord = (record: any) => {
+    try {
+      const stored = localStorage.getItem('hardcrm_biometric_history');
+      const history = stored ? JSON.parse(stored) : [];
+      history.push(record);
+      localStorage.setItem('hardcrm_biometric_history', JSON.stringify(history));
+    } catch (error) {
+      console.error('Error saving biometric record:', error);
+    }
+  };
+
   /* ---------- Cleanup ---------- */
   useEffect(() => {
     return () => {
@@ -242,6 +254,19 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
         landmarks: data.landmarks,
         faceAttributes: data.faceAttributes,
       };
+
+      // Guardar en historial de localStorage
+      saveBiometricRecord({
+        id: `BIO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: verificationResult.timestamp,
+        userName: verificationResult.userName,
+        projectName: projectName,
+        verified: verificationResult.verified,
+        similarity: verificationResult.similarity,
+        confidence: verificationResult.confidence,
+        registrationPhoto: registrationPhoto!,
+        verificationPhoto: verificationPhoto!,
+      });
 
       setResult(verificationResult);
       setIsScanning(false);

@@ -20,6 +20,7 @@ import { ComparacionView } from './components/comparacion/ComparacionView';
 import { AdminReportsView } from './components/admin/AdminReportsView';
 import { DocumentosView } from './components/documentos/DocumentosView';
 import { InvitacionesView } from './components/admin/InvitacionesView';
+import { BiometricHistory } from './components/biometric/BiometricHistory';
 
 import { Cpu } from 'lucide-react';
 
@@ -115,6 +116,9 @@ function DashboardContent({ project, onLogout, onSelectProject }: DashboardConte
             preselectedB={preselectedB}
           />
         )}
+
+        {/* Tab 6: Historial de Verificaciones Biométricas */}
+        {activeTab === 'biometric' && <BiometricHistory />}
       </main>
 
       {/* Modal de Notificaciones */}
