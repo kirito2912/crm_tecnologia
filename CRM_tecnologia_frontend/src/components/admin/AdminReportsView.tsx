@@ -8,11 +8,8 @@ import {
   Calendar,
   User,
   Search,
-  Filter,
   ArrowUpRight,
-  TrendingUp,
   MessageSquare,
-  Sparkles,
   Inbox,
   RefreshCw,
 } from 'lucide-react';
@@ -34,7 +31,7 @@ export const AdminReportsView: React.FC<AdminReportsViewProps> = ({
   const isAdmin = role === 'administrador' || role === 'admin';
 
   const { reportes, isLoading, fetchReportes } = useReports();
-  const { datasets } = useCsv();
+  const { } = useCsv();
 
 
   const [selectedReporte, setSelectedReporte] = useState<ReporteComparativo | null>(null);

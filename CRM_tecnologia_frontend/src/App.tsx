@@ -36,6 +36,11 @@ function DashboardContent({ project, onLogout, onSelectProject }: DashboardConte
   const role = (user?.role || 'colaborador').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
 
+  const [selectedTab, setActiveTab] = useState<NavTab>(isAdmin ? 'reports' : 'dataset');
+  const activeTab = selectedTab === 'invitaciones' && !isAdmin ? 'dataset' : selectedTab;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
   // Validación DEFENSIVA: si el usuario no está habilitado o está pendiente,
   // nunca mostrar el dashboard aunque haya un proyecto seleccionado previamente
   const isStillPending =
@@ -44,11 +49,6 @@ function DashboardContent({ project, onLogout, onSelectProject }: DashboardConte
   if (isStillPending) {
     return <PendingApprovalScreen />;
   }
-
-  const [selectedTab, setActiveTab] = useState<NavTab>(isAdmin ? 'reports' : 'dataset');
-  const activeTab = selectedTab === 'invitaciones' && !isAdmin ? 'dataset' : selectedTab;
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   const baseNotifications = 3;
   const pendingApprovalCount = solicitudesPendientes.length;
@@ -140,7 +140,9 @@ function MainApp() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tok = params.get('invite_token');
-    if (tok) setInviteToken(tok);
+    if (tok) {
+      setInviteToken(tok);
+    }
   }, []);
 
   const clearInviteTokenFromUrl = () => {
@@ -151,9 +153,13 @@ function MainApp() {
   // Compute allowed projects for current user from localStorage
   const allowedProjects = useMemo<string[] | null>(() => {
     if (!user?.id) return null;
-    if (Array.isArray((user as any).permisosProyectos)) {
-      return (user as any).permisosProyectos;
+    
+    // Verificar si el usuario tiene permisosProyectos
+    const userWithPermissions = user as AuthUser & { permisosProyectos?: string[] };
+    if (Array.isArray(userWithPermissions.permisosProyectos)) {
+      return userWithPermissions.permisosProyectos;
     }
+    
     try {
       const raw = localStorage.getItem(PERMISSIONS_STORAGE_KEY);
       if (!raw) return null;
@@ -164,7 +170,7 @@ function MainApp() {
       // ignore parse errors
     }
     return null;
-  }, [user?.id, user as any]);
+  }, [user]);
 
   // Reset project on logout
   const handleLogout = () => {
@@ -172,7 +178,7 @@ function MainApp() {
     logout();
   };
 
-  const handleRegistrationComplete = (_registeredUser: AuthUser) => {
+  const handleRegistrationComplete = () => {
     clearInviteTokenFromUrl();
   };
 

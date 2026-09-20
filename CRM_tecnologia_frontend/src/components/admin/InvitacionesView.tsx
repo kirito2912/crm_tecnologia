@@ -199,8 +199,9 @@ export const InvitacionesView: React.FC = () => {
       setCreatedInviteLink(fullLink);
       setEmailEnviado(inv.email_enviado ?? null);
       showToast(`¡Invitación creada con éxito para ${inv.email}!`);
-    } catch (err: any) {
-      showToast(err.message || 'Error al generar la invitación');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al generar la invitación';
+      showToast(errorMessage);
     } finally {
       setIsSubmittingInvite(false);
     }
@@ -452,7 +453,7 @@ export const InvitacionesView: React.FC = () => {
                 <Filter size={14} />
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  onChange={(e) => setStatusFilter(e.target.value as 'todos' | 'activos' | 'pendientes' | 'deshabilitados')}
                 >
                   <option value="todos">Todos los Estados</option>
                   <option value="activos">Habilitados (Activos)</option>

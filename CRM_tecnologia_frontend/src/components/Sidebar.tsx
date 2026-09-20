@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Users, Package, ReceiptText, Network, LogOut, BrainCircuit } from 'lucide-react';
+import { LayoutGrid, Users, Package, ReceiptText, LogOut, BrainCircuit } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export type NavTab = 'dashboard' | 'clients' | 'products' | 'sales' | 'predictions';

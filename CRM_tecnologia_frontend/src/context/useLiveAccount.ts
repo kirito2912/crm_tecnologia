@@ -17,7 +17,7 @@ export function useLiveAccount(userId: string | undefined, update: (row: any | n
         // Si el usuario no existe en el backend (404), NO borrar la sesión
         // El usuario puede estar autenticado localmente o mediante OTP
         if (response.status === 404) { 
-          console.warn('[useLiveAccount] Usuario no encontrado en backend, manteniendo sesión local');
+          // Silenciar warning repetitivo - usuario autenticado localmente
           return; 
         }
         if (!response.ok) return;

@@ -246,11 +246,6 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     };
     reader.readAsDataURL(file);
   };
-    setIsScanning(true);
-    stopCamera();
-
-    await performComparison(registrationPhoto!, photo);
-  };
 
   /* ---------- Comparación con backend (AWS Rekognition) ---------- */
   const performComparison = async (photo1: string, photo2: string) => {

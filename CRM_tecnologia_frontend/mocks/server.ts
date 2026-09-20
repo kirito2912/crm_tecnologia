@@ -31,7 +31,8 @@ export const handlers = [
 
   rest.patch(`${API_BASE}/usuarios/:userId/toggle-status`, async (req, res, ctx) => {
     // echo back a sample user
-    const { userId } = req.params as any
+    const params = req.params as Record<string, string>;
+    const userId = params.userId;
     return res(
       ctx.status(200),
       ctx.json({ id: userId, habilitado: true, estado: 'activo' })

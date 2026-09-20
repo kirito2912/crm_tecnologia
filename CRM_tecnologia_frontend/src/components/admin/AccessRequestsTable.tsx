@@ -20,7 +20,14 @@ export function AccessRequestsTable({ onApproved }: { onApproved: () => Promise<
     }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void reload(); const timer = setInterval(() => { void reload(); }, 15000); return () => clearInterval(timer); }, [reload]);
+  
+  useEffect(() => {
+    void reload();
+    const timer = setInterval(() => {
+      void reload();
+    }, 15000);
+    return () => clearInterval(timer);
+  }, [reload]);
 
   const decide = async (row: SolicitudAcceso, action: 'aprobar' | 'rechazar' | 'reenviar') => {
     if (busy) return;

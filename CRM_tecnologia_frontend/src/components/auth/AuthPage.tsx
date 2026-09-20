@@ -25,7 +25,7 @@ import type { ValidateTokenResult } from '../../types/invitacion';
 
 export const AuthPage: React.FC = () => {
   const [requestOpen, setRequestOpen] = useState(false);
-  const { login, requestOtp, completeOtpAuth } = useAuth();
+  const { requestOtp, completeOtpAuth } = useAuth();
 
   const [inviteToken, setInviteToken] = useState<string | null>(null);
   const [inviteValidation, setInviteValidation] = useState<ValidateTokenResult | null>(null);
@@ -44,7 +44,6 @@ export const AuthPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe] = useState(true);
 
   const [inviteFullName, setInviteFullName] = useState('');
   const [invitePassword, setInvitePassword] = useState('');

@@ -57,7 +57,6 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordsMatch, setPasswordsMatch] = useState(true);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,13 +91,8 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
     };
   }, [inviteToken]);
 
-  useEffect(() => {
-    if (password && confirmPassword) {
-      setPasswordsMatch(password === confirmPassword);
-    } else {
-      setPasswordsMatch(true);
-    }
-  }, [password, confirmPassword]);
+  // Comparación de contraseñas (derivada, no requiere useEffect)
+  const passwordsMatch = !password || !confirmPassword || password === confirmPassword;
 
   const getRoleIconAndBadge = (roleStr: string) => {
     const r = roleStr.toLowerCase();
