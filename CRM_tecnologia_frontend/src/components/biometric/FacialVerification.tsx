@@ -17,6 +17,7 @@ import {
   Info,
   Sparkles,
   AlertCircle,
+  Upload,
 } from 'lucide-react';
 import './FacialVerification.css';
 
@@ -189,6 +190,26 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     await new Promise((resolve) => setTimeout(resolve, 1000));
   };
 
+  /* ---------- Subir: Foto 1 desde archivo ---------- */
+  const handleUploadRegistration = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setCameraError('Solo se permiten archivos de imagen');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setRegistrationPhoto(result);
+      setCurrentStep('verification');
+      setCameraError(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
   /* ---------- Captura: Foto 2 (Verificación) ---------- */
   const handleCaptureVerification = async () => {
     const photo = capturePhoto();
@@ -198,6 +219,33 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     }
 
     setVerificationPhoto(photo);
+    setIsScanning(true);
+    stopCamera();
+
+    await performComparison(registrationPhoto!, photo);
+  };
+
+  /* ---------- Subir: Foto 2 desde archivo ---------- */
+  const handleUploadVerification = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setCameraError('Solo se permiten archivos de imagen');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const result = e.target?.result as string;
+      setVerificationPhoto(result);
+      setIsScanning(true);
+      setCameraError(null);
+
+      await performComparison(registrationPhoto!, result);
+    };
+    reader.readAsDataURL(file);
+  };
     setIsScanning(true);
     stopCamera();
 
@@ -478,9 +526,20 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
             {/* -------- Action Bar -------- */}
             <div className="fv-actions">
               {!isCameraActive && !registrationPhoto && !result && (
-                <button className="fv-btn--primary" onClick={startCamera}>
-                  <Camera size={17} /> Activar Cámara · Foto 1
-                </button>
+                <>
+                  <button className="fv-btn--primary" onClick={startCamera}>
+                    <Camera size={17} /> Activar Cámara · Foto 1
+                  </button>
+                  <label className="fv-btn--secondary">
+                    <Upload size={17} /> Subir Foto 1
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleUploadRegistration}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </>
               )}
 
               {isCameraActive && currentStep === 'registration' && (
@@ -498,9 +557,20 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
               )}
 
               {!isCameraActive && registrationPhoto && !verificationPhoto && !result && (
-                <button className="fv-btn--primary" onClick={startCamera}>
-                  <Camera size={17} /> Activar Cámara · Foto 2
-                </button>
+                <>
+                  <button className="fv-btn--primary" onClick={startCamera}>
+                    <Camera size={17} /> Activar Cámara · Foto 2
+                  </button>
+                  <label className="fv-btn--secondary">
+                    <Upload size={17} /> Subir Foto 2
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleUploadVerification}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </>
               )}
 
               {isCameraActive &&
