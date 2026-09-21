@@ -20,9 +20,10 @@ class MessageResponse(BaseModel):
 
 
 class UserResponse(BaseModel):
-    id: int
+    id: str  # Cambiado de int a str para soportar formato "USR-XXX"
     email: EmailStr
     full_name: str | None = None
+    role: str | None = None  # Agregado para incluir el rol del usuario
     is_active: bool
     is_verified: bool
 

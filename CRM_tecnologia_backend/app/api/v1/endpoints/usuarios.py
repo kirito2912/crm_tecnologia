@@ -32,13 +32,45 @@ def listar_usuarios(
 @router.get("/{usuario_id}", response_model=UsuarioResponse)
 def obtener_usuario(usuario_id: str, db: Session = Depends(get_db)):
     """Obtiene los detalles de un usuario por su ID."""
+    # Intentar buscar primero en la tabla Usuario (formato USR-XXX)
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
-    if not usuario:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Usuario con ID '{usuario_id}' no encontrado",
-        )
-    return usuario
+    if usuario:
+        return usuario
+    
+    # Si no se encuentra, intentar buscar en la tabla User (ID numérico)
+    # Esto maneja el caso donde el usuario se autenticó con OTP pero aún no tiene registro en Usuario
+    try:
+        user_id_numeric = int(usuario_id.replace("USR-", ""))  # Quitar prefijo USR- si existe
+        user = db.query(User).filter(User.id == user_id_numeric).first()
+        if user:
+            # Buscar si existe un Usuario con el mismo email
+            usuario_existente = db.query(Usuario).filter(Usuario.email == user.email).first()
+            if usuario_existente:
+                # Devolver el Usuario existente en lugar de crear uno nuevo
+                return usuario_existente
+            
+            # Si no existe, convertir User a UsuarioResponse
+            return UsuarioResponse(
+                id=f"USR-{user.id}",  # Convertir ID numérico a formato string
+                nombre=user.full_name or "Usuario",
+                email=user.email,
+                rol=user.role or "colaborador",
+                empresa="Empresa Registrada",
+                avatar=(user.full_name or "US")[:2].upper() if user.full_name else "US",
+                biometric_verified=user.is_verified,
+                habilitado=user.is_active,
+                estado="activo" if user.is_active else "deshabilitado",
+                invitado_por=None,
+            )
+    except ValueError:
+        # usuario_id no es un número, continuar
+        pass
+    
+    # Si no se encuentra en ninguna tabla
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Usuario con ID '{usuario_id}' no encontrado",
+    )
 
 
 @router.post("/", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)

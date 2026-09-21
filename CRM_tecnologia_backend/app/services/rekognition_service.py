@@ -31,17 +31,33 @@ class RekognitionService:
         Retorna landmarks, atributos y calidad del rostro
         """
         try:
+            print(f"[Rekognition] Iniciando detección de rostro...")
+            print(f"[Rekognition] Longitud de imagen base64: {len(image_base64)} caracteres")
+            
             image_bytes = self.base64_to_bytes(image_base64)
+            print(f"[Rekognition] Tamaño de imagen en bytes: {len(image_bytes)} bytes")
+            
+            # Verificar que sea una imagen válida
+            try:
+                img = Image.open(BytesIO(image_bytes))
+                print(f"[Rekognition] Imagen válida: {img.format} {img.size} modo={img.mode}")
+            except Exception as img_err:
+                print(f"[Rekognition] ❌ Error: No es una imagen válida - {img_err}")
+                return None
             
             response = self.client.detect_faces(
                 Image={'Bytes': image_bytes},
                 Attributes=['ALL']
             )
 
+            print(f"[Rekognition] Rostros detectados: {len(response['FaceDetails'])}")
+            
             if not response['FaceDetails']:
+                print("[Rekognition] ❌ No se detectaron rostros en la imagen")
                 return None
 
             face = response['FaceDetails'][0]  # Tomar el primer rostro detectado
+            print(f"[Rekognition] ✓ Rostro detectado con confianza: {face.get('Confidence', 0)}%")
 
             # Extraer landmarks
             landmarks = []
@@ -51,6 +67,8 @@ class RekognitionService:
                     'x': round(landmark['X'], 3),
                     'y': round(landmark['Y'], 3)
                 })
+
+            print(f"[Rekognition] Landmarks extraídos: {len(landmarks)}")
 
             # Extraer atributos faciales
             attributes = {
@@ -90,7 +108,9 @@ class RekognitionService:
             }
 
         except Exception as e:
-            print(f"Error en detect_faces: {str(e)}")
+            print(f"[Rekognition] ❌ Error en detect_faces: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
             return None
 
     def compare_faces(self, source_image_base64: str, target_image_base64: str) -> Optional[Dict[str, Any]]:

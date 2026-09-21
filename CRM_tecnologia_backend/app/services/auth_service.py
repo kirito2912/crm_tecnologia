@@ -210,7 +210,8 @@ def request_otp(data: OTPRequest, db: Session) -> str:
         raise
 
 
-def verify_otp(data: OTPVerifyRequest, db: Session) -> tuple[str, User]:
+def verify_otp(data: OTPVerifyRequest, db: Session) -> tuple[str, dict]:
+    """Verifica el código OTP y devuelve el token de acceso y los datos del usuario."""
     otp_record = (
         db.query(OTPCode)
         .filter(
@@ -249,4 +250,18 @@ def verify_otp(data: OTPVerifyRequest, db: Session) -> tuple[str, User]:
     db.refresh(user)
 
     access_token = create_access_token(user)
-    return access_token, user
+    
+    # Buscar si existe un Usuario con el mismo email (tabla Usuario)
+    usuario_existente = db.query(Usuario).filter(Usuario.email == user.email).first()
+    
+    # Devolver un diccionario con el ID correcto
+    user_data = {
+        "id": usuario_existente.id if usuario_existente else f"USR-{user.id}",
+        "email": user.email,
+        "full_name": usuario_existente.nombre if usuario_existente else user.full_name,
+        "role": usuario_existente.rol if usuario_existente else user.role,
+        "is_active": usuario_existente.habilitado if usuario_existente else user.is_active,
+        "is_verified": user.is_verified,
+    }
+    
+    return access_token, user_data

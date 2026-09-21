@@ -149,3 +149,70 @@ async def detect_single_face(image_base64: str):
             status_code=500,
             detail=f"Error al detectar rostro: {str(e)}"
         )
+
+
+@router.get("/test-aws")
+async def test_aws_connection():
+    """
+    Endpoint de prueba para verificar la conexión con AWS Rekognition
+    """
+    try:
+        # Intentar listar collections (operación simple)
+        response = rekognition_service.client.list_collections()
+        
+        return {
+            "status": "✓ Conexión exitosa con AWS Rekognition",
+            "region": rekognition_service.client.meta.region_name,
+            "collections_count": len(response.get('CollectionIds', []))
+        }
+    except Exception as e:
+        return {
+            "status": "❌ Error de conexión",
+            "error": str(e),
+            "suggestion": "Verifica tus credenciales AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY en el archivo .env"
+        }
+
+
+
+@router.post("/test-image")
+async def test_image_detection(request: dict):
+    """
+    Endpoint de prueba para detectar rostro en una sola imagen
+    Útil para debugging
+    """
+    try:
+        print("\n" + "="*60)
+        print("[TEST] Probando detección de rostro...")
+        print("="*60)
+        
+        image_base64 = request.get("image_base64") or request.get("image")
+        if not image_base64:
+            return {
+                "success": False,
+                "error": "No se proporcionó la imagen en el campo 'image_base64' o 'image'"
+            }
+        
+        face_data = rekognition_service.detect_faces(image_base64)
+        
+        if not face_data:
+            return {
+                "success": False,
+                "message": "No se detectó ningún rostro",
+                "suggestion": "Asegúrate de que la imagen contiene un rostro visible y bien iluminado"
+            }
+        
+        return {
+            "success": True,
+            "message": "✓ Rostro detectado correctamente",
+            "confidence": face_data['confidence'],
+            "landmarks_count": len(face_data['landmarks']),
+            "quality": face_data['quality']
+        }
+        
+    except Exception as e:
+        import traceback
+        return {
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
