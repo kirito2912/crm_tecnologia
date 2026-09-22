@@ -60,6 +60,7 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [otpCode, setOtpCode] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,6 +153,7 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
         'invite'
       );
       if (res.success) {
+        setOtpCode(res.otpCode); // Guardar el código si el backend lo devuelve
         setStage('otp_sent');
       } else {
         setErrorMessage(
@@ -767,6 +769,7 @@ export const InvitationSetupPage: React.FC<InvitationSetupPageProps> = ({
                 setStage('password_form');
                 setErrorMessage(null);
               }}
+              otpCode={otpCode}
             />
           )}
 

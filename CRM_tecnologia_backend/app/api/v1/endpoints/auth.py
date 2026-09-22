@@ -232,7 +232,14 @@ def quick_demo_login(role: str, db: Session = Depends(get_db)):
 @router.post("/request-otp", response_model=MessageResponse, status_code=status.HTTP_200_OK)
 def request_otp_alias(data: OTPRequest, db: Session = Depends(get_db)):
     """Solicita el envío de un código OTP de 6 dígitos al correo del usuario."""
-    request_otp(data, db)
+    import os
+    otp_code = request_otp(data, db)
+    
+    # En desarrollo, devolver el código en la respuesta si el email falla
+    # Útil cuando varios desarrolladores trabajan juntos
+    if os.getenv("FRONTEND_URL", "").startswith("http://localhost"):
+        return {"message": f"Codigo OTP generado: {otp_code} — Revisa tu email o usa este codigo"}
+    
     return {"message": "Se envio el codigo OTP al correo indicado."}
 
 
