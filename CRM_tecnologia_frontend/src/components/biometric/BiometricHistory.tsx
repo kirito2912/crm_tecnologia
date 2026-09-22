@@ -222,18 +222,22 @@ export const BiometricHistory: React.FC = () => {
             <div className="bh-detail-info">
               <div className="bh-detail-info-item">
                 <div className="bh-detail-info-label">
-                  <User size={14} />
-                  Usuario
+                  <TrendingUp size={14} />
+                  Similitud Facial
                 </div>
-                <div className="bh-detail-info-value">{selectedRecord.userName}</div>
+                <div className="bh-detail-info-value" style={{ color: selectedRecord.similarity >= 85 ? '#00ff88' : '#ef4444' }}>
+                  {selectedRecord.similarity}%
+                </div>
               </div>
 
               <div className="bh-detail-info-item">
                 <div className="bh-detail-info-label">
                   <Shield size={14} />
-                  Proyecto
+                  Nivel de Confianza
                 </div>
-                <div className="bh-detail-info-value">{selectedRecord.projectName}</div>
+                <div className="bh-detail-info-value" style={{ color: '#00d4ff' }}>
+                  {selectedRecord.confidence}%
+                </div>
               </div>
 
               <div className="bh-detail-info-item">
