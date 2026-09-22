@@ -197,8 +197,12 @@ def request_otp(data: OTPRequest, db: Session) -> str:
             send_otp_email(email_clean, otp_code)
             email_sent = True
         except Exception as mail_err:
-            print(f"[OTP] Advertencia: No se pudo enviar el email a {email_clean}: {mail_err}")
-            print(f"[OTP] Código generado para {email_clean}: {otp_code} (válido por 10 min)")
+            print("\n" + "=" * 80)
+            print(f"⚠️  [OTP] ADVERTENCIA: No se pudo enviar el email a {email_clean}")
+            print(f"💡 [OTP] USA ESTE CÓDIGO MANUALMENTE: {otp_code}")
+            print(f"⏱️  [OTP] El código expira en {settings.otp_expiration_minutes} minutos")
+            print(f"🔧 [OTP] Error técnico: {mail_err}")
+            print("=" * 80 + "\n")
 
         db.commit()
         return otp_code
