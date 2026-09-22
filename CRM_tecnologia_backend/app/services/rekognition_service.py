@@ -20,10 +20,29 @@ class RekognitionService:
         )
 
     def base64_to_bytes(self, base64_string: str) -> bytes:
-        """Convertir base64 a bytes"""
+        """Convertir base64 a bytes, y si es WEBP convertirlo a JPEG"""
         if ',' in base64_string:
             base64_string = base64_string.split(',')[1]
-        return base64.b64decode(base64_string)
+        
+        image_bytes = base64.b64decode(base64_string)
+        
+        # Verificar si es WEBP y convertir a JPEG
+        try:
+            img = Image.open(BytesIO(image_bytes))
+            if img.format == 'WEBP':
+                print(f"[Rekognition] Convirtiendo WEBP a JPEG...")
+                # Convertir a RGB si es necesario
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    img = img.convert('RGB')
+                # Guardar como JPEG
+                buffer = BytesIO()
+                img.save(buffer, format='JPEG', quality=95)
+                image_bytes = buffer.getvalue()
+                print(f"[Rekognition] ✓ Conversión exitosa: {len(image_bytes)} bytes")
+        except Exception as e:
+            print(f"[Rekognition] Advertencia al verificar formato: {e}")
+        
+        return image_bytes
 
     def detect_faces(self, image_base64: str) -> Optional[Dict[str, Any]]:
         """

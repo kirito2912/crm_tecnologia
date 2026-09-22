@@ -298,7 +298,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
         faceAttributes: data.faceAttributes,
       };
 
-      // Guardar en historial de localStorage
+      // Guardar en historial de localStorage usando las fotos que se compararon
       saveBiometricRecord({
         id: `BIO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         timestamp: verificationResult.timestamp,
@@ -307,8 +307,8 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
         verified: verificationResult.verified,
         similarity: verificationResult.similarity,
         confidence: verificationResult.confidence,
-        registrationPhoto: registrationPhoto!,
-        verificationPhoto: verificationPhoto!,
+        registrationPhoto: photo1,  // Usar parámetro en lugar de estado
+        verificationPhoto: photo2,  // Usar parámetro en lugar de estado
       });
 
       setResult(verificationResult);
