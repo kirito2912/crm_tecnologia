@@ -85,59 +85,6 @@ export const BiometricHistory: React.FC = () => {
         )}
       </div>
 
-      {/* Stats Cards */}
-      {records.length > 0 && (
-        <div className="bh-stats">
-          <div className="bh-stat-card">
-            <div className="bh-stat-icon" style={{ background: 'rgba(0, 212, 255, 0.1)' }}>
-              <Camera size={20} color="#00d4ff" />
-            </div>
-            <div className="bh-stat-content">
-              <div className="bh-stat-value">{records.length}</div>
-              <div className="bh-stat-label">Total Verificaciones</div>
-            </div>
-          </div>
-
-          <div className="bh-stat-card">
-            <div className="bh-stat-icon" style={{ background: 'rgba(0, 255, 136, 0.1)' }}>
-              <CheckCircle2 size={20} color="#00ff88" />
-            </div>
-            <div className="bh-stat-content">
-              <div className="bh-stat-value">
-                {records.filter(r => r.verified).length}
-              </div>
-              <div className="bh-stat-label">Verificadas</div>
-            </div>
-          </div>
-
-          <div className="bh-stat-card">
-            <div className="bh-stat-icon" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
-              <XCircle size={20} color="#ef4444" />
-            </div>
-            <div className="bh-stat-content">
-              <div className="bh-stat-value">
-                {records.filter(r => !r.verified).length}
-              </div>
-              <div className="bh-stat-label">Rechazadas</div>
-            </div>
-          </div>
-
-          <div className="bh-stat-card">
-            <div className="bh-stat-icon" style={{ background: 'rgba(139, 92, 246, 0.1)' }}>
-              <TrendingUp size={20} color="#8b5cf6" />
-            </div>
-            <div className="bh-stat-content">
-              <div className="bh-stat-value">
-                {records.length > 0
-                  ? (records.reduce((sum, r) => sum + r.similarity, 0) / records.length).toFixed(1)
-                  : '0'}%
-              </div>
-              <div className="bh-stat-label">Promedio Similitud</div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Content */}
       <div className="bh-content">
         {/* Records List */}
@@ -183,8 +130,12 @@ export const BiometricHistory: React.FC = () => {
 
                     <div className="bh-record-meta">
                       <div className="bh-record-meta-item">
-                        <User size={12} />
-                        <span>{record.userName}</span>
+                        <TrendingUp size={12} />
+                        <span>Similitud: {record.similarity}%</span>
+                      </div>
+                      <div className="bh-record-meta-item">
+                        <Shield size={12} />
+                        <span>Confianza: {record.confidence}%</span>
                       </div>
                       <div className="bh-record-meta-item">
                         <Calendar size={12} />
@@ -195,8 +146,6 @@ export const BiometricHistory: React.FC = () => {
                         <span>{formatTime(record.timestamp)}</span>
                       </div>
                     </div>
-
-                    <div className="bh-record-project">{record.projectName}</div>
                   </div>
                 </div>
               ))}

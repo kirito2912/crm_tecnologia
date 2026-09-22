@@ -35,8 +35,16 @@ function DashboardContent({ project, onLogout, onSelectProject }: DashboardConte
   const { solicitudesPendientes } = useInvitaciones();
   const role = (user?.role || 'colaborador').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
+  
+  // Detectar si es proyecto AWS
+  const isAWSProject = project?.toLowerCase().includes('aws') || 
+                       project?.toLowerCase().includes('tecnolog') ||
+                       project?.toLowerCase().includes('cloud');
 
-  const [selectedTab, setActiveTab] = useState<NavTab>(isAdmin ? 'reports' : 'dataset');
+  // Tab inicial: Si es AWS, mostrar biométrico; si no, mostrar según rol
+  const initialTab: NavTab = isAWSProject ? 'biometric' : (isAdmin ? 'reports' : 'dataset');
+  
+  const [selectedTab, setActiveTab] = useState<NavTab>(initialTab);
   const activeTab = selectedTab === 'invitaciones' && !isAdmin ? 'dataset' : selectedTab;
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);

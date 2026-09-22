@@ -29,11 +29,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, select
 
   const role = (user?.role || 'colaborador').toLowerCase();
   const isAdmin = role === 'administrador' || role === 'admin';
+  
+  // Si el proyecto es AWS (TECNOLOGÍA CLOUD CON AWS), solo mostrar Historial Biométrico
+  const isAWSProject = selectedProject?.toLowerCase().includes('aws') || 
+                       selectedProject?.toLowerCase().includes('tecnolog') ||
+                       selectedProject?.toLowerCase().includes('cloud');
 
-  // Ítems de navegación dinámicos según el rol:
-  // - Administrador: Reportes, Gestión de Personal e Invitaciones, Documentos Word y PDF
-  // - Colaborador: Reportes, Datasets CSV, Documentos Word y PDF y Comparativa
-  const menuItems = isAdmin
+  // Ítems de navegación dinámicos según el rol y proyecto:
+  const menuItems = isAWSProject 
+    ? [
+        // Solo Historial Biométrico para proyecto AWS
+        { id: 'biometric' as NavTab, label: 'Historial Biométrico', icon: Shield },
+      ]
+    : isAdmin
     ? [
         { id: 'reports' as NavTab, label: 'Reportes de Comparativas', icon: FileText },
         {
@@ -45,14 +53,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab, select
         { id: 'dataset' as NavTab, label: 'Datasets de Empresas', icon: Database },
         { id: 'documentos' as NavTab, label: 'Documentos Word y PDF', icon: Files },
         { id: 'comparativa' as NavTab, label: 'Módulo Comparativa', icon: GitCompare },
-        { id: 'biometric' as NavTab, label: 'Historial Biométrico', icon: Shield },
       ]
     : [
         { id: 'reports' as NavTab, label: 'Reportes de Comparativas', icon: FileText },
         { id: 'dataset' as NavTab, label: 'Datasets de Empresas', icon: Database },
         { id: 'documentos' as NavTab, label: 'Documentos Word y PDF', icon: Files },
         { id: 'comparativa' as NavTab, label: 'Módulo Comparativa', icon: GitCompare },
-        { id: 'biometric' as NavTab, label: 'Historial Biométrico', icon: Shield },
       ];
 
 
