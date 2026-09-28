@@ -5,13 +5,9 @@ import {
   XCircle,
   RefreshCw,
   Shield,
-  Activity,
   Lock,
   Cloud,
   X,
-  User,
-  Mail,
-  FolderKanban,
   ScanFace,
   Fingerprint,
   Info,
@@ -69,26 +65,18 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
   projectName,
   userEmail,
 }) => {
-  /* ---------- Estado ---------- */
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [distance, setDistance] = useState<number>(0.0);
-  const [liveConfidence, setLiveConfidence] = useState<number>(0);
-  const [editableUserName, setEditableUserName] = useState<string>(
-    userEmail.split('@')[0]
-  );
-
+  const [editableUserName] = useState<string>(userEmail.split('@')[0]);
   const [registrationPhoto, setRegistrationPhoto] = useState<string | null>(null);
   const [verificationPhoto, setVerificationPhoto] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<Step>('registration');
-
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  /* ---------- Función para guardar en historial ---------- */
-  const saveBiometricRecord = (record: any) => {
+  const saveBiometricRecord = (record: unknown) => {
     try {
       const stored = localStorage.getItem('hardcrm_biometric_history');
       const history = stored ? JSON.parse(stored) : [];
@@ -99,32 +87,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     }
   };
 
-  /* ---------- Cleanup ---------- */
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, []);
-
-  /* ---------- Métricas en vivo (animación) ---------- */
-  useEffect(() => {
-    if (!isCameraActive || isScanning) return;
-
-    let step = 0;
-    const interval = setInterval(() => {
-      step += 0.15;
-      const simulatedDistance = Math.max(0.15, 0.35 + Math.sin(step) * 0.1);
-      const simulatedConfidence = Math.min(
-        99.5,
-        (1 - simulatedDistance / 1.2) * 100
-      );
-
-      setDistance(parseFloat(simulatedDistance.toFixed(3)));
-      setLiveConfidence(parseFloat(simulatedConfidence.toFixed(1)));
-    }, 120);
-
-    return () => clearInterval(interval);
-  }, [isCameraActive, isScanning]);
+  useEffect(() => () => stopCamera(), []);
 
   /* ---------- Cámara ---------- */
   const startCamera = async () => {
@@ -139,30 +102,33 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
           },
         });
         streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play();
+        if (!videoRef.current) {
+          throw new Error('El visor de la cámara no está disponible');
         }
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
         setIsCameraActive(true);
       } else {
         throw new Error('Sin soporte de cámara');
       }
     } catch {
-      setCameraError('Cámara física no disponible. Usando sensor virtual HD.');
-      setIsCameraActive(true);
+      stopCamera();
+      setCameraError('No se pudo mostrar la cámara. Revisa los permisos y vuelve a activarla.');
     }
   };
 
-  const stopCamera = () => {
+  function stopCamera() {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
+    if (videoRef.current) videoRef.current.srcObject = null;
     setIsCameraActive(false);
-  };
+  }
 
   const capturePhoto = (): string | null => {
-    if (!videoRef.current) return null;
+    if (!videoRef.current || videoRef.current.readyState < 2 ||
+        !videoRef.current.videoWidth || !videoRef.current.videoHeight) return null;
 
     const canvas = document.createElement('canvas');
     canvas.width = videoRef.current.videoWidth;
@@ -425,15 +391,15 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
               } ${result ? 'fv-viewport--verified' : ''}`}
             >
               {/* Video en vivo */}
-              {isCameraActive && !result && (
+              {/* Mantener el visor montado para conectar el stream antes de reproducirlo. */}
                 <video
                   ref={videoRef}
                   className="fv-viewport__video"
+                  hidden={!isCameraActive || !!result}
                   autoPlay
                   playsInline
                   muted
                 />
-              )}
 
               {/* Placeholder inicial */}
               {!isCameraActive && !registrationPhoto && !result && (
@@ -474,19 +440,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
                     {isScanning && <div className="fv-scan__line" />}
                   </div>
 
-                  <div className="fv-scan__metrics">
-                    <div className="fv-scan__metric">
-                      <Activity size={12} />
-                      <span>Distancia</span>
-                      <strong>{distance}</strong>
-                    </div>
-                    <span className="fv-scan__divider">│</span>
-                    <div className="fv-scan__metric">
-                      <Fingerprint size={12} />
-                      <span>Match</span>
-                      <strong>{liveConfidence}%</strong>
-                    </div>
-                  </div>
+                  
                 </div>
               )}
 
@@ -514,6 +468,13 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+              {result && !result.verified && (
+                <div className="fv-result fv-result--failed" role="status">
+                  <div className="fv-result__icon"><XCircle size={64} strokeWidth={1.8} /></div>
+                  <h2 className="fv-result__title">Rostro no coincidente</h2>
+                  <p className="fv-result__subtitle">AWS no confirmó que las imágenes pertenezcan a la misma persona.</p>
                 </div>
               )}
             </div>
@@ -684,10 +645,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
                 <div className="fv-notice">
                   <Info size={15} />
                   <span>
-                    AWS Rekognition detecta{' '}
-                    <strong>27 landmarks faciales</strong> por rostro y calcula
-                    similitud mediante distancia euclidiana entre vectores
-                    biométricos.
+                    AWS Rekognition detecta puntos faciales para visualización y compara ambas imágenes con su servicio de reconocimiento facial. La similitud proviene de AWS.
                   </span>
                 </div>
               </>
@@ -696,11 +654,11 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
             {/* ---------- Vista de resultados ---------- */}
             {result && result.landmarks && (
               <div className="fv-result-view">
-                <div className="fv-result-banner">
+                <div className={`fv-result-banner ${result.verified ? '' : 'fv-result-banner--failed'}`}>
                   <Sparkles size={20} />
                   <div>
                     <div className="fv-result-banner__title">
-                      Verificación Completada
+                      {result.verified ? 'Verificación completada' : 'Verificación rechazada'}
                     </div>
                     <div className="fv-result-banner__sub">
                       {new Date(result.timestamp).toLocaleString('es-ES')}
@@ -743,11 +701,18 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
                     <div className="fv-compare__item">
                       <div className="fv-compare__label">Verificación</div>
                       {verificationPhoto && (
-                        <img
-                          src={verificationPhoto}
-                          alt="Verificación"
-                          className="fv-compare__img"
-                        />
+                        <div className="fv-landmark-image">
+                          <img src={verificationPhoto} alt="Verificación con puntos faciales" className="fv-compare__img" />
+                          {result.landmarks?.map((landmark, index) => (
+                            <span
+                              key={`${landmark.type}-${index}`}
+                              className="fv-landmark-dot"
+                              style={{ left: `${landmark.x * 100}%`, top: `${landmark.y * 100}%` }}
+                              title={landmark.type}
+                              aria-label={`${landmark.type}: ${landmark.x.toFixed(3)}, ${landmark.y.toFixed(3)}`}
+                            />
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -948,8 +913,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
           <div className="fv-footer__info">
             <Lock size={13} />
             <span>
-              Cifrado <strong>E2E</strong> · Procesado por{' '}
-              <strong>AWS Rekognition</strong>
+              Procesado por <strong>AWS Rekognition</strong>
             </span>
           </div>
 
@@ -966,11 +930,30 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
               </button>
             )}
 
+            {result && !result.verified && (
+              <div className="fv-result-banner fv-result-banner--failed" role="status">
+                <XCircle size={20} />
+                <div>
+                  <div className="fv-result-banner__title">Rostro no coincidente</div>
+                  <div className="fv-result-banner__sub">Similitud: {result.similarity}%</div>
+                </div>
+              </div>
+            )}
+
+            {result && (
+              <button className="fv-btn--cancel" onClick={onCancel}>
+                Cancelar
+              </button>
+            )}
+
+            {result && !result.verified && (
+              <button className="fv-btn--cancel" onClick={resetProcess}>
+                <RefreshCw size={15} /> Intentar de nuevo
+              </button>
+            )}
+
             {result && result.verified && (
               <>
-                <button className="fv-btn--cancel" onClick={onCancel}>
-                  Cancelar
-                </button>
                 <button
                   className="fv-btn--cta"
                   onClick={() => onVerified(result)}
