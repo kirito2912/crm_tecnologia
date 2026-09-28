@@ -235,9 +235,11 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
         const errorBody = await response.json().catch(() => null);
         const detail = errorBody?.detail;
         throw new Error(
-          typeof detail === 'string'
-            ? detail
-            : 'El servidor no pudo completar el análisis facial.'
+          typeof detail === 'string' && detail.includes('Credenciales AWS incompletas')
+            ? 'Falta AWS_ACCESS_KEY_ID en Render. En el servicio del backend, configura AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY como pareja y vuelve a desplegar.'
+            : typeof detail === 'string'
+              ? detail
+              : 'El servidor no pudo completar el análisis facial.'
         );
       }
 

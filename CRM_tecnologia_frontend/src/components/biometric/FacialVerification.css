@@ -1432,3 +1432,240 @@
   .fv-footer__actions { justify-content: stretch; }
   .fv-footer__actions button { flex: 1; }
 }
+
+/* Executive palette: quiet surfaces, restrained blue accents, no neon glow. */
+.fv-overlay {
+  --surface-base: #f4f6f8;
+  --surface-1: #ffffff;
+  --surface-2: #f8fafb;
+  --surface-3: #edf1f4;
+  --surface-elevated: #ffffff;
+  --accent-primary: #355c7d;
+  --accent-primary-soft: #edf3f7;
+  --accent-success: #34715b;
+  --accent-success-soft: #edf5f1;
+  --accent-warning: #926d30;
+  --accent-warning-soft: #f8f3e9;
+  --accent-danger: #a84e50;
+  --accent-danger-soft: #fbefef;
+  --accent-violet: #718397;
+  --text-primary: #1e2933;
+  --text-secondary: #53616d;
+  --text-muted: #7b8791;
+  --text-disabled: #a8b0b7;
+  --border-1: #e5e9ed;
+  --border-2: #d7dee4;
+  --border-accent: #b8c8d5;
+  --sh-sm: 0 1px 3px rgba(20, 36, 50, 0.06);
+  --sh-md: 0 4px 14px rgba(20, 36, 50, 0.08);
+  --sh-lg: 0 22px 64px rgba(20, 36, 50, 0.2);
+  --glow-primary: none;
+  --glow-success: none;
+  background: rgba(25, 37, 48, 0.42);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  color: var(--text-primary);
+}
+
+.fv-modal {
+  background: var(--surface-1);
+  border: 1px solid #dce2e7;
+  border-radius: 14px;
+  box-shadow: var(--sh-lg);
+}
+
+.fv-modal::before {
+  height: 3px;
+  opacity: 1;
+  background: #49677f;
+}
+
+.fv-header,
+.fv-stepper,
+.fv-footer {
+  background: #fff;
+}
+
+.fv-header { border-color: var(--border-1); }
+.fv-header__logo {
+  background: #edf2f6;
+  border-color: #d9e2e9;
+  box-shadow: none;
+  color: #49677f;
+}
+.fv-header__title { color: #1e2933; }
+.fv-header__subtitle strong { color: #49677f; }
+.fv-badge--secure {
+  color: #34715b;
+  background: #edf5f1;
+  border-color: #d6e8df;
+}
+.fv-badge--aws {
+  color: #725d3d;
+  background: #f7f3eb;
+  border-color: #e9dfcc;
+}
+.fv-badge--version { background: #f3f5f6; }
+.fv-header__close { background: #f5f7f8; }
+
+.fv-stepper {
+  border-color: var(--border-1);
+  background: #f8fafb;
+}
+.fv-step__num { background: #f0f3f5; }
+.fv-step--active .fv-step__num {
+  color: #fff;
+  background: #49677f;
+  border-color: #49677f;
+  box-shadow: none;
+}
+.fv-step--done .fv-step__num {
+  color: #fff;
+  background: #477560;
+}
+.fv-step--done .fv-step__label { color: #477560; }
+.fv-step__connector--done::after { background: #789582; }
+
+.fv-stage { border-color: var(--border-1); }
+.fv-panel { background: #f8fafb; }
+.fv-viewport {
+  border-color: #d9e0e5;
+  box-shadow: var(--sh-sm);
+}
+.fv-viewport--scanning,
+.fv-viewport--verified {
+  border-color: #8198aa;
+  box-shadow: 0 0 0 2px rgba(73, 103, 127, 0.12);
+}
+.fv-scan__corner { border-color: #d2dde5; }
+.fv-scan__line {
+  background: linear-gradient(90deg, transparent, rgba(111, 145, 170, 0.55), transparent);
+  box-shadow: 0 0 12px rgba(111, 145, 170, 0.2);
+}
+
+.fv-btn--primary,
+.fv-btn--success,
+.fv-btn--cta {
+  color: #fff;
+  background: #355c7d;
+  box-shadow: 0 2px 5px rgba(35, 64, 86, 0.16);
+}
+.fv-btn--primary:hover,
+.fv-btn--success:hover,
+.fv-btn--cta:hover {
+  background: #294a65;
+  box-shadow: 0 4px 10px rgba(35, 64, 86, 0.18);
+  transform: translateY(-1px);
+}
+.fv-btn--secondary {
+  color: #355c7d;
+  background: #f2f5f7;
+  border-color: #d5dfe6;
+}
+.fv-btn--secondary:hover {
+  background: #e8eef2;
+  border-color: #b9c9d5;
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+.fv-btn--ghost,
+.fv-btn--cancel { background: #fff; }
+.fv-actions button::before { display: none; }
+
+.fv-error {
+  color: #8c3f43;
+  background: #fbefef;
+  border-color: #efd7d8;
+}
+.fv-notice {
+  color: #596873;
+  background: #f3f6f8;
+  border-left-color: #6b879c;
+}
+.fv-notice strong { color: #355c7d; }
+.fv-section__title,
+.fv-compare__label,
+.fv-landmark-row__name { color: #49677f; }
+.fv-progress,
+.fv-compare__item,
+.fv-landmark-group,
+.fv-attr,
+.fv-metric {
+  background: #fff;
+  border-color: var(--border-1);
+  box-shadow: none;
+}
+.fv-progress--captured { border-color: #d6e6dd; }
+.fv-progress--ready { border-color: #e9dfcc; }
+.fv-metric__value,
+.fv-landmark-row__coords { color: #355c7d; }
+.fv-result-banner {
+  background: #edf5f1;
+  border-color: #d6e8df;
+  color: #34715b;
+}
+.fv-result-banner--failed {
+  color: #8c3f43;
+  background: #fbefef;
+  border-color: #efd7d8;
+}
+.fv-result-banner--failed .fv-result-banner__title { color: #8c3f43; }
+.fv-result--failed {
+  background: radial-gradient(ellipse at center, rgba(168, 78, 80, 0.12), transparent 70%), rgba(255, 255, 255, 0.97);
+}
+.fv-result--failed .fv-result__icon,
+.fv-result--failed .fv-result__title { color: #a84e50; }
+.fv-result__icon { animation: none; }
+.fv-landmark-dot {
+  background: #355c7d;
+  border-color: #fff;
+  box-shadow: 0 0 0 1px rgba(31, 55, 73, 0.28);
+}
+.fv-footer { border-color: var(--border-1); }
+.fv-footer__info svg { color: #718397; }
+.fv-placeholder {
+  background: repeating-linear-gradient(45deg, transparent, transparent 24px, rgba(73, 103, 127, 0.025) 24px, rgba(73, 103, 127, 0.025) 48px);
+}
+.fv-placeholder__icon {
+  background: #edf2f6;
+  border: 1px solid #d7e1e8;
+  animation: none;
+}
+.fv-photo-captured__badge {
+  color: #fff;
+  background: rgba(38, 67, 55, 0.78);
+  border-color: rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(6px);
+}
+.fv-result {
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(8px);
+}
+.fv-result__icon {
+  background: #edf5f1;
+  color: #34715b;
+  animation: none;
+}
+.fv-result__title,
+.fv-result__stat-value { color: #34715b; }
+.fv-result__stat {
+  background: #f3f7f5;
+  border-color: #dce9e2;
+}
+.fv-progress--captured {
+  background: #f4f8f6;
+  border-color: #dce9e2;
+}
+.fv-progress--captured::before,
+.fv-progress--ready::before { box-shadow: none; animation: none; }
+.fv-progress__thumb { border-color: #dce9e2; }
+.fv-landmarks::-webkit-scrollbar-track { background: #f1f4f6; }
+.fv-landmarks::-webkit-scrollbar-thumb {
+  background: #c3d0d9;
+  animation: none;
+  filter: none;
+}
+.fv-landmark-group { border-bottom-color: #e5e9ed; }
+.fv-landmark-group:hover,
+.fv-landmark-row:hover { background: #f3f6f8; }
+.fv-emotion__fill { background: #65849a; box-shadow: none; }
