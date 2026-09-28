@@ -7,6 +7,7 @@ interface OtpVerificationStepProps {
   fullName?: string;
   onSuccess: (token?: string) => void;
   onCancel: () => void;
+  otpCode?: string; // Código OTP devuelto por el backend en desarrollo
 }
 
 export const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({
@@ -14,6 +15,7 @@ export const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({
   fullName,
   onSuccess,
   onCancel,
+  otpCode,
 }) => {
   const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -178,6 +180,35 @@ export const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({
         <Mail size={16} className="text-indigo-500" style={{ flexShrink: 0 }} />
         <span>Revisa tu bandeja de entrada o carpeta de spam e ingresa el código a continuación.</span>
       </div>
+
+      {/* Código OTP visible en desarrollo */}
+      {otpCode && (
+        <div style={{
+          marginTop: '16px',
+          padding: '16px',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: '12px',
+          textAlign: 'center',
+          border: '2px solid #ffffff33',
+        }}>
+          <div style={{ fontSize: '12px', color: '#ffffff', marginBottom: '8px', fontWeight: 600 }}>
+            🔓 MODO DESARROLLO
+          </div>
+          <div style={{ 
+            fontSize: '32px', 
+            fontWeight: 900, 
+            letterSpacing: '8px', 
+            color: '#fff',
+            fontFamily: 'monospace',
+            textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+          }}>
+            {otpCode}
+          </div>
+          <div style={{ fontSize: '11px', color: '#ffffffcc', marginTop: '8px' }}>
+            Tu código OTP (Cópialo o ingrésalo manualmente)
+          </div>
+        </div>
+      )}
 
       {/* Resend Confirmation Banner */}
       {resendSuccess && (

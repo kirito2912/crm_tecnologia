@@ -120,9 +120,21 @@ export async function requestOtpApi(
     if (response.ok) {
       const data = await response.json();
       sessionStorage.setItem(`dev_otp_${cleanEmail}`, localCode);
+      
+      // Extraer el código OTP del mensaje si está en desarrollo
+      let extractedOtp: string | undefined;
+      if (data.message && typeof data.message === 'string') {
+        const otpMatch = data.message.match(/Codigo OTP generado: (\d{6})/);
+        if (otpMatch) {
+          extractedOtp = otpMatch[1];
+          console.log(`🔑 [DEV] Código OTP recibido: ${extractedOtp}`);
+        }
+      }
+      
       return {
         success: true,
         message: data.message || 'Código OTP enviado correctamente.',
+        otpCode: extractedOtp,
       };
     } else {
       let errorMsg = 'Error al procesar la solicitud.';
