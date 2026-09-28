@@ -20,13 +20,35 @@ class RekognitionServiceError(RuntimeError):
 
 class RekognitionService:
     def __init__(self):
-        """Inicializar cliente de AWS Rekognition"""
-        self.client = boto3.client(
-            'rekognition',
-            region_name=os.getenv('AWS_DEFAULT_REGION') or 'us-east-1',
-            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID') or None,
-            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY') or None
-        )
+        """Dejar AWS listo para uso sin bloquear el arranque de la API."""
+        self.region = os.getenv('AWS_DEFAULT_REGION') or 'us-east-1'
+        self.access_key_id = os.getenv('AWS_ACCESS_KEY_ID') or None
+        self.secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY') or None
+        self.credentials_incomplete = bool(self.access_key_id) != bool(self.secret_access_key)
+        self.client = None
+
+    def _get_client(self):
+        if getattr(self, 'credentials_incomplete', False):
+            raise RekognitionServiceError(
+                "Credenciales AWS incompletas: configura AWS_ACCESS_KEY_ID y "
+                "AWS_SECRET_ACCESS_KEY juntas, o elimina ambas para usar un IAM role."
+            )
+
+        if self.client is None:
+            try:
+                self.client = boto3.client(
+                    'rekognition',
+                    region_name=self.region,
+                    aws_access_key_id=self.access_key_id,
+                    aws_secret_access_key=self.secret_access_key,
+                )
+            except (BotoCoreError, ClientError) as e:
+                raise RekognitionServiceError(
+                    "No se pudo inicializar AWS Rekognition. Revisa la región y "
+                    "la configuración de credenciales AWS."
+                ) from e
+
+        return self.client
 
     def base64_to_bytes(self, base64_string: str) -> bytes:
         """Convertir base64 a bytes, y si es WEBP convertirlo a JPEG"""
@@ -73,7 +95,7 @@ class RekognitionService:
                 print(f"[Rekognition] ❌ Error: No es una imagen válida - {img_err}")
                 return None
             
-            response = self.client.detect_faces(
+            response = self._get_client().detect_faces(
                 Image={'Bytes': image_bytes},
                 Attributes=['ALL']
             )
@@ -135,6 +157,8 @@ class RekognitionService:
                 }
             }
 
+        except RekognitionServiceError:
+            raise
         except (BotoCoreError, ClientError) as e:
             print(f"[Rekognition] Error de AWS en detect_faces: {e}")
             raise RekognitionServiceError(
@@ -155,7 +179,7 @@ class RekognitionService:
             source_bytes = self.base64_to_bytes(source_image_base64)
             target_bytes = self.base64_to_bytes(target_image_base64)
 
-            response = self.client.compare_faces(
+            response = self._get_client().compare_faces(
                 SourceImage={'Bytes': source_bytes},
                 TargetImage={'Bytes': target_bytes},
                 SimilarityThreshold=0

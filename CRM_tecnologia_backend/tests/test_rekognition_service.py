@@ -1,5 +1,6 @@
 import base64
 import asyncio
+import os
 import unittest
 from io import BytesIO
 from unittest.mock import Mock, patch
@@ -71,6 +72,17 @@ class RekognitionServiceTests(unittest.TestCase):
 
         self.assertEqual(raised.exception.status_code, 503)
         self.assertIn("AWS credentials missing", raised.exception.detail)
+
+    def test_partial_credentials_do_not_crash_service_startup(self):
+        with patch.dict(
+            os.environ,
+            {"AWS_ACCESS_KEY_ID": "", "AWS_SECRET_ACCESS_KEY": "test-secret"},
+        ):
+            service = RekognitionService()
+
+        self.assertIsNone(service.client)
+        with self.assertRaisesRegex(RekognitionServiceError, "AWS_ACCESS_KEY_ID"):
+            service.detect_faces(self.image_base64)
 
 
 if __name__ == "__main__":
