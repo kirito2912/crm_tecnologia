@@ -7,6 +7,15 @@ from io import BytesIO
 from PIL import Image
 from typing import Optional, Dict, List, Any
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+from botocore.exceptions import BotoCoreError, ClientError
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+
+
+class RekognitionServiceError(RuntimeError):
+    """Error de configuración o comunicación con AWS Rekognition."""
 
 
 class RekognitionService:
@@ -14,9 +23,9 @@ class RekognitionService:
         """Inicializar cliente de AWS Rekognition"""
         self.client = boto3.client(
             'rekognition',
-            region_name=os.getenv('AWS_DEFAULT_REGION', 'us-east-1'),
-            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+            region_name=os.getenv('AWS_DEFAULT_REGION') or 'us-east-1',
+            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID') or None,
+            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY') or None
         )
 
     def base64_to_bytes(self, base64_string: str) -> bytes:
@@ -126,6 +135,12 @@ class RekognitionService:
                 }
             }
 
+        except (BotoCoreError, ClientError) as e:
+            print(f"[Rekognition] Error de AWS en detect_faces: {e}")
+            raise RekognitionServiceError(
+                "AWS Rekognition no está disponible. Verifica las credenciales, "
+                "AWS_DEFAULT_REGION y permisos para rekognition:DetectFaces."
+            ) from e
         except Exception as e:
             print(f"[Rekognition] ❌ Error en detect_faces: {str(e)}")
             import traceback
@@ -162,9 +177,12 @@ class RekognitionService:
                 'matched': match['Similarity'] >= 85.0  # Umbral de 85%
             }
 
-        except Exception as e:
-            print(f"Error en compare_faces: {str(e)}")
-            return None
+        except (BotoCoreError, ClientError) as e:
+            print(f"[Rekognition] Error de AWS en compare_faces: {e}")
+            raise RekognitionServiceError(
+                "AWS Rekognition no está disponible. Verifica las credenciales, "
+                "AWS_DEFAULT_REGION y permisos para rekognition:CompareFaces."
+            ) from e
 
 
 # Instancia global

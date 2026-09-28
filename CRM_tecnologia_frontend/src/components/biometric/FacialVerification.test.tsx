@@ -41,3 +41,45 @@ it('libera la cámara y permite reintentar si falla la reproducción', async () 
   expect(container.querySelector('video')!.srcObject).toBeNull();
   expect(screen.getByRole('button', { name: /Activar Cámara/ })).toBeTruthy();
 });
+
+it('compara las fotos y ubica los landmarks de Rekognition sobre la imagen', async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      verified: true,
+      similarity: 98.4,
+      confidence: 99.1,
+      timestamp: '2026-01-01T00:00:00Z',
+      userName: 'test',
+      landmarks: [{ type: 'eyeLeft', x: 0.25, y: 0.75 }],
+      faceAttributes: {
+        eyesOpen: 99,
+        mouthOpen: 98,
+        smile: 10,
+        eyeglasses: false,
+        sunglasses: false,
+        beard: false,
+        mustache: false,
+        emotions: [],
+      },
+    }),
+  });
+  vi.stubGlobal('fetch', fetchMock);
+  render(<FacialVerification onVerified={vi.fn()} onCancel={vi.fn()}
+    projectName="Proyecto" userEmail="test@example.com" />);
+
+  const registrationInput = screen.getByLabelText(/Subir Foto 1/i);
+  fireEvent.change(registrationInput, {
+    target: { files: [new File(['registration'], 'registration.png', { type: 'image/png' })] },
+  });
+  const verificationInput = await screen.findByLabelText(/Subir Foto 2/i);
+  fireEvent.change(verificationInput, {
+    target: { files: [new File(['verification'], 'verification.png', { type: 'image/png' })] },
+  });
+
+  const landmark = await screen.findByTitle('eyeLeft');
+  expect(landmark.style.left).toBe('25%');
+  expect(landmark.style.top).toBe('75%');
+  expect(fetchMock).toHaveBeenCalledOnce();
+  expect(await screen.findByText(/Verificación completada/i)).toBeTruthy();
+});

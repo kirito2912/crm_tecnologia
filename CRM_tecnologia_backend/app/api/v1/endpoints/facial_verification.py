@@ -4,7 +4,7 @@ Endpoint para verificación facial con AWS Rekognition
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
-from app.services.rekognition_service import rekognition_service
+from app.services.rekognition_service import rekognition_service, RekognitionServiceError
 from datetime import datetime
 
 
@@ -115,6 +115,8 @@ async def verify_faces(request: VerificationRequest):
             faceAttributes=attributes
         )
 
+    except RekognitionServiceError as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
     except Exception as e:
         print(f"Error en verify_faces: {str(e)}")
         raise HTTPException(

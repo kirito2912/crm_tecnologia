@@ -217,7 +217,9 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
   const performComparison = async (photo1: string, photo2: string) => {
     try {
       const backendUrl =
-        import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+        import.meta.env.VITE_BACKEND_URL ||
+        import.meta.env.VITE_API_URL?.replace(/\/api\/v1\/?$/, '') ||
+        'http://localhost:8000';
 
       const response = await fetch(`${backendUrl}/api/v1/facial/verify`, {
         method: 'POST',
@@ -230,7 +232,13 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
       });
 
       if (!response.ok) {
-        throw new Error('Error al verificar con AWS Rekognition');
+        const errorBody = await response.json().catch(() => null);
+        const detail = errorBody?.detail;
+        throw new Error(
+          typeof detail === 'string'
+            ? detail
+            : 'El servidor no pudo completar el análisis facial.'
+        );
       }
 
       const data = await response.json();
@@ -244,23 +252,13 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
         return;
       }
 
-      if (!data.landmarks || data.landmarks.length === 0) {
-        setCameraError(
-          'No se detectaron suficientes puntos faciales para la verificación'
-        );
-        setIsScanning(false);
-        setVerificationPhoto(null);
-        setCurrentStep('verification');
-        return;
-      }
-
       const verificationResult: VerificationResult = {
         verified: data.verified,
         similarity: data.similarity,
         confidence: data.confidence,
         timestamp: data.timestamp,
         userName: data.userName,
-        landmarks: data.landmarks,
+        landmarks: Array.isArray(data.landmarks) ? data.landmarks : [],
         faceAttributes: data.faceAttributes,
       };
 
@@ -283,7 +281,9 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
     } catch (error) {
       console.error('Error en performComparison:', error);
       setCameraError(
-        'Error al conectar con el servicio de verificación. Verifica tu conexión.'
+        error instanceof Error && error.message !== 'Failed to fetch'
+          ? error.message
+          : 'No se pudo conectar con el backend. Confirma que esté activo y que VITE_BACKEND_URL apunte a ese servidor.'
       );
       setIsScanning(false);
       setVerificationPhoto(null);
@@ -734,7 +734,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
                       {result.landmarks
                         .filter(
                           (l) =>
-                            l.type.includes('left') &&
+                            l.type.toLowerCase().includes('left') &&
                             l.type.toLowerCase().includes('eye')
                         )
                         .map((lm, i) => (
@@ -757,7 +757,7 @@ export const FacialVerification: React.FC<FacialVerificationProps> = ({
                       {result.landmarks
                         .filter(
                           (l) =>
-                            l.type.includes('right') &&
+                            l.type.toLowerCase().includes('right') &&
                             l.type.toLowerCase().includes('eye')
                         )
                         .map((lm, i) => (
