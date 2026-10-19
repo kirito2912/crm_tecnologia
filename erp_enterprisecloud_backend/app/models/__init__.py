@@ -1,6 +1,9 @@
 """
-Modelos de base de datos
+Modelos de base de datos - ERP EnterpriseCloud
+Todos los modelos SQLAlchemy del sistema
 """
+
+# Importar todos los modelos
 from app.models.usuario import Usuario, Rol, Permiso, UsuarioRol, RolPermiso, Sesion, Auditoria
 from app.models.cliente import Cliente
 from app.models.proveedor import Proveedor
@@ -19,17 +22,26 @@ from app.models.documento_s3 import DocumentoS3, CategoriaDocumento
 from app.models.empresa import Empresa
 from app.models.parametro_sistema import ParametroSistema, Secuencia
 
+# Lista de exportación
 __all__ = [
+    # Seguridad y Usuarios
     "Usuario", "Rol", "Permiso", "UsuarioRol", "RolPermiso", "Sesion", "Auditoria",
-    "Cliente", "Proveedor",
+    # Maestros
+    "Cliente", "Proveedor", "Empresa",
+    # Productos e Inventario
     "Producto", "CategoriaProducto", "UnidadMedida",
+    "Almacen", "Stock", "MovimientoInventario", "AjusteInventario",
+    # Ventas
     "Cotizacion", "CotizacionDetalle",
     "Pedido", "PedidoDetalle",
     "Factura", "FacturaDetalle",
-    "OrdenCompra", "OrdenCompraDetalle", "SolicitudCompra",
+    # Compras
+    "SolicitudCompra", "OrdenCompra", "OrdenCompraDetalle",
     "Recepcion", "RecepcionDetalle",
-    "Almacen", "Stock", "MovimientoInventario", "AjusteInventario",
+    # Finanzas
     "CuentaPorCobrar", "CuentaPorPagar",
+    # Documentos
     "DocumentoS3", "CategoriaDocumento",
-    "Empresa", "ParametroSistema", "Secuencia"
+    # Sistema
+    "ParametroSistema", "Secuencia"
 ]
