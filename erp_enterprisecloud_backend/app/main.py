@@ -116,9 +116,9 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Importar y registrar routers (se agregarán progresivamente)
-# from app.api.v1.router import api_router
-# app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+# Importar y registrar routers
+from app.api.v1.router import api_router
+app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
 
 if __name__ == "__main__":
