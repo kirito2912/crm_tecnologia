@@ -4,9 +4,11 @@ Sistema Integrado de Gestión Empresarial en AWS
 """
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import time
+from pathlib import Path
 
 from app.core.config import settings
 from app.db.session import engine, Base, init_db
@@ -80,12 +82,17 @@ async def health_check():
     }
 
 
-# Root Endpoint
-@app.get("/", tags=["Root"])
+# Root Endpoint - Servir página HTML de inicio
+@app.get("/", response_class=HTMLResponse, tags=["Root"])
 async def root():
     """
-    Endpoint raíz con información del sistema
+    Página de inicio del sistema ERP
     """
+    html_path = Path(__file__).parent.parent / "public" / "index.html"
+    if html_path.exists():
+        return FileResponse(html_path)
+    
+    # Fallback si no existe el archivo HTML
     return {
         "message": "Bienvenido a ERP EnterpriseCloud",
         "app": settings.APP_NAME,
@@ -93,10 +100,10 @@ async def root():
         "docs": "/docs",
         "api": settings.API_V1_PREFIX,
         "stack": {
-            "backend": "FastAPI + Python 3.11",
-            "database": "PostgreSQL 14 (AWS RDS)",
+            "backend": "FastAPI + Python 3.13",
+            "database": "SQLite / PostgreSQL",
             "storage": "AWS S3",
-            "compute": "AWS EC2"
+            "features": "29 endpoints, 37 tablas, JWT auth"
         }
     }
 

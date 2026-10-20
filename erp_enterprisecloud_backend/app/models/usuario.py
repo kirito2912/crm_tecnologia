@@ -28,7 +28,7 @@ class Usuario(Base):
     modificado_por = Column(Integer, ForeignKey("usuarios.id"))
     
     # Relaciones
-    usuario_roles = relationship("UsuarioRol", back_populates="usuario")
+    usuario_roles = relationship("UsuarioRol", back_populates="usuario", foreign_keys="UsuarioRol.usuario_id")
     sesiones = relationship("Sesion", back_populates="usuario")
 
 

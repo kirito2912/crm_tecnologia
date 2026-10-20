@@ -1,4 +1,4 @@
-"""
+﻿"""
 Script para poblar la base de datos con datos iniciales
 """
 import sys
@@ -21,7 +21,7 @@ from app.core.config import settings
 
 def crear_roles(db: Session):
     """Crear roles del sistema"""
-    print("📋 Creando roles...")
+    print("[ROLES] Creando roles...")
     
     roles_data = [
         {
@@ -63,12 +63,12 @@ def crear_roles(db: Session):
             db.add(rol)
     
     db.commit()
-    print(f"✅ {len(roles_data)} roles creados")
+    print(f"[OK] {len(roles_data)} roles creados")
 
 
 def crear_permisos(db: Session):
     """Crear permisos del sistema"""
-    print("🔐 Creando permisos...")
+    print("[PERMS] Creando permisos...")
     
     modulos = [
         "dashboard", "usuarios", "clientes", "proveedores", "productos",
@@ -95,7 +95,7 @@ def crear_permisos(db: Session):
                 permisos_creados += 1
     
     db.commit()
-    print(f"✅ {permisos_creados} permisos creados")
+    print(f"[OK] {permisos_creados} permisos creados")
 
 
 def asignar_permisos_admin(db: Session):
@@ -104,7 +104,7 @@ def asignar_permisos_admin(db: Session):
     
     rol_admin = db.query(Rol).filter(Rol.nombre == "Administrador").first()
     if not rol_admin:
-        print("❌ Rol Administrador no encontrado")
+        print("[ERROR] Rol Administrador no encontrado")
         return
     
     permisos = db.query(Permiso).all()
@@ -125,12 +125,12 @@ def asignar_permisos_admin(db: Session):
             permisos_asignados += 1
     
     db.commit()
-    print(f"✅ {permisos_asignados} permisos asignados a Administrador")
+    print(f"[OK] {permisos_asignados} permisos asignados a Administrador")
 
 
 def crear_usuario_admin(db: Session):
     """Crear usuario administrador por defecto"""
-    print("👤 Creando usuario administrador...")
+    print("[USER] Creando usuario administrador...")
     
     email_admin = "admin@empresa.com"
     existing = db.query(Usuario).filter(Usuario.email == email_admin).first()
@@ -164,7 +164,7 @@ def crear_usuario_admin(db: Session):
     db.commit()
     db.refresh(admin)
     
-    print(f"✅ Usuario administrador creado:")
+    print(f"[OK] Usuario administrador creado:")
     print(f"   Email: {email_admin}")
     print(f"   Password: Admin123!")
     
@@ -173,7 +173,7 @@ def crear_usuario_admin(db: Session):
 
 def crear_categorias_producto(db: Session):
     """Crear categorías de productos"""
-    print("📦 Creando categorías de productos...")
+    print("[DATA] Creando categorías de productos...")
     
     categorias = [
         {"nombre": "Computadoras", "descripcion": "Equipos de cómputo"},
@@ -193,7 +193,7 @@ def crear_categorias_producto(db: Session):
             db.add(categoria)
     
     db.commit()
-    print(f"✅ {len(categorias)} categorías creadas")
+    print(f"[OK] {len(categorias)} categorías creadas")
 
 
 def crear_unidades_medida(db: Session):
@@ -222,7 +222,7 @@ def crear_unidades_medida(db: Session):
             db.add(unidad)
     
     db.commit()
-    print(f"✅ {len(unidades)} unidades de medida creadas")
+    print(f"[OK] {len(unidades)} unidades de medida creadas")
 
 
 def crear_almacen_principal(db: Session):
@@ -242,7 +242,7 @@ def crear_almacen_principal(db: Session):
         )
         db.add(almacen)
         db.commit()
-        print("✅ Almacén principal creado")
+        print("[OK] Almacén principal creado")
     else:
         print("⚠️  Almacén principal ya existe")
 
@@ -269,7 +269,7 @@ def crear_categorias_documento(db: Session):
             db.add(categoria)
     
     db.commit()
-    print(f"✅ {len(categorias)} categorías de documentos creadas")
+    print(f"[OK] {len(categorias)} categorías de documentos creadas")
 
 
 def crear_empresa(db: Session):
@@ -292,7 +292,7 @@ def crear_empresa(db: Session):
         )
         db.add(empresa)
         db.commit()
-        print("✅ Datos de la empresa creados")
+        print("[OK] Datos de la empresa creados")
     else:
         print("⚠️  Datos de empresa ya existen")
 
@@ -349,7 +349,7 @@ def crear_parametros_sistema(db: Session):
             db.add(parametro)
     
     db.commit()
-    print(f"✅ {len(parametros)} parámetros creados")
+    print(f"[OK] {len(parametros)} parámetros creados")
 
 
 def crear_secuencias(db: Session):
@@ -377,19 +377,19 @@ def crear_secuencias(db: Session):
             db.add(secuencia)
     
     db.commit()
-    print(f"✅ {len(secuencias)} secuencias creadas")
+    print(f"[OK] {len(secuencias)} secuencias creadas")
 
 
 def main():
     """Función principal para ejecutar el seed"""
     print("\n" + "="*60)
-    print("🌱 INICIANDO SEED DE BASE DE DATOS")
+    print("[SEED] INICIANDO SEED DE BASE DE DATOS")
     print("="*60 + "\n")
     
     # Inicializar base de datos (crear tablas si no existen)
-    print("🗄️  Inicializando base de datos...")
+    print("[DB]  Inicializando base de datos...")
     init_db()
-    print("✅ Base de datos inicializada\n")
+    print("[OK] Base de datos inicializada\n")
     
     # Crear sesión
     db = SessionLocal()
@@ -409,7 +409,7 @@ def main():
         crear_secuencias(db)
         
         print("\n" + "="*60)
-        print("✅ SEED COMPLETADO EXITOSAMENTE")
+        print("[OK] SEED COMPLETADO EXITOSAMENTE")
         print("="*60)
         print("\n📌 CREDENCIALES DE ACCESO:")
         print(f"   Email: admin@empresa.com")
@@ -417,7 +417,7 @@ def main():
         print("\n🚀 Puedes iniciar el servidor ahora:\n   python app/main.py\n")
         
     except Exception as e:
-        print(f"\n❌ Error durante el seed: {str(e)}")
+        print(f"\n[ERROR] Error durante el seed: {str(e)}")
         db.rollback()
         raise
     finally:

@@ -1,436 +1,246 @@
-# 🚀 ERP EnterpriseCloud - Backend
+# ERP EnterpriseCloud Backend
 
-## Sistema Integrado de Gestión Empresarial en AWS
+Sistema ERP completo desarrollado en FastAPI con PostgreSQL/SQLite y integración con AWS S3.
 
-Backend desarrollado con **FastAPI + Python 3.11** para el proyecto de Tecnología Cloud con AWS.
+## 🚀 Proyecto en Ejecución
 
----
+El servidor está corriendo exitosamente en: **http://localhost:8000**
 
-## 📋 Requisitos Previos
+## 📋 Características
 
-- **Python**: 3.11 o superior
-- **PostgreSQL**: 14 o superior
-- **AWS CLI**: Configurado (opcional para desarrollo local)
-- **Git**: 2.x
+- **API REST completa** con 29 endpoints
+- **37 modelos SQLAlchemy** para gestión de datos
+- **Autenticación JWT** con roles y permisos
+- **Integración AWS S3** para almacenamiento de documentos
+- **Base de datos**: SQLite (local) o PostgreSQL (producción)
+- **Documentación automática**: Swagger UI y ReDoc
 
----
+## 🛠️ Tecnologías
 
-## 🔧 Instalación
+- **FastAPI 0.146.0** - Framework web moderno
+- **SQLAlchemy 2.1.5** - ORM
+- **Pydantic 2.14.1** - Validación de datos
+- **Python 3.13** - Lenguaje de programación
+- **psycopg 3.3.6** - Driver PostgreSQL
+- **boto3** - AWS SDK
+- **python-jose** - JWT
+- **bcrypt** - Hash de contraseñas
+- **uvicorn** - Servidor ASGI
 
-### 1. Clonar el Repositorio
-
-```bash
-cd crm_tecnologia
-cd erp_enterprisecloud_backend
-```
-
-### 2. Crear Entorno Virtual
-
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# Linux/Mac
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 3. Instalar Dependencias
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Configurar Variables de Entorno
-
-```bash
-# Copiar el archivo de ejemplo
-copy .env.example .env  # Windows
-# cp .env.example .env  # Linux/Mac
-
-# Editar .env con tus credenciales
-```
-
-**Configuración mínima en `.env`:**
-
-```env
-DATABASE_URL=postgresql+psycopg2://erp_admin:password@localhost:5432/erp_enterprisecloud
-JWT_SECRET_KEY=tu-clave-super-secreta-cambiar
-AWS_ACCESS_KEY_ID=TU_ACCESS_KEY
-AWS_SECRET_ACCESS_KEY=TU_SECRET_KEY
-AWS_S3_BUCKET=erp-enterprisecloud-documents
-```
-
-### 5. Crear Base de Datos
-
-```bash
-# Conectar a PostgreSQL
-psql -U postgres
-
-# Crear base de datos
-CREATE DATABASE erp_enterprisecloud;
-
-# Crear usuario
-CREATE USER erp_admin WITH PASSWORD 'password';
-GRANT ALL PRIVILEGES ON DATABASE erp_enterprisecloud TO erp_admin;
-
-# Salir
-\q
-```
-
-### 6. Inicializar Base de Datos
-
-```bash
-# Las tablas se crean automáticamente al iniciar el servidor
-python app/main.py
-```
-
----
-
-## 🚀 Ejecutar el Servidor
-
-### Modo Desarrollo
-
-```bash
-# Con auto-reload
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# O directamente con Python
-python app/main.py
-```
-
-### Modo Producción
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
-```
-
-El servidor estará disponible en:
-- **API**: http://localhost:8000
-- **Documentación Swagger**: http://localhost:8000/docs
-- **Documentación ReDoc**: http://localhost:8000/redoc
-- **Health Check**: http://localhost:8000/health
-
----
-
-## 📚 Estructura del Proyecto
+## 📁 Estructura del Proyecto
 
 ```
 erp_enterprisecloud_backend/
 ├── app/
-│   ├── api/
-│   │   └── v1/
-│   │       ├── endpoints/       # Endpoints de la API
-│   │       └── router.py        # Router principal
+│   ├── api/v1/
+│   │   ├── endpoints/
+│   │   │   ├── auth.py          # Autenticación (login, logout, refresh)
+│   │   │   ├── usuarios.py      # Gestión de usuarios
+│   │   │   ├── clientes.py      # Gestión de clientes
+│   │   │   ├── productos.py     # Gestión de productos
+│   │   │   ├── documentos.py    # Documentos S3
+│   │   │   └── dashboard.py     # Dashboard y reportes
+│   │   └── router.py
 │   ├── core/
-│   │   ├── config.py           # Configuración
-│   │   └── security.py         # Autenticación y seguridad
+│   │   ├── config.py            # Configuración
+│   │   └── security.py          # JWT y bcrypt
 │   ├── db/
-│   │   └── session.py          # Sesión de base de datos
-│   ├── models/                 # Modelos SQLAlchemy
-│   │   ├── usuario.py
-│   │   ├── cliente.py
-│   │   ├── producto.py
-│   │   └── ...
-│   ├── schemas/                # Schemas Pydantic
-│   │   ├── usuario.py
-│   │   └── ...
-│   ├── services/               # Lógica de negocio
-│   │   ├── auth_service.py
-│   │   ├── s3_service.py
-│   │   └── ...
-│   └── main.py                 # Aplicación principal
+│   │   └── session.py           # Conexión DB
+│   ├── models/                  # 17 archivos de modelos
+│   ├── schemas/                 # 4 archivos de schemas Pydantic
+│   ├── services/
+│   │   ├── s3_service.py        # Servicio AWS S3
+│   │   └── auth_service.py      # Servicio de autenticación
+│   └── main.py                  # Aplicación principal
 ├── database/
-│   ├── schema.sql              # Schema completo
-│   └── seed.sql                # Datos iniciales
-├── tests/                      # Tests unitarios
-├── .env.example                # Variables de entorno ejemplo
-├── requirements.txt            # Dependencias Python
-└── README.md                   # Este archivo
+│   └── seed.py                  # Script de datos iniciales
+├── .env                         # Variables de entorno
+├── requirements.txt             # Dependencias
+└── README.md
 ```
 
----
+## 🏃‍♂️ Cómo Ejecutar
 
-## 🔑 API Endpoints
+### 1. Activar el entorno virtual
 
-### Health Check
-```
-GET /health
-```
-
-### Autenticación
-```
-POST /api/v1/auth/login          # Iniciar sesión
-POST /api/v1/auth/register       # Registrar usuario
-GET  /api/v1/auth/me             # Obtener perfil actual
+```powershell
+cd C:\Users\PC\Pictures\crm_tecnologia\erp_enterprisecloud_backend
+.\venv\Scripts\activate
 ```
 
-### Usuarios
-```
-GET    /api/v1/usuarios          # Listar usuarios
-POST   /api/v1/usuarios          # Crear usuario
-GET    /api/v1/usuarios/{id}     # Obtener usuario
-PUT    /api/v1/usuarios/{id}     # Actualizar usuario
-DELETE /api/v1/usuarios/{id}     # Eliminar usuario
-```
+### 2. Instalar dependencias (si no están instaladas)
 
-### Clientes
-```
-GET    /api/v1/clientes          # Listar clientes
-POST   /api/v1/clientes          # Crear cliente
-GET    /api/v1/clientes/{id}     # Obtener cliente
-PUT    /api/v1/clientes/{id}     # Actualizar cliente
-DELETE /api/v1/clientes/{id}     # Eliminar cliente
-```
-
-### Productos
-```
-GET    /api/v1/productos         # Listar productos
-POST   /api/v1/productos         # Crear producto
-GET    /api/v1/productos/{id}    # Obtener producto
-PUT    /api/v1/productos/{id}    # Actualizar producto
-DELETE /api/v1/productos/{id}    # Eliminar producto
-GET    /api/v1/productos/stock   # Consultar stock
-```
-
-### Ventas
-```
-GET    /api/v1/ventas/cotizaciones      # Listar cotizaciones
-POST   /api/v1/ventas/cotizaciones      # Crear cotización
-GET    /api/v1/ventas/pedidos           # Listar pedidos
-POST   /api/v1/ventas/pedidos           # Crear pedido
-GET    /api/v1/ventas/facturas          # Listar facturas
-POST   /api/v1/ventas/facturas          # Crear factura
-```
-
-### Compras
-```
-GET    /api/v1/compras/ordenes          # Listar órdenes de compra
-POST   /api/v1/compras/ordenes          # Crear orden de compra
-GET    /api/v1/compras/recepciones      # Listar recepciones
-POST   /api/v1/compras/recepciones      # Registrar recepción
-```
-
-### Inventario
-```
-GET    /api/v1/inventario/stock         # Consultar stock
-POST   /api/v1/inventario/movimientos   # Registrar movimiento
-GET    /api/v1/inventario/ajustes       # Listar ajustes
-POST   /api/v1/inventario/ajustes       # Crear ajuste
-```
-
-### Documentos (S3)
-```
-GET    /api/v1/documentos               # Listar documentos
-POST   /api/v1/documentos/upload        # Subir documento
-GET    /api/v1/documentos/{id}          # Obtener documento
-DELETE /api/v1/documentos/{id}          # Eliminar documento
-```
-
-### Reportes
-```
-GET    /api/v1/reportes/ventas          # Reporte de ventas
-GET    /api/v1/reportes/compras         # Reporte de compras
-GET    /api/v1/reportes/inventario      # Reporte de inventario
-GET    /api/v1/reportes/financiero      # Reporte financiero
-```
-
----
-
-## 🔐 Autenticación
-
-La API usa **JWT (JSON Web Tokens)** para autenticación.
-
-### Flujo de Autenticación
-
-1. **Login**: POST `/api/v1/auth/login`
-```json
-{
-  "email": "admin@empresa.com",
-  "password": "Admin123!"
-}
-```
-
-Respuesta:
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer",
-  "user": {
-    "id": 1,
-    "nombre": "Administrador",
-    "email": "admin@empresa.com",
-    "rol": "Administrador"
-  }
-}
-```
-
-2. **Usar el token** en las siguientes peticiones:
-```bash
-curl -H "Authorization: Bearer TOKEN_AQUI" http://localhost:8000/api/v1/usuarios
-```
-
----
-
-## 📊 Modelos de Datos
-
-### Principales Entidades
-
-- **Usuario**: Usuarios del sistema con roles y permisos
-- **Cliente**: Clientes de la empresa
-- **Proveedor**: Proveedores
-- **Producto**: Catálogo de productos
-- **Cotización**: Propuestas comerciales
-- **Pedido**: Pedidos de venta
-- **Factura**: Comprobantes de venta
-- **Orden de Compra**: Órdenes a proveedores
-- **Stock**: Inventario por almacén
-- **Documento**: Archivos almacenados en S3
-
----
-
-## 🧪 Testing
-
-```bash
-# Ejecutar tests
-pytest
-
-# Con coverage
-pytest --cov=app tests/
-
-# Test específico
-pytest tests/test_usuarios.py
-```
-
----
-
-## 🐳 Docker (Opcional)
-
-```dockerfile
-# Dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-EXPOSE 8000
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-```bash
-# Build
-docker build -t erp-backend .
-
-# Run
-docker run -p 8000:8000 erp-backend
-```
-
----
-
-## ☁️ Despliegue en AWS
-
-### EC2
-
-1. Lanzar instancia EC2 (Ubuntu 22.04, t3.medium)
-2. Conectar por SSH
-3. Instalar dependencias:
-
-```bash
-# Actualizar sistema
-sudo apt update && sudo apt upgrade -y
-
-# Instalar Python 3.11
-sudo apt install python3.11 python3-pip python3-venv -y
-
-# Clonar repositorio
-git clone https://github.com/tu-repo/crm_tecnologia.git
-cd crm_tecnologia/erp_enterprisecloud_backend
-
-# Instalar dependencias
-python3.11 -m venv venv
-source venv/bin/activate
+```powershell
 pip install -r requirements.txt
-
-# Configurar .env con credenciales de RDS y S3
-
-# Instalar nginx
-sudo apt install nginx -y
-
-# Configurar como servicio systemd
-sudo nano /etc/systemd/system/erp-backend.service
 ```
 
-**Contenido de `erp-backend.service`:**
+### 3. Poblar la base de datos (primera vez)
 
-```ini
-[Unit]
-Description=ERP EnterpriseCloud Backend
-After=network.target
-
-[Service]
-User=ubuntu
-WorkingDirectory=/home/ubuntu/crm_tecnologia/erp_enterprisecloud_backend
-Environment="PATH=/home/ubuntu/crm_tecnologia/erp_enterprisecloud_backend/venv/bin"
-ExecStart=/home/ubuntu/crm_tecnologia/erp_enterprisecloud_backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
+```powershell
+python database\seed.py
 ```
 
-```bash
-# Iniciar servicio
-sudo systemctl daemon-reload
-sudo systemctl enable erp-backend
-sudo systemctl start erp-backend
-sudo systemctl status erp-backend
+### 4. Iniciar el servidor
+
+```powershell
+$env:PYTHONIOENCODING="utf-8"
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
----
+El servidor estará disponible en: http://localhost:8000
 
-## 🛠️ Comandos Útiles
+## 📖 Documentación API
 
-```bash
-# Ver logs del servidor
-tail -f /var/log/erp-backend.log
+Una vez que el servidor esté ejecutándose:
 
-# Reiniciar servicio
-sudo systemctl restart erp-backend
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **OpenAPI JSON**: http://localhost:8000/openapi.json
 
-# Migrar base de datos
-alembic upgrade head
+## 🔑 Credenciales de Acceso
 
-# Crear migración
-alembic revision --autogenerate -m "descripcion"
+**Usuario Administrador:**
+- Email: `admin@empresa.com`
+- Password: `Admin123!`
 
-# Backup de base de datos
-pg_dump erp_enterprisecloud > backup.sql
+## 📡 Endpoints Principales
 
-# Restaurar backup
-psql erp_enterprisecloud < backup.sql
+### Autenticación (`/api/v1/auth`)
+- `POST /login` - Iniciar sesión
+- `POST /logout` - Cerrar sesión
+- `POST /refresh` - Renovar token
+- `GET /me` - Obtener usuario actual
+
+### Usuarios (`/api/v1/usuarios`)
+- `GET /` - Listar usuarios
+- `POST /` - Crear usuario
+- `GET /{id}` - Obtener usuario
+- `PUT /{id}` - Actualizar usuario
+- `DELETE /{id}` - Eliminar usuario
+
+### Clientes (`/api/v1/clientes`)
+- `GET /` - Listar clientes (con paginación y filtros)
+- `POST /` - Crear cliente
+- `GET /{id}` - Obtener cliente
+- `PUT /{id}` - Actualizar cliente
+- `DELETE /{id}` - Eliminar cliente
+- `GET /estadisticas` - Estadísticas de clientes
+
+### Productos (`/api/v1/productos`)
+- `GET /` - Listar productos (con filtros)
+- `POST /` - Crear producto
+- `GET /{id}` - Obtener producto
+- `PUT /{id}` - Actualizar producto
+- `DELETE /{id}` - Cambiar estado
+- `GET /estadisticas` - Estadísticas de inventario
+- `GET /bajo-stock` - Productos con stock bajo
+
+### Documentos (`/api/v1/documentos`)
+- `POST /upload` - Subir documento a S3
+- `GET /` - Listar documentos
+- `GET /{id}` - Obtener documento
+- `GET /{id}/download` - Descargar documento
+- `DELETE /{id}` - Eliminar documento
+
+### Dashboard (`/api/v1/dashboard`)
+- `GET /resumen` - Resumen general
+- `GET /ventas` - Métricas de ventas
+- `GET /actividad-reciente` - Actividad reciente
+
+## 🧪 Probar el API
+
+### Login
+```powershell
+$body = @{email='admin@empresa.com'; password='Admin123!'} | ConvertTo-Json
+Invoke-WebRequest -Uri 'http://localhost:8000/api/v1/auth/login' -Method POST -Body $body -ContentType 'application/json' -UseBasicParsing
 ```
 
----
+### Listar usuarios (con token)
+```powershell
+$token = "TU_TOKEN_JWT"
+Invoke-WebRequest -Uri 'http://localhost:8000/api/v1/usuarios/' -Method GET -Headers @{Authorization="Bearer $token"} -UseBasicParsing
+```
 
-## 📞 Soporte
+## ⚙️ Configuración
 
-- **Email**: soporte@erp-enterprisecloud.com
-- **Documentación**: Ver `/docs` en el servidor
-- **Issues**: GitHub Issues
+Editar el archivo `.env`:
 
----
+```env
+# Base de Datos
+DATABASE_URL=sqlite:///./erp_enterprisecloud.db
+
+# JWT
+JWT_SECRET_KEY=erp-enterprisecloud-secret-key-2026-aws-project
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+
+# AWS S3
+AWS_ACCESS_KEY_ID=tu_access_key
+AWS_SECRET_ACCESS_KEY=tu_secret_key
+AWS_DEFAULT_REGION=us-east-1
+AWS_S3_BUCKET=erp-enterprisecloud-documents
+
+# Empresa
+EMPRESA_RUC=20123456789
+EMPRESA_RAZON_SOCIAL=DataTech Analytics S.A.C.
+EMPRESA_NOMBRE_COMERCIAL=DataTech Analytics
+```
+
+## 📊 Modelos de Base de Datos (37 tablas)
+
+1. **Seguridad**: usuarios, roles, permisos, usuario_rol, rol_permiso, sesiones, auditoria
+2. **Comercial**: clientes, proveedores
+3. **Productos**: categorias_producto, unidades_medida, productos
+4. **Ventas**: cotizaciones, cotizacion_detalles, pedidos, pedido_detalles, facturas, factura_detalles
+5. **Compras**: solicitudes_compra, ordenes_compra, orden_compra_detalles, recepciones, recepcion_detalles
+6. **Inventario**: almacenes, stocks, movimientos_inventario, ajustes_inventario
+7. **Finanzas**: cuentas_por_cobrar, cuentas_por_pagar
+8. **Documentos**: categorias_documento, documentos_s3
+9. **Sistema**: empresa, parametros_sistema, secuencias
+
+## 🎯 Datos Iniciales Creados
+
+El script `database/seed.py` crea:
+
+- ✅ 5 roles (Administrador, Gerente, Vendedor, Almacenero, Contador)
+- ✅ 48 permisos asignados al rol Administrador
+- ✅ 1 usuario administrador
+- ✅ 8 categorías de producto
+- ✅ 12 unidades de medida
+- ✅ 1 almacén principal
+- ✅ 5 categorías de documento
+- ✅ 1 registro de empresa
+- ✅ 4 parámetros del sistema
+- ✅ 9 secuencias para códigos automáticos
+
+## 🌐 Despliegue (Opcional)
+
+### Opción 1: Render.com (Recomendado)
+1. Crear cuenta en render.com
+2. Conectar repositorio GitHub
+3. Crear Web Service con:
+   - Build: `pip install -r requirements.txt`
+   - Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+4. Agregar PostgreSQL database
+5. Configurar variables de entorno
+
+### Opción 2: PostgreSQL Local
+1. Instalar PostgreSQL
+2. Crear base de datos y usuario
+3. Actualizar `DATABASE_URL` en `.env`
+4. Ejecutar seed y servidor
+
+## 📝 Notas
+
+- El proyecto usa **SQLite** por defecto para facilitar desarrollo local
+- Para producción, cambia a **PostgreSQL** actualizando `DATABASE_URL`
+- Los documentos se almacenan en **AWS S3** (requiere credenciales válidas)
+- Todos los endpoints protegidos requieren token JWT en header: `Authorization: Bearer TOKEN`
+
+## 👨‍💻 Autor
+
+Proyecto desarrollado para el curso AWS Cloud Technology - Semana 07
 
 ## 📄 Licencia
 
-Proyecto académico - Tecnología Cloud con AWS
-
----
-
-**Desarrollado con ❤️ usando FastAPI + PostgreSQL + AWS**
-
+Este proyecto es parte de un trabajo académico.

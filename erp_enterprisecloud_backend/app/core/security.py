@@ -4,7 +4,7 @@ Módulo de seguridad: Autenticación y autorización
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -14,21 +14,28 @@ from app.db.session import get_db
 from app.models.usuario import Usuario
 
 
-# Contexto de encriptación de contraseñas
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 # Bearer token para FastAPI
 security = HTTPBearer()
 
 
 def hash_password(password: str) -> str:
     """Encripta una contraseña usando bcrypt"""
-    return pwd_context.hash(password)
+    # Convertir password a bytes y hashear
+    password_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    # Retornar como string
+    return hashed.decode('utf-8')
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifica una contraseña contra su hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        password_bytes = plain_password.encode('utf-8')
+        hashed_bytes = hashed_password.encode('utf-8')
+        return bcrypt.checkpw(password_bytes, hashed_bytes)
+    except Exception:
+        return False
 
 
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
